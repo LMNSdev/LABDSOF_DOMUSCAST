@@ -67,6 +67,23 @@ Os condomínios coordenam problemas do edifício (fuga de água, luz da escada f
 
 ### Pressupostos e riscos
 
+**Pressupostos**:
+- A maioria dos residentes tem smartphone e ligação à internet suficiente (dados móveis/Wi-Fi) para usar a app;
+- Existe sempre um administrador no prédio (já é uma exigência legal em Portugal), que faz a configuração inicial e cria as contas dos residentes;
+- Um único prédio já é "comunidade" suficiente para o produto gerar valor, sem depender de adoção multi-prédio.
+
+**Riscos e mitigações:**
+
+Cada risco abaixo está ligado a um pressuposto ou a um problema identificado na secção anterior, para garantir que nenhum fica sem mitigação.
+
+| Risco | Mitigação |
+|---|---|
+| Custo de mudança do WhatsApp (grátis, já instalado) | Onboarding em segundos: administrador cria as contas e dá a cada residente um QR code para associar a sua conta por scan |
+| Residentes sem smartphone, menos digitais ou idosos ficam excluídos | Interface acessível, reporte assistido por vizinho/administrador |
+| Exclusão de residentes com deficiência visual ou auditiva | Seguir princípios de acessibilidade (WCAG): suporte a leitor de ecrã, texto alternativo em fotos, alternativas não sonoras às notificações |
+| Administrador sente perda de controlo | Posicionar como redução de esforço, não canal extra a vigiar |
+| Dados pessoais dos residentes mal geridos ou guardados sem necessidade | Minimização de dados: guardar só o essencial (ex.: fração), sem perfis completos nem retenção além do necessário (RGPD) |
+
 ---
 
 ## 2. Análise de Mercado e Concorrência
