@@ -135,6 +135,16 @@ TownSq, Condo Control e Buildium são plataformas maduras de contabilidade, quot
 
 ### 2.5 Conclusão e oportunidade de diferenciação
 
+Não existe, no mercado português, um produto pensado de raiz para o administrador voluntário de um condomínio pequeno/médio autogerido. Todos os concorrentes diretos assumem uma administração profissional já cliente (Gecond), um pacote de gestão financeira completo e pesado (SolidSoft, GOcondomínios), ou investimento em hardware smart (Unitify). O WhatsApp continua a ganhar por defeito, não porque seja bom, mas porque é a única opção com fricção zero.
+
+**Diferenciação:**
+1. Foco em gestão de problemas/informação, não em gestão de dinheiro: sem contabilidade, votações ou preços por portefólio.
+2. Foco no residente, não no gestor: reportar em segundos é o ecrã principal, não uma funcionalidade escondida.
+3. Zero-configuração para um único prédio autogerido, adotável por um administrador voluntário sem depender de terceiros.
+4. Privacidade por desenho: visibilidade limitada aos residentes/administrador relevantes, sem expor números de telefone nem difundir tudo a todos.
+5. Estrutura sem perder simplicidade: converter conversa em pedidos com estado, dono e histórico.
+6. Baixo custo e sem hardware, adequado a prédios sem orçamento de gestão profissional.
+
 ---
 
 ## 3. Investigação de Utilizadores
