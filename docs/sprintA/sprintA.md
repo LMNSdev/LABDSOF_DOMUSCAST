@@ -122,6 +122,17 @@ TownSq, Condo Control e Buildium são plataformas maduras de contabilidade, quot
 
 ### 2.4 Quadro comparativo
 
+| Alternativa | Para quem é | Força | Fraqueza (para o nosso alvo) |
+|---|---|---|---|
+| **Grupos WhatsApp/Messenger** | Qualquer grupo, sem configuração | Grátis, universal, zero fricção | Sem estado do pedido, sem privacidade, informação perde-se |
+| **Media física** (avisos em papel, folhetos no elevador) | Residentes presenciais no prédio | Acessível a residentes não-digitais, sem exigir smartphone | Desatualiza-se, cai ou estraga-se; não chega a proprietários ausentes nem a inquilinos que não passam pelo hall |
+| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; internacionais: TownSq, Condo Control, Buildium) | Administradores profissionais / gestoras de portefólios | Contabilidade, quotas, pagamentos e governança maduros; robustez legal | Foco em dinheiro/governança, não em problemas do dia a dia; complexidade e preço pesados para 1 prédio autogerido |
+| **Apps de condóminos dependentes da administração** (Gecond) | Condóminos de prédios com administração cliente | Votação antecipada, registo de avarias | Só por convite; B2B2C; avaliação 1,7/5; inacessível a administrador voluntário |
+| **My LDC** | Administrador–condómino | Gratuita, transparência, referência MB | Lançada em 2017, possível abandono (a validar) |
+| **Smart building** (Unitify) | Administradoras e novos empreendimentos | UX moderna, MB WAY/Multibanco, foco em Portugal | Exige hardware e investimento inicial |
+| **Software de tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios profissionais | SLA rigoroso, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; exige conta e input técnico para reportar uma lâmpada fundida |
+| **Plataformas comunitárias genéricas** | Vizinhança em geral | Sentido de vizinhança, recomendação de prestadores | Sem hierarquia de edifício nem tickets/estados; sem figura de administrador; modelo assente em publicidade |
+
 ### 2.5 Conclusão e oportunidade de diferenciação
 
 ---
