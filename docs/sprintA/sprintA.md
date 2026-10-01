@@ -42,6 +42,9 @@ Todos os 4 membros implementam código (frontend/backend), a tabela indica apena
 | Membro 5 | Backend Developer | Desenvolve e mantem a lógica do código, bases de dados, e APIs que alimentam a App|
 | Membro 6 | Frontend Developer | Desenvolve a parte visual e interativa da App |
 
+### Definition of Ready (DoR)
+Uma User Story está pronta para entrar num sprint quando: tem critérios de aceitação claros e testáveis; não depende de nenhuma outra tarefa; está estimada pela equipa (temporalmente); o seu impacto e valor agregado é compreendido sem ambiguidade por todos.
+
 ---
 
 ### Metodologia
