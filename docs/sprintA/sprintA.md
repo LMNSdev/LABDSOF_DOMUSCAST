@@ -52,8 +52,18 @@ Os condomínios coordenam problemas do edifício (fuga de água, luz da escada f
 - Privacidade fraca nos grupos de WhatsApp: os números de telefone pessoais de todos os moradores ficam expostos a todo o grupo.
 
 ### Mapa de stakeholders
+| Stakeholder | Papel | Relação com o produto |
+|---|---|---|
+| Condómino (proprietário/inquilino) | Vive no edifício, quer problemas resolvidos e visibilidade | Utilizador principal, reporta e acompanha |
+| Administrador do condomínio | Responsável pela manutenção das partes comuns | Utilizador principal, triagem, atribuição, fecho |
+| Comissão de condóminos | Supervisiona o administrador, aprova despesas maiores | Consulta histórico/relatórios |
+| Prestadores de manutenção | Executam a reparação | Utilizador indireto (fora do MVP) |
+| Funcionário/porteiro | Pode reportar em nome de residentes | Reportador secundário |
+| Seguradora | Pode exigir prova de incidente/diligência | Beneficiário indireto do histórico |
+| Município/fornecedores de utilities | Relevantes quando o problema é externo ao prédio | Fora do MVP; caminho de escalonamento futuro |
 
 ### Evidência do problema
+- **TODO:** fazer questionario/forms + procurar em foruns 
 
 ### Pressupostos e riscos
 
