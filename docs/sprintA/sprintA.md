@@ -19,6 +19,32 @@
 ## 0. Processo e Metodologia de Equipa
 
 ### Metodologia
+- Framework ágil: Scrum, com sprints alinhados aos do enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no final de cada sprint, e retrospetiva da equipa.
+
+### Controlo de versões (Git) - GitHub Flow
+- Estratégia: **GitHub Flow**, uma única branch de longa duração, `main` (como branch de production), mais uma branch de curta duração por funcionalidade/tarefa. Nunca se commita diretamente em `main`.
+- Formato da mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é o identificador da issue/task associado(a).
+
+![GitHub Flow: branch principal `main` sempre estável, branches de funcionalidade curtas, integradas de volta via PR após code review e deployment/CI](./github_flow.png)
+
+### Gestão de issues
+- Ferramenta: GitHub Issues/Projects com cada issue referenciada nos commits e PRs.
+
+### Papéis da equipa
+Todos os 4 membros implementam código (frontend/backend), a tabela indica apenas a responsabilidade **adicional** de cada um, para além do desenvolvimento comum a todos.
+
+| Membro | Responsabilidade adicional | Detalhe |
+|---|---|---|
+| Membro 1 | Product Owner / PM | Backlog, prioridades, contacto com investidores (docentes) |
+| Membro 2 | Business Analyst | Levantamento de requisitos, pesquisa de mercado/utilizador |
+| Membro 3 | QA | Estratégia e execução de testes |
+| Membro 4 | DevOps / Scrum Master | Pipeline de CI/CD, facilitação do processo ágil |
+| Membro 5 | Backend Developer | Desenvolve e mantem a lógica do código, bases de dados, e APIs que alimentam a App|
+| Membro 6 | Frontend Developer | Desenvolve a parte visual e interativa da App |
+
+---
+
+### Metodologia
 
 ### Controlo de versões (Git) - GitHub Flow
 
