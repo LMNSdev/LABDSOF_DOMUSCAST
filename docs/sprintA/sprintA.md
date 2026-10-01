@@ -42,6 +42,14 @@ Moradores de prédios de habitação multifamiliar autogeridos em Portugal (regi
 **Beneficiários secundários:** comissão de condóminos, prestadores de manutenção (canalizador, eletricista, elevadores), porteiro/funcionário (quando existe).
 
 ### Problema
+Os condomínios coordenam problemas do edifício (fuga de água, luz da escada fundida, elevador avariado, etc.) normalmente através de um grupo de WhatsApp ou posters espalhados pelo prédio. No entanto, esta gestão traz alguns problemas:
+- Mensagens perdem-se no meio de conversa não relacionada;
+- Não há estado do pedido, pedidos repetidos e incerteza sobre se algo já foi tratado;
+- Sem histórico auditável para o administrador (prioridades, prova de diligência na resolução);
+- Quem gere o grupo é normalmente um voluntário sem ferramentas de apoio;
+- Os posters junto ao elevador ficam desatualizados, são removidos ou simplesmente não chegam a inquilinos/residentes que raramente passam por ali;
+- Decisões tomadas em assembleias de condóminos não chegam a quem falta (por doença, viagem, horário), a informação passa "de boca em boca" e é frequentemente distorcida ou incompleta, sem ata acessível e centralizada;
+- Privacidade fraca nos grupos de WhatsApp: os números de telefone pessoais de todos os moradores ficam expostos a todo o grupo.
 
 ### Mapa de stakeholders
 
