@@ -35,6 +35,11 @@
 ## 1. Relatório de Problema e Oportunidade
 
 ### Comunidade-alvo
+Moradores de prédios de habitação multifamiliar autogeridos em Portugal (regime de propriedade horizontal), tipicamente entre 8 e 60 frações, com administrador eleito de entre os condóminos (não uma empresa profissional de gestão).
+
+**Utilizadores primários:** condóminos (proprietários e inquilinos) e o administrador do condomínio.
+
+**Beneficiários secundários:** comissão de condóminos, prestadores de manutenção (canalizador, eletricista, elevadores), porteiro/funcionário (quando existe).
 
 ### Problema
 
