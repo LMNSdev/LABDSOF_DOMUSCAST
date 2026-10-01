@@ -45,6 +45,10 @@ Todos os 4 membros implementam código (frontend/backend), a tabela indica apena
 ### Definition of Ready (DoR)
 Uma User Story está pronta para entrar num sprint quando: tem critérios de aceitação claros e testáveis; não depende de nenhuma outra tarefa; está estimada pela equipa (temporalmente); o seu impacto e valor agregado é compreendido sem ambiguidade por todos.
 
+
+### Definition of Done (DoD)
+Uma User Story está concluída quando: o código foi implementado e aprovado em code review (PR revisto, e aprovado, por, pelo menos, 1 pessoa); a pipeline de CI passa (build, testes automatizados, linting/análise estática); tem testes automatizados relevantes; foi integrada em `main`; a documentação relevante foi atualizada; e cumpre os critérios de aceitação definidos.
+
 ---
 
 ### Metodologia
