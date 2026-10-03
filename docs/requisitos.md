@@ -5,7 +5,7 @@
 ## Legenda de estado
 - **Draft**: proposto pela equipa, ainda não discutido com os clientes.
 - **In Review**: apresentado aos clientes (docentes), aguarda feedback/aprovação.
-- **Approved**: validado pelos clientes (docentes) e pronto para ser detalhado em user stories no [backlog](./sprintA/sprintA.md#6-product-backlog).
+- **Approved**: validado pelos clientes (docentes) e pronto para ser detalhado em user stories no [Product Backlog](./sprintA/sprintA.md#6-product-backlog).
 
 ## Histórico de versões
 
