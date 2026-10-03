@@ -51,20 +51,6 @@ Uma User Story está concluída quando: o código foi implementado e aprovado em
 
 ---
 
-### Metodologia
-
-### Controlo de versões (Git) - GitHub Flow
-
-### Gestão de issues
-
-### Definition of Ready (DoR)
-
-### Definition of Done (DoD)
-
-### Papéis da equipa
-
----
-
 ## 1. Relatório de Problema e Oportunidade
 
 ### Comunidade-alvo
@@ -127,96 +113,31 @@ TODO: Adicionar dados/fontes/evidências concretas do texto segundo a pesquisa r
 
 **Achado da pesquisa de trabalhos relacionados:** as soluções digitais de gestão de condomínio existentes (ex.: TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) são construídas à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos, orçamentos) e da **governança** (votações, atas), não da **gestão de problemas/informação** do dia a dia (reportar e acompanhar uma avaria, por exemplo). É esse o espaço que a nossa app ocupa.
 
-### 2.1 Alternativas e status quo
+### 2.1 Quadro comparativo de alternativas e concorrentes
 
-#### Soluções ad-hoc (WhatsApp/Messenger, posters, folha de papel)
-- **Funcionalidades principais:** mensagens instantâneas em grupo, posters físicos no elevador/hall, folha de papel para avarias.
-- **Pontos fortes:** adoção imediata (quase todos têm WhatsApp), custo zero, comunicação em tempo real, acessível a residentes não-digitais (papel).
-- **Pontos fracos:** perda de mensagens importantes no meio de conversas não relacionadas; ausência de acompanhamento de estado (tickets repetidos); falta de histórico auditável para comprovar a diligência do administrador; editais em papel ficam desatualizados, caem ou estragam-se, e não chegam a quem está ausente (proprietários ausentes, inquilinos que não passam pelo hall).
-- **Modelo de negócio/sustentabilidade:** N/A (ferramentas genéricas gratuitas).
-- **UX:** familiar e intuitiva para conversas sociais, mas caótica e frustrante para a gestão e triagem de problemas.
-- **Privacidade e confiança:** baixa; os números de telefone pessoais de todos os moradores ficam expostos a todo o grupo.
-- **Diferenciação:** estruturar o que hoje é conversa em pedidos com estado, dono e histórico, sem sacrificar a simplicidade do chat.
+| Alternativa | Utilizadores-alvo | Funcionalidades principais | Pontos fortes | Pontos fracos | Modelo de negócio | UX e privacidade | Diferenciação da nossa proposta |
+|---|---|---|---|---|---|---|---|
+| **WhatsApp/Messenger, posters, papel** | Qualquer grupo, sem configuração nem literacia digital exigida | Mensagens de grupo em tempo real; posters físicos; folha de papel para reportar avarias | Adoção imediata e custo zero; papel acessível a não-digitais | Mensagens perdem-se, sem estado do pedido nem histórico; posters desatualizam-se ou somem | N/A (ferramentas genéricas gratuitas) | Familiar mas caótica para triagem; números de telefone expostos a todo o grupo | Pedidos com estado, dono e histórico, sem perder a simplicidade do chat |
+| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais / gestoras de portefólio | Faturação, quotas, contas correntes, atas de assembleia, gestão de ocorrências (backoffice) | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio autogerido; foco em dinheiro/governança, não em avarias do dia a dia | SaaS B2B por subscrição, dependente do nº de frações | Corporativa e com curva de aprendizagem íngreme; RGPD estabelecido | Foco na coordenação do dia a dia, com onboarding e preço adequados a 1 prédio |
+| **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral, sem hierarquia de prédio | Feed social, recomendação de prestadores locais, alertas de segurança, mensagens privadas | Sentido de comunidade, recomendação de prestadores locais | Sem a figura do administrador nem tickets/estado para avarias | Grátis, financiado por publicidade geolocalizada | Orientada a engajamento social, não a tarefas; privacidade moderada/baixa | Estrutura à volta do edifício (propriedade horizontal), com administrador e pedidos com estado |
+| **Software de tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios profissionais | Abertura e despacho de tickets, SLA, manutenção preventiva | SLA rigoroso, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; exige conta e input técnico para algo trivial | SaaS B2B por ativo/unidade gerido | Profissional, formulários técnicos; sem foco em privacidade entre vizinhos | Reporte em segundos, sem formação técnica nem contrato empresarial |
+| **Gecond** ("o meu condomínio") | Condóminos de prédios com administração já cliente do backend | Votação antecipada em assembleias; registo e acompanhamento de avarias | Votação antecipada + registo de avarias na mesma app | Só por convite (B2B2C); avaliação muito baixa nas lojas de apps (1,7/5) | B2B2C, vendido à administração | Inconsistente entre prédios; confiança baixa (rating) | Adotável diretamente por qualquer administrador voluntário, sem depender de terceiro |
+| **My LDC** (Loja do Condomínio) | Condóminos e administrador, relação direta | Consulta de informação do condomínio, pedidos, referência MB para pagamento | Gratuita, foco em transparência, referência MB para pagamentos | Sem atualizações desde 2017; possível abandono (a validar) | Gratuito, sustentabilidade não divulgada | Simples mas datada; sem política de privacidade pública | Mantém a proposta de transparência, mas com manutenção ativa e pedidos com estado |
+| **Unitify** (smart building) | Administradoras profissionais e novos empreendimentos | Controlo de acesso, intercomunicador de vídeo, contadores inteligentes, cobrança de quotas por fração | UX moderna, pagamentos MB WAY/Multibanco, foco em Portugal | Exige investimento em hardware (controlo de acesso, intercomunicadores) | Pagamentos via Multibanco/MB WAY + Stripe | Moderna, mas dependente de fornecedores de hardware/pagamento terceiros | Sem hardware exigido, adotável por qualquer prédio de baixo orçamento |
 
-#### Software de gestão profissional de condomínios
-- **Funcionalidades principais:** faturação, emissão de recibos e avisos de cobrança, gestão de contas correntes, redação formal de atas, gestão de ocorrências (focada no backoffice).
-- **Pontos fortes:** altamente robustos do ponto de vista legal e financeiro; centralizam toda a documentação.
-- **Pontos fracos:** demasiado complexos e com funcionalidades excessivas para um administrador voluntário; pouco focados na comunicação direta e na comunidade; não resolvem o atrito do utilizador final em reportar pequenos problemas do dia a dia; onboarding e preço pesados para 1 prédio autogerido.
-- **Modelo de negócio:** SaaS B2B com subscrições mensais ou anuais muitas vezes avultadas e dependentes do número de frações geridas.
-- **UX:** interface utilitária e corporativa, com curva de aprendizagem íngreme para leigos.
-- **Privacidade e confiança:** elevada, com controlo de acessos rigoroso e conformidade com o RGPD estabelecida.
+### 2.2 Conclusão e oportunidade de diferenciação
 
-#### Plataformas comunitárias genéricas (redes sociais de vizinhança)
-- **Funcionalidades principais:** feed de notícias social, recomendações de serviços locais, alertas de segurança e mensagens privadas.
-- **Pontos fortes:** promovem o sentido de vizinhança; úteis para encontrar prestadores de serviços locais (canalizadores, eletricistas).
-- **Pontos fracos:** não oferecem hierarquia de edifício (propriedade horizontal) nem ferramentas estruturadas de gestão de avarias (tickets/estados); não há a figura do "Administrador" com permissões de gestão do prédio.
-- **Modelo de negócio:** gratuito para o utilizador, sustentado por publicidade geolocalizada e patrocínios de negócios locais.
-- **UX:** desenhada para potenciar o engajamento social (scroll infinito) e não para a resolução objetiva de tarefas.
-- **Privacidade e confiança:** moderada a baixa; depende de políticas de partilha de dados com anunciantes e a verificação de moradas é por vezes falível.
+Não existe, no mercado português, um produto pensado de raiz para o administrador voluntário de um condomínio pequeno/médio autogerido: os concorrentes diretos assumem uma administração profissional já cliente (Gecond), um pacote financeiro completo e pesado (software de gestão profissional), ou investimento em hardware smart (Unitify). O WhatsApp continua a ganhar por defeito, não porque seja bom, mas porque é a única opção com fricção zero.
 
-#### Software de tickets de manutenção (ex.: UpKeep, Fixflo)
-- **Para quem é:** facility managers, operadores imobiliários comerciais, senhorios profissionais.
-- **Pontos fortes:** SLA rigoroso, despacho de fornecedores, manutenção preventiva.
-- **Pontos fracos:** sem dimensão comunitária (sem quadro de avisos/visibilidade coletiva); exige criação de conta e input técnico detalhado só para reportar, por exemplo, uma lâmpada fundida.
+**Oportunidades de diferenciação:**
+1. Gestão de problemas/informação do dia a dia, não de dinheiro ou governança.
+2. Foco no residente (reportar em segundos), não no gestor/contabilidade.
+3. Zero-configuração para um único prédio autogerido, sem depender de terceiros nem de hardware.
+4. Privacidade por desenho: visibilidade limitada aos residentes/administrador relevantes, sem expor contactos pessoais.
 
-### 2.2 Concorrentes digitais no mercado português
+### 2.3 Proposta de Valor
 
-#### Gecond — "o meu condomínio"
-- **Utilizadores-alvo:** condóminos, mas só é disponibilizada por convite, através de administrações que já usam o software Gecond; pressupõe uma administração (frequentemente profissional) já cliente do backend.
-- **Funcionalidades:** votação antecipada em assembleias, registo e acompanhamento de avarias.
-- **Pontos fracos:** avaliação muito baixa nas lojas de apps (1,7/5); depende de um terceiro (a administração) ter comprado o software primeiro, pelo que um administrador voluntário não o pode adotar sozinho.
-- **Modelo:** B2B2C (vendido à empresa/administrador, não ao condomínio diretamente).
-
-#### SolidSoft GC
-- **Utilizadores-alvo:** dupla vertente, condóminos e técnicos de manutenção externos.
-- **Funcionalidades:** gestão documental, pagamentos, contas correntes, ocorrências (reporte de avarias com foto e registo offline), assembleias com ata para download e assembleia digital por videoconferência.
-- **Pontos fortes:** muito completo.
-- **Pontos fracos:** a complexidade e amplitude (financeiro completo, rotas de manutenção) sugerem um produto pensado para administração profissional ou condomínios grandes, não para o administrador voluntário de um prédio de 10 frações.
-
-#### My LDC (Loja do Condomínio)
-- **Funcionalidades:** gratuita, com foco na relação administrador–condómino: consulta de informação do condomínio, pedidos e acesso à referência MB para pagamento, com o objetivo declarado de reforçar transparência e envolvimento.
-- **Observações:** é o mais próximo conceptualmente da nossa proposta, mas é de 2017 e não há sinal de evolução recente; possível "produto abandonado" **(a validar)**.
-
-#### GCondomPro
-- Software de condomínios "original desde 1998", desktop, focado em documentos de cobrança e contas; geração anterior, pensado para administração financeira, não para coordenação do dia a dia entre vizinhos.
-
-#### GOcondomínios (Sopenfor)
-- Aplicação web de gestão de condomínios, sem instalação, com período de teste gratuito de 30 dias, de uma empresa com quase 30 anos no setor.
-- **Modelo:** SaaS clássico B2B vendido a quem administra (empresa ou administrador), focado em ferramentas de gestão administrativa/financeira, não em comunicação estruturada entre residentes.
-
-#### Unitify
-- **Proposta:** plataforma "smart building" que liga controlo de acesso, intercomunicadores de vídeo, contadores inteligentes e uma app de residente num único sistema, com cobrança de quotas organizada por fração.
-- **Modelo de negócio:** pagamentos via Multibanco e MB WAY, canais que os proprietários portugueses já usam para pagamentos recorrentes, mais integração Stripe para cartão.
-- **Pontos fortes:** UX moderna, forte foco em Portugal (não é adaptação de produto brasileiro), pipeline de conteúdo/marketing ativo.
-- **Pontos fracos para o nosso segmento:** desenhado para empresas de administração de condomínios e novos empreendimentos com sistemas prediais smart; pressupõe investimento em hardware (intercomunicadores, controlo de acesso) que um condomínio autogerido de 8-60 frações dificilmente vai financiar só para resolver "a luz da escada fundiu".
-
-### 2.3 Referências internacionais
-TownSq, Condo Control e Buildium são plataformas maduras de contabilidade, quotas, pagamentos e governança, dirigidas a administradores profissionais e gestoras de portefólios. Servem como referência de funcionalidades, mas não são concorrentes diretos no mercado português.
-
-### 2.4 Quadro comparativo
-
-| Alternativa | Para quem é | Força | Fraqueza (para o nosso alvo) |
-|---|---|---|---|
-| **Grupos WhatsApp/Messenger** | Qualquer grupo, sem configuração | Grátis, universal, zero fricção | Sem estado do pedido, sem privacidade, informação perde-se |
-| **Media física** (avisos em papel, folhetos no elevador) | Residentes presenciais no prédio | Acessível a residentes não-digitais, sem exigir smartphone | Desatualiza-se, cai ou estraga-se; não chega a proprietários ausentes nem a inquilinos que não passam pelo hall |
-| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; internacionais: TownSq, Condo Control, Buildium) | Administradores profissionais / gestoras de portefólios | Contabilidade, quotas, pagamentos e governança maduros; robustez legal | Foco em dinheiro/governança, não em problemas do dia a dia; complexidade e preço pesados para 1 prédio autogerido |
-| **Apps de condóminos dependentes da administração** (Gecond) | Condóminos de prédios com administração cliente | Votação antecipada, registo de avarias | Só por convite; B2B2C; avaliação 1,7/5; inacessível a administrador voluntário |
-| **My LDC** | Administrador–condómino | Gratuita, transparência, referência MB | Lançada em 2017, possível abandono (a validar) |
-| **Smart building** (Unitify) | Administradoras e novos empreendimentos | UX moderna, MB WAY/Multibanco, foco em Portugal | Exige hardware e investimento inicial |
-| **Software de tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios profissionais | SLA rigoroso, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; exige conta e input técnico para reportar uma lâmpada fundida |
-| **Plataformas comunitárias genéricas** | Vizinhança em geral | Sentido de vizinhança, recomendação de prestadores | Sem hierarquia de edifício nem tickets/estados; sem figura de administrador; modelo assente em publicidade |
-
-### 2.5 Conclusão e oportunidade de diferenciação
-
-Não existe, no mercado português, um produto pensado de raiz para o administrador voluntário de um condomínio pequeno/médio autogerido. Todos os concorrentes diretos assumem uma administração profissional já cliente (Gecond), um pacote de gestão financeira completo e pesado (SolidSoft, GOcondomínios), ou investimento em hardware smart (Unitify). O WhatsApp continua a ganhar por defeito, não porque seja bom, mas porque é a única opção com fricção zero.
-
-**Diferenciação:**
-1. Foco em gestão de problemas/informação, não em gestão de dinheiro: sem contabilidade, votações ou preços por portefólio.
-2. Foco no residente, não no gestor: reportar em segundos é o ecrã principal, não uma funcionalidade escondida.
-3. Zero-configuração para um único prédio autogerido, adotável por um administrador voluntário sem depender de terceiros.
-4. Privacidade por desenho: visibilidade limitada aos residentes/administrador relevantes, sem expor números de telefone nem difundir tudo a todos.
-5. Estrutura sem perder simplicidade: converter conversa em pedidos com estado, dono e histórico.
-6. Baixo custo e sem hardware, adequado a prédios sem orçamento de gestão profissional.
+> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (regime de propriedade horizontal), que hoje coordenam avarias e avisos através de grupos de WhatsApp caóticos ou posters físicos desatualizados, o [Nome do Produto] é uma aplicação de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em pedidos estruturados com estado, dono e histórico. Ao contrário do software de gestão profissional de condomínios (focado em contabilidade e governança) e das soluções "smart building" (que exigem hardware e investimento), o nosso produto é gratuito/low-cost, de configuração imediata para um único prédio, e desenhado para o residente, com privacidade por desenho (sem exposição de números de telefone nem perfis completos além do essencial).
 
 ---
 
@@ -226,26 +147,26 @@ Não existe, no mercado português, um produto pensado de raiz para o administra
 
 A investigação combina três fontes complementares:
 
-1. **Inquérito online** (Google Forms, distribuído pela rede da equipa e em grupos de Facebook/Reddit de moradores portugueses) — ver questionário abaixo.
+1. **Inquérito online** (Google Forms, distribuído pela rede da equipa e em grupos de Facebook/Reddit de moradores portugueses), ver questionário abaixo.
 
-2. **Leitura de reviews de apps concorrentes** nas lojas Google Play e App Store (foco: Gecond — "o meu condomínio", SolidSoft GC, My LDC), recolhendo padrões de queixas e elogios recorrentes.
+2. **Leitura de reviews de apps concorrentes** nas lojas Google Play e App Store (foco: Gecond, "o meu condomínio", SolidSoft GC, My LDC), recolhendo padrões de queixas e elogios recorrentes.
 
-3. **Observação informal** — os quatro membros da equipa habitam ou têm familiares em prédios autogeridos em Portugal; as situações descritas foram observadas diretamente (grupos de WhatsApp saturados, posters rasgados no elevador, administrador contactado por SMS ou chamada pessoal).
+3. **Observação informal** - os quatro membros da equipa habitam ou têm familiares em prédios autogeridos em Portugal; as situações descritas foram observadas diretamente (grupos de WhatsApp saturados, posters rasgados no elevador, administrador contactado por SMS ou chamada pessoal).
 
 ### Questionário
 
-**Secção A — Perfil**
+**Secção A - Perfil**
 1. Qual é o seu papel no condomínio? *(Proprietário residente / Inquilino / Administrador / Outro)*
 2. Quantas frações tem o seu prédio aproximadamente? *(Menos de 8 / 8–30 / 31–60 / Mais de 60)*
 3. O seu prédio tem administração profissional ou é autogerido por um condómino eleito? *(Profissional / Condómino voluntário / Não sei)*
 
-**Secção B — Comunicação atual**
+**Secção B - Comunicação atual**
 
 4. Como comunica habitualmente avarias ou problemas do prédio? *(Grupo de WhatsApp/Messenger / Poster/aviso físico no prédio / Contacto direto com o administrador / E-mail / App dedicada / Outro)*
 5. Com que frequência reporta um problema no prédio? *(Nunca / Raramente (1–2x/ano) / Às vezes (3–6x/ano) / Frequentemente (>6x/ano))*
 6. Depois de reportar um problema, costuma saber se foi resolvido? *(Sim, sou sempre informado/a / Às vezes / Raramente / Nunca)*
 
-**Secção C — Frustrações (escala 1 = nada frustrado, 5 = muito frustrado)**
+**Secção C - Frustrações (escala 1 = nada frustrado, 5 = muito frustrado)**
 
 7. "As minhas mensagens perdem-se no meio de outras conversas no grupo."
 8. "Não sei se o problema que reportei já foi ou vai ser tratado."
@@ -254,14 +175,14 @@ A investigação combina três fontes complementares:
 11. "O meu número de telefone pessoal fica exposto a todos os membros do grupo."
 12. "Os avisos em papel no elevador/hall estão desatualizados ou em mau estado."
 
-**Secção D — Adoção de nova ferramenta**
+**Secção D - Adoção de nova ferramenta**
 
 13. Usaria uma app dedicada ao seu condomínio para reportar avarias e ver avisos? *(Sim, definitivamente / Provavelmente sim / Provavelmente não / Definitivamente não)*
 14. O que seria mais importante para decidir usar essa app? *(Ser rápida de usar / Privacidade dos meus dados / Gratuita ou barata / Que os vizinhos também a usassem / Outro)*
 15. O que mais o/a inibiria de adotar uma app dessas? *(Mais uma app para instalar / Os vizinhos mais velhos não vão usar / Preocupações com privacidade / Já o WhatsApp chega / Outro)*
 16. Quanto estaria disposto/a a pagar por fração, por mês, por um serviço sem publicidade e com privacidade garantida? *(Nada / Até 0,50 € / Até 1 € / Até 2 € / Mais de 2 €)*
 
-**Secção E — Questão aberta**
+**Secção E - Questão aberta**
 
 17. Descreva uma situação concreta em que a comunicação no seu condomínio falhou. *(resposta livre)*
 
