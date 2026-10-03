@@ -5,14 +5,14 @@
 - [1. Relatório de Problema e Oportunidade](#1-relatório-de-problema-e-oportunidade)
 - [2. Análise de Mercado e Concorrência](#2-análise-de-mercado-e-concorrência)
 - [3. Investigação de Utilizadores](#3-investigação-de-utilizadores)
-- [Rascunho de Requisitos](#rascunho-de-requisitos)
-- [4. Product Vision](#4-product-vision)
-- [5. Product Backlog](#5-product-backlog)
-- [6. Responsible AI Opportunity Assessment](#6-responsible-ai-opportunity-assessment)
-- [7. Technical Design](#7-technical-design)
-- [8. Architecture Decision Records](#8-architecture-decision-records)
-- [9. Security and Privacy Assessment](#9-security-and-privacy-assessment)
-- [10. Walking Skeleton](#10-walking-skeleton)
+- [4. Rascunho de Requisitos](#4-rascunho-de-requisitos)
+- [5. Product Vision](#5-product-vision)
+- [6. Product Backlog](#6-product-backlog)
+- [7. Responsible AI Opportunity Assessment](#7-responsible-ai-opportunity-assessment)
+- [8. Technical Design](#8-technical-design)
+- [9. Architecture Decision Records](#9-architecture-decision-records)
+- [10. Security and Privacy Assessment](#10-security-and-privacy-assessment)
+- [11. Walking Skeleton](#11-walking-skeleton)
 
 ---
 
@@ -200,19 +200,25 @@ A investigação combina três fontes complementares:
 
 ---
 
-## Rascunho de Requisitos
+## 4. Rascunho de Requisitos
 
-### Funcionalidades principais
+Esta é uma primeira lista de funcionalidades (agrupadas por epic) e de requisitos não funcionais, resultante da análise de mercado (capítulo 2) e da investigação de utilizadores (capítulo 3). Serve de ponte para a visão de produto (capítulo 5) e será refinada em user stories priorizadas no backlog (capítulo 6), após validação com os clientes (docentes).
 
-### Outros requisitos importantes
+A lista completa de requisitos vive num documento próprio, [docs/requisitos.md](../requisitos.md), onde cada funcionalidade/requisito tem uma **versão** e um **estado** (Draft, In Review e Approved), para acompanhar a validação com os clientes ao longo dos sprints sem misturar esse histórico com o resto deste relatório.
+
+**Resumo dos epics propostos (ver detalhe e estado atual em [docs/requisitos.md](../requisitos.md)):**
+- **Gestão de avarias:** reportar problema, estado do pedido, histórico do prédio, notificações de estado, deteção de duplicados.
+- **Comunicação e governança do condomínio:** mural digital de avisos, calendário de atividades.
+- **Privacidade e confiança:** visibilidade do pedido por assunto.
+- **Requisitos não funcionais:** usabilidade (rapidez), acessibilidade, privacidade (minimização de dados), segurança (controlo de acesso), observabilidade (monitorização).
 
 ---
 
-## 4. Product Vision
+## 5. Product Vision
 
 ---
 
-## 5. Product Backlog
+## 6. Product Backlog
 
 ### 5.1 Backlog priorizado (User Stories)
 
@@ -235,23 +241,22 @@ A investigação combina três fontes complementares:
 | US-13 | Como **residente**, quero ver no calendário as reuniões/assembleias do condomínio e receber uma notificação de lembrete antes de cada uma, para não as esquecer nem ficar de fora de decisões importantes (integração com sistema de calendário externo). | S | 3 | - [ ] O administrador consegue agendar uma reunião/assembleia com data, hora e local.<br>- [ ] A reunião agendada é sincronizada com um serviço de calendário externo (ex.: Google Calendar/iCal) ou um simulador realista.<br>- [ ] O residente recebe uma notificação de lembrete antes da reunião (ex.: 24h antes).<br>- [ ] Quando o serviço de calendário externo está indisponível ou devolve dados inválidos, a reunião continua visível na app a partir dos dados guardados localmente. |
 | NFR-01 | Como **equipa de produto**, quero que a app continue a funcionar de forma degradada quando um componente externo (transcrição de atas por IA ou serviço de calendário) está indisponível, para que o residente consiga sempre reportar/acompanhar avarias e ver as reuniões agendadas (cenário de degradação). | M | 3 | - [ ] Os fallbacks já definidos em US-10 (ata manual) e US-13 (dados locais) funcionam de facto quando o respetivo serviço externo está em baixo.<br>- [ ] A app comunica ao utilizador, de forma clara e visível, que está a operar em modo degradado, em vez de falhar silenciosamente.<br>- [ ] Cada indisponibilidade fica registada nos logs/observabilidade da equipa, com timestamp e componente afetado. |
 
+---
+
+## 7. Responsible AI Opportunity Assessment
 
 ---
 
-## 6. Responsible AI Opportunity Assessment
+## 8. Technical Design
 
 ---
 
-## 7. Technical Design
+## 9. Architecture Decision Records
 
 ---
 
-## 8. Architecture Decision Records
+## 10. Security and Privacy Assessment
 
 ---
 
-## 9. Security and Privacy Assessment
-
----
-
-## 10. Walking Skeleton
+## 11. Walking Skeleton
