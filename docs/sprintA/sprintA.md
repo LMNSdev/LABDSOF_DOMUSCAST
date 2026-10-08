@@ -230,6 +230,26 @@ A lista completa de requisitos vive num documento próprio, [docs/requisitos.md]
 - **Condómino Sénior Pouco Digital** (ex.: "D. Amélia", 76, proprietária):
     - Vive no prédio há muitos anos, usa um telemóvel com poucas funcionalidades e confia sobretudo no papel e no contacto presencial para se informar. Quer continuar a saber o que se passa no prédio e poder comunicar um problema sem depender de tecnologia que não domina. Sente-se frequentemente excluída, porque os posters ficam desatualizados e a informação lhe chega "de boca em boca", muitas vezes incompleta ou distorcida.
 
+
+### 5.2. Value Proposition
+
+- Para administradores voluntários e condóminos de prédios autogeridos, a nossa plataforma transforma a gestão do dia a dia do edifício de uma fonte de stress para um processo simples e colaborativo;
+
+- Em vez de recorrer a ferramentas genéricas onde as mensagens perdem-se facilmente, estruturamos a comunicação em pedidos com estado, responsável e histórico auditável, e levamos avisos e decisões de assembleias a todos os residentes, incluindo quem falta ou raramente passa pelo hall onde fica normalmente o poster físico;
+
+- Diferenciamo-nos do software de administração profissional ao deixar deliberadamente de fora a contabilidade e a gestão financeira, concentrando-nos na resolução rápida dos problemas do prédio e na privacidade dos residentes, sem hardware nem custos de adoção para o administrador.
+
+
+**Proposta de Valor por Persona**:
+
+| Persona                        | Valor principal                                                          |
+|--------------------------------|--------------------------------------------------------------------------|
+| Administrador Voluntário       | Menos esforço de triagem e um histórico que prova a sua diligência       |
+| Condómino Residente Ocupado    | Reportar em segundos e saber o estado sem perguntar a ninguém            |
+| Inquilino / Residente Recente  | Receber os avisos relevantes e reportar sem expor o seu telemóvel        |
+| Condómino Sénior Pouco Digital | Não ficar excluído da informação do prédio, através do reporte assistido |
+
+
 ---
 
 ## 6. Product Backlog
