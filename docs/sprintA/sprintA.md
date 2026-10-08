@@ -216,6 +216,20 @@ A lista completa de requisitos vive num documento próprio, [docs/requisitos.md]
 
 ## 5. Product Vision
 
+### 5.1. Personas
+
+- **Administrador Voluntário** (ex.: "Rui", 58, reformado/ativo, eleito em assembleia): 
+  -  É um inquilino eleito para gerir o prédio, não pertecendo a uma empresa profissional de gestão. Faz esta gestão nas horas livres e não possui ferramentas de apoio. Sente regularmente dificuldade em fazer a triagem dos problemas e em provar a sua diligência na resolução dos mesmos perante os outros inquilinos. Precisa de uma solução para gerir as ocorrências e registar o histórico de decisões e reparações.
+
+- **Condómino Residente Ocupado** (ex.: "Marta", 34, proprietária):
+    - É proprietária de uma fração e trabalha fora de casa, pelo que acompanha o grupo do prédio de forma intermitente e raramente consegue estar presente nas assembleias. Quer poder reportar um problema em poucos segundos e saber, sem ter de perguntar a ninguém, se já foi comunicado e tratado. Sente dificuldade em perceber o estado dos problemas do edifício e depende de terceiros para saber o que foi decidido nas assembleias a que falta.
+
+- **Inquilino/Residente Recente** (ex.: "Tiago", 25, inquilino):
+    - Vive no prédio há pouco tempo, raramente passa pelo hall e não conhece bem os vizinhos, pelo que nunca chegou a ver os avisos afixados nem está necessariamente incluído no grupo de WhatsApp. Quer receber apenas os avisos que lhe dizem respeito e conseguir reportar um problema sem constrangimento e sem expor o seu número de telefone a todo o prédio. A sua dor principal é a falta de informação, porque muitas vezes só sabe que houve uma avaria ou uma decisão depois de o problema já o ter afetado.
+
+- **Condómino Sénior Pouco Digital** (ex.: "D. Amélia", 76, proprietária):
+    - Vive no prédio há muitos anos, usa um telemóvel com poucas funcionalidades e confia sobretudo no papel e no contacto presencial para se informar. Quer continuar a saber o que se passa no prédio e poder comunicar um problema sem depender de tecnologia que não domina. Sente-se frequentemente excluída, porque os posters ficam desatualizados e a informação lhe chega "de boca em boca", muitas vezes incompleta ou distorcida.
+
 ---
 
 ## 6. Product Backlog
