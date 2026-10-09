@@ -222,6 +222,18 @@ A lista completa de requisitos vive num documento próprio, [docs/requisitos.md]
 
 O Product Backlog completo, com prioridade MoSCoW, pontos de história, critérios de aceitação e estado de validação (Draft/In Review/Approved), está em [docs/backlog.md](../backlog.md). As histórias "Must have" são exatamente as que materializam a [proposta de valor](#2-análise-de-mercado-e-concorrência) definida no capítulo 2: transformar o reporte de avarias disperso em pedidos com estado, dono e histórico, com privacidade por desenho.
 
+### 6.1 Objetivos dos sprints
+
+> O detalhe de que user stories entram em cada sprint já está no [plano de release](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint); esta secção regista apenas o objetivo de cada sprint.
+
+- **Sprint A (Descoberta, Validação e Design):** validar que o problema é relevante e que o MVP proposto é o mais pequeno experimento credível; entregar o Walking Skeleton (versão mínima, ponta a ponta).
+- **Sprint B (Construir e operar a fatia vertical):** entregar de forma operacional a jornada principal do utilizador, reportar e acompanhar uma avaria, incluindo autenticação (pode ser mock no MVP), armazenamento persistente, pelo menos um workflow assíncrono, a primeira versão da capacidade assistida por IA com fallback não-IA, uma primeira integração com um sistema externo e a demonstração de pelo menos uma condição de falha, conforme exigido para este sprint no enunciado. Este conjunto é o **Sprint B Backlog**, detalhado e confirmado contra a Definition of Ready em [docs/sprintB/backlog.md](../sprintB/backlog.md).
+- **Sprint C (Avaliar, consolidar e apresentar):** robustecer e avaliar o que já existe, e consolidar a avaliação formal da capacidade de IA e do cenário de degradação, preparando a apresentação final.
+
+### 6.2 Plano de release inicial
+
+O plano de release multi-sprint (Sprint A/B/C -> entregável -> user stories) está documentado em [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint).
+
 ---
 
 ## 7. Responsible AI Opportunity Assessment
