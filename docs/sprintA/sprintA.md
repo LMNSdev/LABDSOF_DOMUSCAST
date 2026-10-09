@@ -216,6 +216,68 @@ A lista completa de requisitos vive num documento próprio, [docs/requisitos.md]
 
 ## 5. Product Vision
 
+### 5.1. Personas
+
+- **Administrador Voluntário** (ex.: "Rui", 58, reformado/ativo, eleito em assembleia): 
+  -  É um inquilino eleito para gerir o prédio, não pertecendo a uma empresa profissional de gestão. Faz esta gestão nas horas livres e não possui ferramentas de apoio. Sente regularmente dificuldade em fazer a triagem dos problemas e em provar a sua diligência na resolução dos mesmos perante os outros inquilinos. Precisa de uma solução para gerir as ocorrências e registar o histórico de decisões e reparações.
+
+- **Condómino Residente Ocupado** (ex.: "Marta", 34, proprietária):
+    - É proprietária de uma fração e trabalha fora de casa, pelo que acompanha o grupo do prédio de forma intermitente e raramente consegue estar presente nas assembleias. Quer poder reportar um problema em poucos segundos e saber, sem ter de perguntar a ninguém, se já foi comunicado e tratado. Sente dificuldade em perceber o estado dos problemas do edifício e depende de terceiros para saber o que foi decidido nas assembleias a que falta.
+
+- **Inquilino/Residente Recente** (ex.: "Tiago", 25, inquilino):
+    - Vive no prédio há pouco tempo, raramente passa pelo hall e não conhece bem os vizinhos, pelo que nunca chegou a ver os avisos afixados nem está necessariamente incluído no grupo de WhatsApp. Quer receber apenas os avisos que lhe dizem respeito e conseguir reportar um problema sem constrangimento e sem expor o seu número de telefone a todo o prédio. A sua dor principal é a falta de informação, porque muitas vezes só sabe que houve uma avaria ou uma decisão depois de o problema já o ter afetado.
+
+- **Condómino Sénior Pouco Digital** (ex.: "D. Amélia", 76, proprietária):
+    - Vive no prédio há muitos anos, usa um telemóvel com poucas funcionalidades e confia sobretudo no papel e no contacto presencial para se informar. Quer continuar a saber o que se passa no prédio e poder comunicar um problema sem depender de tecnologia que não domina. Sente-se frequentemente excluída, porque os posters ficam desatualizados e a informação lhe chega "de boca em boca", muitas vezes incompleta ou distorcida.
+
+
+### 5.2. Proposta de Valor
+
+- Para administradores voluntários e condóminos de prédios autogeridos, a nossa plataforma transforma a gestão do dia a dia do edifício de uma fonte de stress para um processo simples e colaborativo;
+
+- Em vez de recorrer a ferramentas genéricas onde as mensagens perdem-se facilmente, estruturamos a comunicação em pedidos com estado, responsável e histórico auditável, e levamos avisos e decisões de assembleias a todos os residentes, incluindo quem falta ou raramente passa pelo hall onde fica normalmente o poster físico;
+
+- Diferenciamo-nos do software de administração profissional ao deixar deliberadamente de fora a contabilidade e a gestão financeira, concentrando-nos na resolução rápida dos problemas do prédio e na privacidade dos residentes, sem hardware nem custos de adoção para o administrador.
+
+
+**Proposta de Valor por Persona**:
+
+| Persona                        | Valor principal                                                          |
+|--------------------------------|--------------------------------------------------------------------------|
+| Administrador Voluntário       | Menos esforço de triagem e um histórico que prova a sua diligência       |
+| Condómino Residente Ocupado    | Reportar em segundos e saber o estado sem perguntar a ninguém            |
+| Inquilino / Residente Recente  | Receber os avisos relevantes e reportar sem expor o seu telemóvel        |
+| Condómino Sénior Pouco Digital | Não ficar excluído da informação do prédio, através do reporte assistido |
+
+### 5.3. User Journey
+
+- **Reportar um problema**: O inquilino repara numa avaria, abre a aplicação e reporta o problema de forma rápida, tendo possibilidade de adicionar evidências, a categoria da anomalia e a localização da avaria no prédio;
+
+- **Triagem e resolução**: O administrador do condomínio verifica a lista de pedidos abertos e altera o estado do pedido para indicar que o processo está "em curso". Quando o estado da avaria é alterado, o morador que a reportou recebe imediatamente uma notificação de atualização;
+
+- **Consulta de histórico e murais**: Um inquilino pode a todo o momento consultar o mural digital e o histórico do prédio para ler os últimos avisos, atas ou acompanhar as resoluções ativas, permitindo que o mesmo consiga manter-se facilmente atualizado.
+
+### 5.4. Critérios de Sucesso
+
+> Este projeto é de âmbito académico e o produto não será lançado em ambiente real nem testado com utilizadores externos. Os critérios abaixo são verificados pela própria equipa de desenvolvimento, através de testes automatizados (unitários, de integração e end-to-end), de cenários de demonstração com dados sintéticos, de testes de carga e acessibilidade em ambiente controlado e de uma avaliação de usabilidade. Estes critérios demonstram que o produto cumpre o que foi desenhado, mas não provam que os utilizadores reais beneficiam dele. Qualquer medição de tempo feita pela equipa reflete utilizadores experientes e conhecedores da aplicação, pelo que é apenas indicativa. 
+
+- **Velocidade e eficiência**: O residente tem de conseguir reportar qualquer problema em menos de 1 minuto, mesmo com uma ligação à internet fraca. Este critério será verificado por um teste end-to-end automatizado que executa a jornada de reporte com a rede limitada por simulação de ligação lenta, confirmando que a jornada se conclui dentro de um orçamento de tempo definido e com um número reduzido de passos (a fixar no protótipo, com a hipótese de, no máximo, 5 interações). Os tempos serão também cronometrados pela equipa, sendo apenas indicativos;
+
+- **Valor com utilização mínima**: A plataforma deverá gerar valor imediato mesmo que apenas o administrador e alguns residentes a utilizem, assumindo que pelo menos um residente assume o papel de administrador da aplicação no prédio. Este critério será validado por um cenário de demonstração com um edifício fictício (um administrador e alguns residentes com dados sintéticos), em que as jornadas de reporte e de triagem se concluem sem depender de mais utilizadores, e em que a criação do prédio e o convite dos primeiros residentes são concluídos em poucos passos. A adoção por uma percentagem das frações em contexto real fica como hipótese de produto;
+
+- **Privacidade nativa e retenção**: Os dados pessoais serão geridos de acordo com o RGPD e os contactos dos residentes não serão expostos aos restantes moradores, o que elimina uma das fricções à mudança face ao WhatsApp. Este critério será verificado por testes automatizados de autorização que confirmam que nenhuma resposta da aplicação a um residente contém contactos de outros residentes, pela implementação de um período de retenção dos dados com teste automatizado da sua aplicação, e pelo uso exclusivo de dados sintéticos em todo o projeto, validado na revisão de segurança e privacidade;
+
+- **Redução do ruído comunicacional**: Pretende-se diminuir os pedidos duplicados e a incerteza sobre se um problema já foi ou não tratado, por oposição à experiência atual em ferramentas como o WhatsApp. A deteção de duplicados será avaliada num conjunto de pedidos sintéticos criado pela equipa, com pares duplicados e não duplicados e com a origem e as limitações documentadas, medindo a precisão e a cobertura face a uma alternativa sem IA. A incerteza sobre o estado de um problema será avaliada num cenário com guião, em que a equipa procura saber se uma dada avaria já foi tratada, primeiro numa conversa de WhatsApp simulada com mensagens de ruído e depois na aplicação, comparando o número de passos necessários e se a resposta é encontrada sem ambiguidade;
+
+- **Transparência do estado dos pedidos**: Cada pedido deve ter sempre um estado atualizado e visível ao residente que o reportou. Este critério será verificado por testes automatizados de integração que confirmam que 100% das alterações de estado geram uma entrada no histórico e uma notificação ao residente (e aos seguidores do pedido), com o tempo de entrega da notificação medido em ambiente de teste e com valor-alvo a definir no Technical Design;
+
+- **Capacidade de resposta do administrador**: A plataforma deve reduzir o esforço de triagem do administrador. Este critério será avaliado por um cenário com guião em que um membro da equipa, no papel de administrador, faz a triagem do mesmo conjunto de pedidos simulados, primeiro numa conversa de WhatsApp simulada e depois na aplicação, comparando o número de passos, o tempo gasto e o número de pedidos esquecidos ou mal classificados. O resultado é indicativo, porque quem executa a tarefa conhece a aplicação;
+
+- **Alcance das decisões e avisos**: As convocatórias, atas e decisões de assembleia devem chegar também a quem faltou. Como a leitura dos avisos não poderá ser medida em utilização real, este critério será verificado pelo correto registo de leituras e pela entrega das notificações, através de testes automatizados, e por um cenário com guião em que a equipa localiza a decisão de uma assembleia simulada no mural digital, comparando o número de passos com a procura da mesma informação numa conversa de WhatsApp simulada;
+
+- **Inclusão e acessibilidade**: Os residentes menos digitais ou com limitações de visão ou audição não devem ficar excluídos. Este critério será verificado por uma revisão com ferramentas automáticas de acessibilidade e por uma verificação manual das jornadas principais com leitor de ecrã e navegação por teclado, tendo como referência os critérios WCAG 2.1 de nível AA, e pela confirmação de que o reporte assistido permite concluir a jornada de reporte em nome de outro residente. A equipa fará ainda uma avaliação heurística de usabilidade das jornadas principais, com base nas heurísticas de Nielsen;
+
+- **Fiabilidade e degradação controlada**: O reporte de um problema deve estar disponível e responder com rapidez, mesmo quando um componente falha. Este critério será medido pela disponibilidade e pela latência (percentil 95) da submissão de pedidos num ambiente de teste containerizado sujeito a carga simulada, com os valores concretos a definir no Technical Design, e por uma demonstração em que a indisponibilidade da componente de IA não impede o reporte, que continua sem deteção de duplicados.
 ---
 
 ## 6. Product Backlog
