@@ -1,32 +1,47 @@
 <mxfile host="app.diagrams.net" pages="7">
   <diagram id="wf1" name="1. Onboarding do condominio">
-    <mxGraphModel dx="1273" dy="1264" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
+    <mxGraphModel dx="1273" dy="1264" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="700" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="t" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Workflow 1 - Onboarding: criar condominio e associar residentes por QR code partilhado por fracao (US-01)" vertex="1">
+        <mxCell id="t" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Workflow 1 - Onboarding: criar condominio, associar residentes por QR code partilhado por fracao e identifica-los pelo nome (US-01, US-15)" vertex="1">
           <mxGeometry height="30" width="900" y="-50" as="geometry" />
         </mxCell>
         <mxCell id="l1" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;swimlaneFillColor=#ffffff;" value="Administrador" vertex="1">
-          <mxGeometry height="140" width="1100" as="geometry" />
+          <mxGeometry height="140" width="2100" as="geometry" />
         </mxCell>
         <mxCell id="l2" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;swimlaneFillColor=#ffffff;" value="Sistema (app/backend)" vertex="1">
-          <mxGeometry height="140" width="1100" y="140" as="geometry" />
+          <mxGeometry height="140" width="2100" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="n7" parent="l2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Associa o residente a fracao (o mesmo QR code pode ser usado por varios residentes; sem partilhar contacto pessoal)" vertex="1">
+        <mxCell id="n7" parent="l2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Valida o token do QR code e identifica a fracao (o mesmo QR code pode ser usado por varios residentes; sem partilhar contacto pessoal)" vertex="1">
           <mxGeometry height="80" width="210" x="830" y="30" as="geometry" />
         </mxCell>
+        <mxCell id="dI" parent="l2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Ja existe identidade neste dispositivo?" vertex="1">
+          <mxGeometry height="90" width="190" x="1070" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="ns1" parent="l2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Valida o nome (nao vazio, unico na fracao), cria a identidade do residente (fracao + nome) e guarda a credencial no dispositivo" vertex="1">
+          <mxGeometry height="80" width="220" x="1300" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="dN" parent="l2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Nome valido?" vertex="1">
+          <mxGeometry height="90" width="150" x="1550" y="25" as="geometry" />
+        </mxCell>
         <mxCell id="l3" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;swimlaneFillColor=#ffffff;" value="Residente" vertex="1">
-          <mxGeometry height="140" width="1100" y="280" as="geometry" />
+          <mxGeometry height="140" width="2100" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="nn1" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Indica o seu nome (obrigatorio; so no 1.º acesso neste dispositivo)" vertex="1">
+          <mxGeometry height="60" width="180" x="1070" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="nerr" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="Mostra erro (nome vazio ou ja usado na fracao) e pede outro nome" vertex="1">
+          <mxGeometry height="60" width="200" x="1300" y="40" as="geometry" />
         </mxCell>
         <mxCell id="n8" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Mostra erro: QR code invalido" vertex="1">
           <mxGeometry height="60" width="160" x="610" y="40" as="geometry" />
         </mxCell>
         <mxCell id="n10" parent="l3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#333333;strokeWidth=3;" value="Fim" vertex="1">
-          <mxGeometry height="40" width="60" x="1010" y="50" as="geometry" />
+          <mxGeometry height="40" width="60" x="1980" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="n9" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Acede a app como residente da fracao" vertex="1">
-          <mxGeometry height="60" width="160" x="810" y="40" as="geometry" />
+        <mxCell id="n9" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Acede a app como residente da fracao (nome visivel no perfil e editavel; reportes ficam associados ao seu nome)" vertex="1">
+          <mxGeometry height="70" width="190" x="1745" y="35" as="geometry" />
         </mxCell>
         <mxCell id="e9" edge="1" parent="l3" source="n9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="n10">
           <mxGeometry relative="1" as="geometry" />
@@ -79,8 +94,56 @@
         <mxCell id="e7" edge="1" parent="1" source="d6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="n8" value="Nao">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e8" edge="1" parent="1" source="n7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="n9">
+        <mxCell id="e8" edge="1" parent="1" source="n7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="dI">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8a" edge="1" parent="1" source="dI" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="n9" value="Sim (nao pede o nome)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1165" y="150" />
+              <mxPoint x="1840" y="150" />
+              <mxPoint x="1840" y="315" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8b" edge="1" parent="1" source="dI" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="nn1" value="Nao">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8c" edge="1" parent="1" source="nn1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ns1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1280" y="350" />
+              <mxPoint x="1280" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8d" edge="1" parent="1" source="ns1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="dN">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8e" edge="1" parent="1" source="dN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="n9" value="Sim">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1720" y="210" />
+              <mxPoint x="1720" y="300" />
+              <mxPoint x="1840" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8f" edge="1" parent="1" source="dN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="nerr" value="Nao">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1625" y="265" />
+              <mxPoint x="1400" y="265" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8g" edge="1" parent="1" source="nerr" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="nn1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1400" y="410" />
+              <mxPoint x="1160" y="410" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
@@ -108,22 +171,22 @@
         <mxCell id="r2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Abre a app e escolhe &quot;Reportar avaria&quot;" vertex="1">
           <mxGeometry height="60" width="150" x="150" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="r3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Preenche descricao e, opcionalmente, foto com texto alternativo (acessivel por leitor de ecra)" vertex="1">
+        <mxCell id="r3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Preenche descricao e, opcionalmente, foto com texto alternativo (acessivel por leitor de ecra); pode optar por mostrar o seu nome" vertex="1">
           <mxGeometry height="70" width="160" x="330" y="35" as="geometry" />
         </mxCell>
-        <mxCell id="r4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Submete o pedido" vertex="1">
+        <mxCell id="r4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Submete o reporte" vertex="1">
           <mxGeometry height="60" width="150" x="525" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Valida o pedido (campos obrigatorios, anexos, autenticacao)" vertex="1">
+        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Valida o reporte (campos obrigatorios, anexos, credencial da identidade do dispositivo)" vertex="1">
           <mxGeometry height="70" width="160" x="520" y="175" as="geometry" />
         </mxCell>
-        <mxCell id="dv" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Pedido valido?" vertex="1">
+        <mxCell id="dv" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Reporte valido?" vertex="1">
           <mxGeometry height="90" width="150" x="720" y="165" as="geometry" />
         </mxCell>
-        <mxCell id="rerr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Recebe erro de validacao e corrige o pedido" vertex="1">
+        <mxCell id="rerr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Recebe erro de validacao e corrige o reporte" vertex="1">
           <mxGeometry height="60" width="150" x="720" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="s2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Guarda o pedido: estado &quot;Aberto - pendente de triagem&quot;, reporter = autor; visivel so ao reporter e ao administrador" vertex="1">
+        <mxCell id="s2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;" value="Guarda o reporte: estado &quot;Aberto - pendente de triagem&quot;, autor = identidade do residente (nome + fracao); reporte visivel a todos os residentes e ao administrador; nome do autor so visivel aos outros se o autor optar; fracao so ao administrador" vertex="1">
           <mxGeometry height="70" width="190" x="900" y="175" as="geometry" />
         </mxCell>
         <mxCell id="s3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Confirma a submissao ao residente" vertex="1">
@@ -132,28 +195,28 @@
         <mxCell id="r5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Recebe confirmacao de submissao" vertex="1">
           <mxGeometry height="60" width="150" x="1130" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="arev" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Ve o pedido novo na lista e analisa-o" vertex="1">
+        <mxCell id="arev" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Ve o reporte novo na lista com o nome do autor e a fracao (para o contactar, se necessario) e analisa-o" vertex="1">
           <mxGeometry height="70" width="150" x="1130" y="325" as="geometry" />
         </mxCell>
-        <mxCell id="d2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Duplicado de um pedido existente?" vertex="1">
+        <mxCell id="d2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Duplicado de um reporte existente?" vertex="1">
           <mxGeometry height="90" width="170" x="1310" y="315" as="geometry" />
         </mxCell>
         <mxCell id="d3" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Problema ja resolvido?" vertex="1">
           <mxGeometry height="90" width="170" x="1310" y="440" as="geometry" />
         </mxCell>
-        <mxCell id="adup" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Associa ao pedido original: o autor passa a co-reporter (o reporter continua a ser o 1.º residente) e o pedido novo é fechado como duplicado" vertex="1">
+        <mxCell id="adup" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;" value="Fecha o reporte novo com a mensagem &quot;Reporte duplicado do #original&quot; e associa-o ao original: o autor passa a co-reporter (ve o original em &quot;Os meus reportes&quot; e acompanha o estado)" vertex="1">
           <mxGeometry height="80" width="200" x="1530" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="ares" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Fecha o pedido como &quot;Resolvido&quot; (ja tratado) e adiciona nota" vertex="1">
+        <mxCell id="ares" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Fecha o reporte como &quot;Resolvido&quot; (ja tratado) e adiciona nota" vertex="1">
           <mxGeometry height="70" width="200" x="1530" y="450" as="geometry" />
         </mxCell>
-        <mxCell id="aok" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Aceita como pedido novo e trata-o (estado Aberto &gt; Em curso; ver Workflow 3)" vertex="1">
+        <mxCell id="aok" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Aceita como reporte novo e trata-o (estado Aberto &gt; Em curso; ver Workflow 3)" vertex="1">
           <mxGeometry height="70" width="150" x="1120" y="450" as="geometry" />
         </mxCell>
         <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista no historico e notifica reporter e co-reporters (push + alternativa visual)" vertex="1">
           <mxGeometry height="70" width="170" x="1760" y="175" as="geometry" />
         </mxCell>
-        <mxCell id="r6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Consulta &quot;Os meus pedidos&quot; (estado, data de criacao e de ultima atualizacao)" vertex="1">
+        <mxCell id="r6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" value="Consulta a lista de reportes do predio e filtra &quot;Os meus reportes&quot; (estado, data de criacao e de ultima atualizacao)" vertex="1">
           <mxGeometry height="70" width="170" x="1760" y="35" as="geometry" />
         </mxCell>
         <mxCell id="d1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;" value="Resolvido?" vertex="1">
@@ -197,7 +260,7 @@
         <mxCell id="f7" edge="1" parent="1" source="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="r5">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="f8" edge="1" parent="1" source="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="arev" value="Pedido na lista do administrador">
+        <mxCell id="f8" edge="1" parent="1" source="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="arev" value="Reporte na lista do administrador">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="f9" edge="1" parent="1" source="arev" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="d2">
@@ -265,13 +328,13 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="t" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Workflow 3 - Administrador: acompanhar e resolver pedidos com historico auditavel e aviso ligado ao pedido (US-04, US-05, US-14)" vertex="1">
+        <mxCell id="t" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Workflow 3 - Administrador: acompanhar e resolver reportes com historico auditavel e aviso ligado ao reporte (US-04, US-05, US-14)" vertex="1">
           <mxGeometry height="30" width="1100" y="-50" as="geometry" />
         </mxCell>
         <mxCell id="l1" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;swimlaneFillColor=#ffffff;" value="Administrador" vertex="1">
           <mxGeometry height="140" width="1990" as="geometry" />
         </mxCell>
-        <mxCell id="dr" parent="l1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="O pedido representa um risco para os residentes?" vertex="1">
+        <mxCell id="dr" parent="l1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="O reporte representa um risco para os residentes?" vertex="1">
           <mxGeometry height="90" width="170" x="490" y="40" as="geometry" />
         </mxCell>
         <mxCell id="a4" parent="l1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Altera o estado (Aberto &gt; Em curso &gt; Resolvido) e adiciona nota" vertex="1">
@@ -286,7 +349,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="aw" parent="l1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Cria um aviso ligado ao pedido (ex.: buraco grande no chao no local X): titulo, texto e local" vertex="1">
+        <mxCell id="aw" parent="l1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Cria um aviso ligado ao reporte (ex.: buraco grande no chao no local X): titulo, texto e local" vertex="1">
           <mxGeometry height="80" width="170" x="720" y="30" as="geometry" />
         </mxCell>
         <mxCell id="f4a" edge="1" parent="l1" source="dr" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;entryX=0.004;entryY=0.85;entryDx=0;entryDy=0;entryPerimeter=0;" target="aw" value="Sim">
@@ -298,28 +361,28 @@
         <mxCell id="l2" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;swimlaneFillColor=#ffffff;" value="Sistema (app/backend)" vertex="1">
           <mxGeometry height="140" width="1990" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="l3" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;swimlaneFillColor=#ffffff;" value="Residente (autor do pedido)" vertex="1">
+        <mxCell id="l3" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;swimlaneFillColor=#ffffff;" value="Residente (autor do reporte)" vertex="1">
           <mxGeometry height="140" width="1990" y="280" as="geometry" />
         </mxCell>
         <mxCell id="a1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333333;fontColor=#ffffff;" value="Inicio" vertex="1">
           <mxGeometry height="40" width="60" x="50" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="a2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Abre a lista unica de pedidos e filtra por estado" vertex="1">
+        <mxCell id="a2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Abre a lista unica de reportes e filtra por estado" vertex="1">
           <mxGeometry height="60" width="150" x="130" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Mostra pedidos com estado, data e fracao" vertex="1">
+        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Mostra reportes com estado, data e fracao" vertex="1">
           <mxGeometry height="70" width="150" x="130" y="175" as="geometry" />
         </mxCell>
-        <mxCell id="a3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Analisa o pedido (duplicados: ver Workflow 2)" vertex="1">
+        <mxCell id="a3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Analisa o reporte (duplicados: ver Workflow 2)" vertex="1">
           <mxGeometry height="60" width="150" x="310" y="40" as="geometry" />
         </mxCell>
         <mxCell id="s2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista a alteracao com data/hora e autor (historico imutavel)" vertex="1">
           <mxGeometry height="70" width="160" x="1160" y="175" as="geometry" />
         </mxCell>
-        <mxCell id="s3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Notifica o residente autor do pedido" vertex="1">
+        <mxCell id="s3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Notifica o residente autor do reporte" vertex="1">
           <mxGeometry height="60" width="150" x="1350" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="r1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ve o estado atualizado na sua lista de pedidos" vertex="1">
+        <mxCell id="r1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ve o estado atualizado na sua lista de reportes" vertex="1">
           <mxGeometry height="60" width="150" x="1350" y="320" as="geometry" />
         </mxCell>
         <mxCell id="d1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;" value="Resolvido?" vertex="1">
@@ -331,13 +394,13 @@
         <mxCell id="dsc" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Estado alterado?" vertex="1">
           <mxGeometry height="90" width="170" x="945" y="165" as="geometry" />
         </mxCell>
-        <mxCell id="sw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Publica o aviso no quadro de avisos, liga-o ao pedido e notifica os residentes" vertex="1">
+        <mxCell id="sw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Publica o aviso no quadro de avisos, liga-o ao reporte e notifica os residentes" vertex="1">
           <mxGeometry height="70" width="170" x="690" y="175" as="geometry" />
         </mxCell>
-        <mxCell id="rw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Todos os residentes veem o aviso e ficam alertados do risco (o pedido continua privado)" vertex="1">
+        <mxCell id="rw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Todos os residentes veem o aviso e ficam alertados do risco (o autor do reporte nao e exposto)" vertex="1">
           <mxGeometry height="70" width="170" x="690" y="315" as="geometry" />
         </mxCell>
-        <mxCell id="aw2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Se existir aviso ligado ao pedido, arquiva-o (fica no historico de avisos)" vertex="1">
+        <mxCell id="aw2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Se existir aviso ligado ao reporte, arquiva-o (fica no historico de avisos)" vertex="1">
           <mxGeometry height="70" width="170" x="1680" y="35" as="geometry" />
         </mxCell>
         <mxCell id="f1" edge="1" parent="1" source="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" target="a2">
@@ -691,7 +754,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="t" value="Workflow 6 - Quadro de avisos do condominio, incluindo avisos ligados a pedidos (US-06, US-07, US-14)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+        <mxCell id="t" value="Workflow 6 - Quadro de avisos do condominio, incluindo avisos ligados a reportes (US-06, US-07, US-14)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
           <mxGeometry x="0" y="-50" width="900" height="30" as="geometry" />
         </mxCell>
         <mxCell id="l1" value="Administrador" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
@@ -706,10 +769,10 @@
         <mxCell id="a1" value="Inicio" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333333;fontColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="60" y="50" width="60" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="a2" value="Publica um aviso (titulo e texto): geral ou ligado a um pedido existente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+        <mxCell id="a2" value="Publica um aviso (titulo e texto): geral ou ligado a um reporte existente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
           <mxGeometry x="150" y="40" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="s1" value="Guarda o aviso com data; se ligado a um pedido, associa-o a esse pedido (sem expor o reporter); mais recentes primeiro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="s1" value="Guarda o aviso com data; se ligado a um reporte, associa-o a esse reporte (sem expor o reporter); mais recentes primeiro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="330" y="175" width="160" height="70" as="geometry" />
         </mxCell>
         <mxCell id="r1" value="Consulta o quadro de avisos a partir do ecra principal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
@@ -734,55 +797,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="r2" target="r3">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="wf7" name="7. Relatorio da comissao">
-    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="500" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="t" value="Workflow 7 - Comissao de condominos: validar diligencia do administrador (US-12)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
-          <mxGeometry x="0" y="-50" width="900" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="l1" value="Comissao de condominos" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="0" y="0" width="800" height="140" as="geometry" />
-        </mxCell>
-        <mxCell id="l2" value="Sistema (app/backend)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="0" y="140" width="800" height="140" as="geometry" />
-        </mxCell>
-        <mxCell id="c1" value="Inicio" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333333;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="60" y="50" width="60" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="c2" value="Abre o relatorio de pedidos e filtra por periodo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="150" y="40" width="150" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="s1" value="Devolve o historico de pedidos e estados (acesso so de leitura)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="150" y="175" width="150" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="c3" value="Valida a diligencia do administrador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="340" y="40" width="150" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="c4" value="Fim" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#333333;strokeWidth=3;" vertex="1" parent="1">
-          <mxGeometry x="540" y="50" width="60" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="c1" target="c2">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="c2" target="s1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="s1" target="c3">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="320" y="210" />
-              <mxPoint x="320" y="70" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="c3" target="c4">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
