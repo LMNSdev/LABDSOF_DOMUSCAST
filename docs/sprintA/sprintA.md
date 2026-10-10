@@ -262,27 +262,27 @@ Cada jornada corresponde a um workflow modelado em diagrama de atividade com rai
 - **Onboarding do condomínio (Workflow 1, US-01, US-15)**: O administrador cria o condomínio, indicando o nome e o número de frações, e a aplicação gera um QR code único por fração, que pode ser partilhado por todos os residentes dessa fração. O administrador distribui o QR code aos residentes e cada residente faz scan com a aplicação. Se o QR code for válido e o dispositivo ainda não tiver identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existir identidade, não volta a pedir. Se o QR code for inválido ou tiver sido revogado, é mostrado um erro;
 
 <!-- TODO (equipa): reexportar o SVG a partir de workflows.drawio (páginas 1 e 2 foram alteradas para incluir o nome do residente) -->
-![Onboarding do condominio](<images/onboarding_do_condominio.drawio.svg>)
+![Onboarding do condominio](images/workflow-1.drawio.png)
 
 - **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11)**: O residente escolhe "Reportar avaria", descreve o problema e, opcionalmente, junta uma fotografia com texto alternativo, acessível a leitores de ecrã. O backend valida o reporte (campos obrigatórios, anexos e identidade do dispositivo) e, se for inválido, o residente corrige-o. Um reporte válido é guardado no estado "Aberto - pendente de triagem", com a identidade do residente como autor, visível a todos os residentes (o autor só é mostrado ao administrador, ou aos outros se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte novo, com o nome do autor e a fração, e analisa-o: se for duplicado, fecha-o com a mensagem "Reporte duplicado do #<id>" e o autor passa a co-reporter do original, que aparece em "Os meus reportes"; se o problema já estiver resolvido, fecha-o como "Resolvido" com uma nota; caso contrário, aceita-o como reporte novo e trata-o (Workflow 3). Cada decisão é registada no histórico e o reporter e os co-reporters são notificados, por notificação push com alternativa visual. Os residentes consultam a lista de reportes do prédio (e filtram "Os meus reportes") para ver o estado, a data de criação e a data da última atualização, e podem seguir um reporte para receber as notificações do seu estado (autores e co-reporters seguem automaticamente);
 
-![alt text](<images/reportar_e_acompanhar_avaria.drawio.svg>)
+![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
 - **Acompanhar e resolver reportes (Workflow 3, US-04, US-05, US-14)**: O administrador abre a lista única de reportes, filtra por estado e analisa cada reporte. Se o reporte representar um risco para os residentes, cria um aviso ligado ao reporte (título, texto e local), que é publicado no quadro de avisos e notifica todos os residentes, sem expor o autor do reporte. O administrador altera o estado do reporte (Aberto, Em curso, Resolvido) e acrescenta uma nota. O sistema regista cada alteração com data, hora e autor, num histórico imutável, e notifica o residente. Quando o reporte é resolvido, o aviso ligado a ele é arquivado e fica no histórico de avisos;
 
-![alt text](<images/acompanhar_e_resolucao.drawio.svg>)
+![Acompanhar e resolver reportes](images/workflow-3.drawio.png)
 
 - **Agendar assembleias e lembretes (Workflow 4, US-13, NFR-01)**: O administrador agenda a assembleia (data, hora e local) e a reunião é guardada localmente no telemóvel. Sem internet, fica numa fila local e sincroniza automaticamente quando a ligação regressar. Com internet, o evento é sincronizado com o Google Calendar ou, se este estiver indisponível, com um calendário alternativo (iCal/Outlook ou simulador). Se nenhum estiver disponível, a aplicação entra em modo degradado: usa os dados locais, mostra um aviso visível, regista o erro e volta a tentar mais tarde. É agendado um lembrete antes da reunião (por exemplo, 24 horas antes) e os residentes veem a reunião no calendário e recebem o lembrete;
 
-![alt text](<images/4. Reuniao e calendario.drawio.svg>)
+![Agendar assembleias e lembretes](images/workflow-4.drawio.png)
 
 - **Ata da assembleia assistida por IA (Workflow 5, US-10, NFR-01)**: Depois da assembleia, o administrador grava ou carrega o ficheiro de áudio, que é guardado no telemóvel e, sem internet, fica numa fila local até a ligação regressar. Com o serviço de IA disponível, este gera a transcrição e um rascunho da ata, marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova a ata, e só então ela é publicada aos residentes, incluindo os que faltaram. Se o serviço de IA estiver indisponível, o áudio mantém-se guardado e a transcrição é repetida mais tarde, e o administrador é avisado e pode escrever a ata manualmente;
 
-![alt text](<images/5. Ata da assembleia por IA.drawio.svg>)
+![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
 - **Quadro de avisos (Workflow 6, US-06, US-07, US-14)**: O administrador publica um aviso, geral ou ligado a um reporte existente, sem expor o reporter. Os residentes consultam o quadro de avisos a partir do ecrã principal, com os mais recentes primeiro, e podem consultar os avisos antigos no histórico;
 
-![alt text](<images/6. Quadro de avisos.drawio.svg>)
+![Quadro de avisos](images/workflow-6.drawio.png)
 
 ### 5.4. Critérios de Sucesso
 
@@ -377,6 +377,59 @@ Reduz o esforço do administrador voluntário, porque escrever a ata a partir do
 ---
 
 ## 10. Security and Privacy Assessment
+
+### 10.1 Dados sensíveis
+
+| Dado | Sensibilidade | Quem vê | Observações |
+|---|---|---|---|
+| Nome do residente (autodeclarado) | Dado pessoal | Administrador e o próprio; outros residentes só por escolha do autor, num reporte | Único dado pessoal do residente; não aparece em avisos, logs nem notificações a outros |
+| Fração | Pessoal (indireto, associada ao nome) | Administrador e o próprio | Nunca mostrada aos outros residentes |
+| Reportes (texto e fotos) | Podem conter dados pessoais de terceiros | Todos os residentes e o administrador | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
+| Áudio e transcrição de assembleias | Dado pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver 7.3 |
+| Credencial do dispositivo | Segredo | Dispositivo (servidor guarda só o hash) | |
+
+### 10.2 Controlo de acessos
+
+| Recurso | Residente | Administrador |
+|---|---|---|
+| Criar reporte | Sim (autor = identidade do dispositivo) | - |
+| Ver reporte | Todos os reportes do prédio, sem fração do autor e com o nome só se o autor optou por o mostrar (o próprio vê o seu nome) | Todos, com nome do autor e fração |
+| Mudar estado, remover identidade, revogar QR code | Não | Sim |
+| Seguir um reporte | Sim (identidade não visível aos outros residentes) | Vê apenas o número de seguidores |
+| Ver avisos e atas aprovadas | Sim | Sim |
+
+A autorização é verificada no servidor, com testes automáticos que confirmam que as respostas aos residentes nunca incluem a fração do autor nem o nome (salvo `mostrar_nome`). A autenticação do administrador pode ser mock no MVP, sem desativar controlos de segurança.
+
+### 10.3 Minimização e finalidade (RGPD)
+
+- Só se recolhe o **nome** (e a fração, que vem do QR code), para identificar o autor de um reporte perante o administrador; a finalidade é indicada no ecrã (US-15). O nome só é mostrado aos outros residentes por escolha do autor, reporte a reporte.
+- Não se recolhe telefone, e-mail nem localização. Os testes e a demonstração usam dados sintéticos.
+- O residente pode corrigir o nome e pedir o apagamento ao administrador (remoção da identidade).
+- Base de licitude proposta: interesse legítimo do condomínio. TODO (equipa): validar com os docentes.
+
+### 10.4 Retenção
+
+- **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador remove a identidade (por exemplo, o residente deixa a fração).
+- **Reportes de identidades removidas:** mantêm-se sem nome ("Residente removido" + fração). Retenção proposta: áudio apagado após a aprovação da ata; prazo dos reportes e do histórico: TODO (equipa).
+
+### 10.5 QR code, revogação e abuso
+
+- O QR code contém um token aleatório (só o hash fica guardado). Ao revogar/regenerar, o antigo deixa de permitir novos acessos e as identidades existentes mantêm-se; o administrador remove as que não reconheça.
+- Criar identidades tem limite de tentativas e um máximo por fração (proposta: 10). TODO (equipa): confirmar.
+
+### 10.6 Modelo de ameaças inicial
+
+| Ameaça | Mitigação |
+|---|---|
+| QR code divulgado a terceiros | Revogação/regeneração, revisão de identidades pelo administrador |
+| Adivinhar tokens de QR code | Token aleatório longo, limitação de tentativas |
+| Personificação de um residente (mesmo nome) | Risco aceite como baixo: a fração fica sempre registada e o administrador esclarece junto dela; nome único por fração; remoção da identidade |
+| Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
+| Dados pessoais de terceiros em texto ou fotos de reportes visíveis a todos | Aviso no formulário, remoção de metadados das fotos; TODO (equipa): ocultar reporte pelo administrador |
+| Roubo da credencial do dispositivo | Credencial opaca, só o hash no servidor, comunicação cifrada, revogação ao remover a identidade |
+| Fila offline expõe dados no dispositivo | Dados mínimos na fila; envio recusado se a identidade foi removida |
+| Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; testes automáticos |
+| Prompt injection e dados pessoais no áudio | Ver 7.3 |
 
 ---
 
