@@ -32,7 +32,7 @@
 |---|---|---|---|---|---|
 | RF-06 | Mural digital de avisos | Substitui os posters e o "boca em boca" pós-assembleia | Importante | v0.1 | Draft |
 | RF-07 | Calendário de atividades | Administrador agenda assembleias/atividades futuras; residentes recebem lembretes (ex.: convocatórias, atas) | Importante | v0.1 | Draft |
-| RF-09 | Aviso ligado a um pedido | Administrador associa um aviso a um pedido específico (ex.: buraco grande no chão no local X) para alertar todos os residentes do risco, sem expor quem reportou nem os detalhes privados do pedido | Importante | v0.1 | Draft |
+| RF-09 | Aviso ligado a um problema | Administrador associa um aviso a um report de um problema específico (ex.: buraco grande no chão no local X) para alertar todos os residentes do risco | Importante | v0.1 | Draft |
 
 ### Epic: Privacidade e confiança
 
