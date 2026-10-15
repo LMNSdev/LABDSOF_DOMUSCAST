@@ -13,7 +13,7 @@ Este é o **Sprint Backlog** do Sprint B, o subconjunto do [Product Backlog](../
 | US-15 | Identificar residente pelo nome (QR code partilhado) | 3 | TBC | TBC | TBC (depende de US-01; US-02 e US-04 mostram o autor) | TBC | TBC | TBC | falta plano de teste |
 | US-10 | Transcrição de ata por IA | 5 | TBC | qualidade/precisão aceitável da transcrição ainda por definir | TBC | TBC | TBC | TBC | falta plano de teste e regra de qualidade |
 | US-13 | Calendário de reuniões | 3 | TBC | TBC | TBC | TBC | TBC | TBC | falta plano de teste |
-| NFR-01 | Cenário de degradação | 3 | TBC | TBC | TBC (sequencia com US-10/US-13, mesmo sprint, não bloqueante) | TBC | TBC | TBC | falta plano de teste |
+| US-18 | Cenário de degradação | 3 | TBC | TBC | TBC (sequencia com US-10/US-13, mesmo sprint, não bloqueante) | TBC | TBC | TBC | falta plano de teste |
 
 
 
