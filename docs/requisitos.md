@@ -46,6 +46,7 @@
 | RF-08 | Visibilidade do reporte e privacidade do autor | Todos veem os reportes; autor oculto por omissão (só o administrador vê nome e fração); o autor pode mostrar o nome num reporte | Importante | v0.3 | Draft |
 | RF-10 | Identificação pelo nome | Com QR code partilhado pela fração, a app pede o nome (único na fração) no primeiro acesso, guarda a identidade no dispositivo, permite editar e anexa-o a cada reporte | Essencial | v0.3 | Draft |
 | RF-11 | Gestão de identidades e QR codes | O administrador vê as identidades por fração, remove uma identidade (ex.: saída da fração) e revoga/regenera o QR code (ex.: divulgado a terceiros) | Essencial | v0.3 | Draft |
+| RF-15 | Vários administradores | Um condomínio tem um ou mais administradores com as mesmas permissões; um administrador convida outro por código de uso único e pode removê-lo, exceto o último | Importante | v0.4 | Draft |
 
 ## Requisitos não funcionais
 

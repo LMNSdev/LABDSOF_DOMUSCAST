@@ -104,7 +104,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 **Pressupostos:**
 - A maioria dos residentes tem smartphone e internet suficiente.
-- Existe sempre um administrador (exigência legal em Portugal), que cria o condomínio e gera os QR codes das frações.
+- Existe sempre pelo menos um administrador (exigência legal em Portugal); o primeiro cria o condomínio e gera os QR codes das frações, e pode convidar outros administradores com as mesmas permissões (US-19).
 - Os residentes aceitam indicar o nome (por omissão visível só ao administrador), para que este os possa contactar.
 - O QR code é partilhado pela fração e só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)).
 - Um único prédio é "comunidade" suficiente para gerar valor.
@@ -410,7 +410,7 @@ Três consequências desta separação, que o enunciado pede para justificar:
 
 ### 8.3 Modelo de dados
 
-Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador**, com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
+Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
 
 ![Modelo de dados](images/td-03-dados.png)
 
@@ -419,12 +419,13 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | Entidade | Campos principais | Notas |
 |---|---|---|
 | `condominio` | id, nome, n_fracoes, criado_em | |
-| `administrador` | id, condominio_id, nome, credencial_hash | Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em | Um ou mais por condomínio, todos com as mesmas permissões (US-19); o último não pode ser removido. Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
 | `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado; revogar cria um novo token e marca o antigo (US-01) |
 | `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12); remover apaga `nome` e preenche `removida_em` (US-09) |
 | `reporte` | id, condominio_id, autor_id, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-04) |
-| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05) |
+| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-04, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
 | `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo`, `degradado` (US-13) |
@@ -435,13 +436,16 @@ Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é
 
 ### 8.4 API (esboço)
 
-A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a do administrador na criação do condomínio (mock no MVP). Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
+A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a de um administrador na criação do condomínio ou ao usar um convite (US-19), ambas mock no MVP. Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
 
 Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o condomínio, entrar com o QR code, reportar, acompanhar, triar, avisar, reunir e aprovar a ata.
 
 | Método e rota | Quem | User Story |
 |---|---|---|
-| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial de administrador |
+| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial do primeiro administrador |
+| `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
+| `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
+| `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19: lista e remove; 409 ao tentar remover o último |
 | `GET /condominios/{id}/fracoes` | admin | US-01: frações, QR codes e identidades por fração |
 | `POST /fracoes/{id}/qr/regenerar` | admin | US-01: revoga e gera novo token |
 | `DELETE /identidades/{id}` | admin | US-09: remove identidade |
@@ -587,7 +591,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-008 Autenticação do administrador mock no MVP, autorização real
 - **Contexto:** o enunciado aceita autenticação mock no MVP; a autorização (quem vê nome e fração) é central à privacidade do produto.
-- **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio e enviada como Bearer token, sem registo/login; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
+- **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio, ou ao usar um código de convite de outro administrador (US-19), e enviada como Bearer token, sem registo/login; um condomínio pode ter vários administradores com as mesmas permissões; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
 - **Alternativas:** OAuth/OIDC desde o início (tempo gasto fora das jornadas principais).
 - **Consequências:** mais tempo para as jornadas principais; o registo e a recuperação de conta do administrador ficam no roadmap pós-MVP; os controlos de segurança nunca são desativados para a demonstração.
 
@@ -617,7 +621,8 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 |---|---|---|
 | Criar reporte | Sim (autor = identidade do dispositivo) | - |
 | Ver reporte | Todos os do prédio, sem fração e com nome só se o autor optou (o próprio vê o seu) | Todos, com nome e fração |
-| Mudar estado, remover identidade, revogar QR code | Não | Sim |
+| Mudar estado, remover identidade, revogar QR code | Não | Sim (qualquer administrador; a ação fica registada com o seu id) |
+| Convidar ou remover administradores | Não | Sim; o último administrador não pode ser removido |
 | Seguir um reporte | Sim (invisível aos outros residentes) | Vê só o nº de seguidores |
 | Ver avisos e atas aprovadas | Sim | Sim |
 | Ver relatório de reportes por período (US-12) | Só com `papel = comissao` (leitura) | Sim |
@@ -642,7 +647,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Ameaça | Mitigação |
 |---|---|
 | QR code divulgado a terceiros | Revogação/regeneração; revisão de identidades pelo administrador |
-| Adivinhar tokens | Token aleatório longo; limite de tentativas |
+| Adivinhar tokens de QR code ou códigos de convite de administrador | Token/código aleatório longo; limite de tentativas; convite de uso único com validade curta |
 | Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
 | Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; possibilidade de ocultar reporte pelo administrador |
