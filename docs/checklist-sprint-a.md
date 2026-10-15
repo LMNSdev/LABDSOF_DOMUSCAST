@@ -13,7 +13,7 @@
 | 2 | Market and Competitor Analysis | ⚠️ | [sprintA/sprintA.md §2](sprintA/sprintA.md#2-análise-de-mercado-e-concorrência) |
 | 3 | User Research | ⚠️ | [sprintA/sprintA.md §3](sprintA/sprintA.md#3-investigação-de-utilizadores) |
 | 4 | Product Vision | ✅ | [sprintA/sprintA.md §5](sprintA/sprintA.md#5-product-vision) |
-| 5 | Product Backlog | ✅ | [backlog.md](backlog.md) |
+| 5 | Product Backlog | ⚠️ | [backlog.md](backlog.md) |
 | 6 | Responsible AI Opportunity Assessment | ⚠️ | [sprintA/sprintA.md §7](sprintA/sprintA.md#7-responsible-ai-opportunity-assessment) |
 | 7 | Technical Design | ❌ | [sprintA/sprintA.md §8](sprintA/sprintA.md#8-technical-design) — vazio |
 | 8 | Architecture Decision Records | ❌ | [sprintA/sprintA.md §9](sprintA/sprintA.md#9-architecture-decision-records) — vazio |
