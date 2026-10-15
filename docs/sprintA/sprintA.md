@@ -19,204 +19,189 @@
 ## 0. Processo e Metodologia de Equipa
 
 ### Metodologia
-- Framework ágil: Scrum, com sprints alinhados aos do enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no final de cada sprint, e retrospetiva da equipa.
+Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no fim de cada sprint e retrospetiva da equipa.
 
 ### Controlo de versões (Git) - GitHub Flow
-- Estratégia: **GitHub Flow**, uma única branch de longa duração, `main` (como branch de production), mais uma branch de curta duração por funcionalidade/tarefa. Nunca se commita diretamente em `main`.
-- Formato da mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é o identificador da issue/task associado(a).
+- `main` é a branch de produção, sempre estável; nunca se commita diretamente.
+- Uma branch curta por funcionalidade/tarefa, integrada em `main` por PR após code review.
+- Mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é a issue associada.
 
 ![GitHub Flow: branch principal `main` sempre estável, branches de funcionalidade curtas, integradas de volta via PR após code review e deployment/CI](./images/github_flow.png)
 
 ### Gestão de issues
-- Ferramenta: GitHub Issues/Projects com cada issue referenciada nos commits e PRs.
+GitHub Issues/Projects; cada issue é referenciada nos commits e PRs.
 
 ### Papéis da equipa
-A equipa tem 5 membros; a tabela propõe 6 papéis possíveis para executar o projeto, a atribuir aos membros (um membro acumula dois). Todos implementam código (frontend/backend), e a tabela indica apenas a responsabilidade **adicional** de cada papel, para além do desenvolvimento comum a todos. 
+5 membros, 6 papéis (um membro acumula dois). Todos programam frontend e backend; a tabela indica só a responsabilidade **adicional** de cada papel.
 
-| Papel | Responsabilidade adicional | Detalhe |
-|---|---|---|
-| Papel 1 | Product Owner / PM | Product Backlog, prioridades, contacto com investidores (docentes) |
-| Papel 2 | Business Analyst | Levantamento de requisitos, pesquisa de mercado/utilizador |
-| Papel 3 | QA | Estratégia e execução de testes |
-| Papel 4 | DevOps / Scrum Master | Pipeline de CI/CD, facilitação do processo ágil |
-| Papel 5 | Backend Developer | Desenvolve e mantem a lógica do código, bases de dados, e APIs que alimentam a App|
-| Papel 6 | Frontend Developer | Desenvolve a parte visual e interativa da App |
+| Papel | Responsabilidade adicional |
+|---|---|
+| Product Owner / PM | Product Backlog, prioridades, contacto com os docentes (investidores) |
+| Business Analyst | Requisitos, pesquisa de mercado e de utilizador |
+| QA | Estratégia e execução de testes |
+| DevOps / Scrum Master | Pipeline de CI/CD, facilitação do processo ágil |
+| Backend Developer | Lógica, bases de dados e APIs |
+| Frontend Developer | Parte visual e interativa da app |
 
 ### Definition of Ready (DoR)
-Uma User Story está pronta para entrar num sprint quando: tem critérios de aceitação claros e testáveis; não depende de nenhuma outra tarefa; está estimada pela equipa (temporalmente); o seu impacto e valor agregado é compreendido sem ambiguidade por todos.
-
+Uma User Story entra num sprint quando: tem critérios de aceitação claros e testáveis; não depende de outra tarefa; está estimada pela equipa; o seu valor é compreendido por todos sem ambiguidade.
 
 ### Definition of Done (DoD)
-Uma User Story está concluída quando: o código foi implementado e aprovado em code review (PR revisto, e aprovado, por, pelo menos, 1 pessoa); a pipeline de CI passa (build, testes automatizados, linting/análise estática); tem testes automatizados relevantes; foi integrada em `main`; a documentação relevante foi atualizada; e cumpre os critérios de aceitação definidos.
+Uma User Story está concluída quando: o PR foi revisto e aprovado por pelo menos 1 pessoa; a CI passa (build, testes automatizados, linting/análise estática); tem testes automatizados relevantes; está integrada em `main`; a documentação foi atualizada; cumpre os critérios de aceitação.
 
 ---
 
 ## 1. Relatório de Problema e Oportunidade
 
 ### Comunidade-alvo
-Moradores de prédios de habitação multifamiliar autogeridos em Portugal (regime de propriedade horizontal), tipicamente entre 8 e 60 frações, com administrador eleito de entre os condóminos (não uma empresa profissional de gestão).
+Moradores de prédios de habitação multifamiliar autogeridos em Portugal (propriedade horizontal), tipicamente com 8 a 60 frações e administrador eleito entre os condóminos (não uma empresa de gestão).
 
-**Utilizadores primários:** condóminos (proprietários e inquilinos) e o administrador do condomínio.
-
-**Beneficiários secundários:** comissão de condóminos, prestadores de manutenção (canalizador, eletricista, elevadores), porteiro/funcionário (quando existe).
+- **Utilizadores primários:** condóminos (proprietários e inquilinos) e administrador.
+- **Beneficiários secundários:** comissão de condóminos, prestadores de manutenção (canalizador, eletricista, elevadores), porteiro/funcionário.
 
 ### Problema
-Os condomínios coordenam problemas do edifício (fuga de água, luz da escada fundida, elevador avariado, etc.) normalmente através de um grupo de WhatsApp ou posters espalhados pelo prédio. No entanto, esta gestão traz alguns problemas, que se agravam quanto mais tempo ficam por resolver:
-- Mensagens perdem-se no meio de conversa não relacionada;
-- Não há estado do reporte, reportes repetidos e incerteza sobre se algo já foi tratado, o que permite que avarias simples se agravem por falta de acompanhamento (ex.: uma fuga de água não reportada a tempo causa danos estruturais e custos de reparação muito maiores);
-- Sem histórico auditável para o administrador (prioridades, prova de diligência na resolução), o que o expõe a risco legal/de seguro acrescido em caso de acidente (ex.: queda por avaria não reportada nem resolvida);
-- Quem gere o grupo é normalmente um voluntário sem ferramentas de apoio, o que gera desgaste, perda de confiança dos condóminos (mesmo quando está a tentar resolver os problemas) e dificulta encontrar quem aceite o cargo no futuro;
-- Os posters junto ao elevador ficam desatualizados, são removidos ou simplesmente não chegam a inquilinos/residentes que raramente passam por ali;
-- Decisões tomadas em assembleias de condóminos não chegam a quem falta (por doença, viagem, horário), a informação passa "de boca em boca" e é frequentemente distorcida ou incompleta, sem ata acessível e centralizada, diminuindo a transparência e o sentido de comunidade, e aumentando conflitos entre vizinhos;
-- Privacidade fraca nos grupos de WhatsApp: os números de telefone pessoais de todos os moradores ficam expostos a todo o grupo, sem alternativa mais privada.
+Os problemas do edifício (fuga de água, luz fundida, elevador avariado) coordenam-se por grupo de WhatsApp ou posters no prédio. Consequências, que se agravam com o tempo:
+- Mensagens perdem-se no meio de conversa não relacionada.
+- Sem estado do reporte: reportes repetidos, incerteza sobre o que já foi tratado, e avarias simples que se agravam (ex.: fuga de água que causa danos estruturais e custos muito maiores).
+- Sem histórico auditável: o administrador não prova diligência e fica exposto a risco legal/de seguro (ex.: queda por avaria não resolvida).
+- O administrador é um voluntário sem ferramentas: desgaste, perda de confiança dos condóminos e dificuldade em encontrar quem aceite o cargo.
+- Posters ficam desatualizados, são removidos ou não chegam a quem raramente passa pelo hall.
+- Decisões de assembleia não chegam a quem falta; a informação passa "de boca em boca", distorcida e incompleta, sem ata centralizada, o que reduz a transparência e aumenta conflitos.
+- Privacidade fraca: os números de telefone de todos ficam expostos ao grupo.
 
 ### Mapa de stakeholders
-| Stakeholder | Papel | Relação com o produto |
-|---|---|---|
-| Condómino (proprietário/inquilino) | Vive no edifício, quer problemas resolvidos e visibilidade | Utilizador principal, reporta e acompanha; identifica-se perante o administrador pelo nome (por omissão visível só ao administrador) |
-| Administrador do condomínio | Responsável pela manutenção das partes comuns | Utilizador principal, triagem, atribuição, fecho |
-| Comissão de condóminos | Supervisiona o administrador, aprova despesas maiores | Consulta histórico/relatórios |
-| Prestadores de manutenção | Executam a reparação | Utilizador indireto (fora do MVP) |
-| Funcionário/porteiro | Pode reportar em nome de residentes | Reportador secundário |
-| Seguradora | Pode exigir prova de incidente/diligência | Beneficiário indireto do histórico |
-| Município/fornecedores de utilities | Relevantes quando o problema é externo ao prédio | Fora do MVP; caminho de escalonamento futuro |
+| Stakeholder | Relação com o produto |
+|---|---|
+| Condómino (proprietário/inquilino) | Utilizador principal: reporta e acompanha; identifica-se pelo nome (por omissão visível só ao administrador) |
+| Administrador do condomínio | Utilizador principal: triagem, atribuição, fecho |
+| Comissão de condóminos | Supervisiona o administrador; consulta histórico/relatórios |
+| Prestadores de manutenção | Utilizador indireto (fora do MVP) |
+| Funcionário/porteiro | Reportador secundário, em nome de residentes |
+| Seguradora | Beneficiário indireto do histórico (prova de diligência) |
+| Município/fornecedores de utilities | Fora do MVP; escalonamento futuro |
 
 ### Evidência do problema
-- **TODO (equipa):** fazer questionário/forms e procurar em fóruns; registar aqui as fontes e os resultados reais
+- **TODO (equipa):** questionário/forms e fóruns; registar aqui fontes e resultados.
 
 ### Pressupostos e riscos
 
-**Pressupostos**:
-- A maioria dos residentes tem smartphone e ligação à internet suficiente (dados móveis/Wi-Fi) para usar a app;
-- Existe sempre um administrador no prédio (já é uma exigência legal em Portugal), que faz a configuração inicial: cria o condomínio e gera os QR codes das frações;
-- Os residentes aceitam indicar o nome (por omissão visível só ao administrador), que permite ao administrador contactá-los;
-- O QR code (partilhado pela fração) só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado (ADR-001);
-- Um único prédio já é "comunidade" suficiente para o produto gerar valor, sem depender de adoção multi-prédio.
+**Pressupostos:**
+- A maioria dos residentes tem smartphone e internet suficiente.
+- Existe sempre um administrador (exigência legal em Portugal), que cria o condomínio e gera os QR codes das frações.
+- Os residentes aceitam indicar o nome (por omissão visível só ao administrador), para que este os possa contactar.
+- O QR code é partilhado pela fração e só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado (ADR-001).
+- Um único prédio é "comunidade" suficiente para gerar valor.
 
-**Riscos e mitigações:**
-
-Cada risco abaixo está ligado a um pressuposto ou a um problema identificado na secção anterior, para garantir que nenhum fica sem mitigação.
+**Riscos e mitigações** (cada risco liga a um pressuposto ou problema acima):
 
 | Risco | Mitigação |
 |---|---|
-| Custo de mudança do WhatsApp (grátis, já instalado) | Onboarding em segundos: o administrador gera um QR code por fração e cada residente faz scan e indica o seu nome |
-| Residentes sem smartphone, menos digitais ou idosos ficam excluídos | Interface acessível; um vizinho ou o porteiro pode reportar por eles, com a sua própria identidade |
-| Exclusão de residentes com deficiência visual ou auditiva | Seguir princípios de acessibilidade (WCAG): suporte a leitor de ecrã, texto alternativo em fotos, alternativas não sonoras às notificações |
+| Custo de mudança do WhatsApp (grátis, já instalado) | Onboarding em segundos: QR code por fração, scan e nome |
+| Residentes sem smartphone, pouco digitais ou idosos | Interface acessível; um vizinho ou o porteiro reporta por eles com a própria identidade |
+| Residentes com deficiência visual ou auditiva | WCAG: leitor de ecrã, texto alternativo nas fotos, alternativas não sonoras às notificações |
 | Administrador sente perda de controlo | Posicionar como redução de esforço, não canal extra a vigiar |
-| Dados pessoais dos residentes mal geridos ou guardados sem necessidade | Guardar só fração e nome, sem telefone nem perfil completo; retenção limitada (RGPD) |
-| QR code de uma fração divulgado a terceiros | Token aleatório; o administrador revoga/regenera o QR code e remove identidades (US-01, US-09) |
-| Nome autodeclarado: duplicado ou a fazer-se passar por outro residente | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada (ADR-001) |
+| Dados pessoais mal geridos ou guardados sem necessidade | Guardar só fração e nome; retenção limitada (RGPD) |
+| QR code divulgado a terceiros | Token aleatório; o administrador revoga/regenera o QR code e remove identidades (US-01, US-09) |
+| Nome duplicado ou a fazer-se passar por outro | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada (ADR-001) |
 | Residentes recusam indicar o nome | Finalidade explicada no ecrã; só o nome é pedido |
-| Reportes visíveis a todos podem expor dados pessoais de terceiros | Aviso no formulário; autor oculto por omissão |
+| Reportes visíveis a todos expõem dados de terceiros | Aviso no formulário; autor oculto por omissão |
 
 ---
 
 ## 2. Análise de Mercado e Concorrência
 
-TODO: Adicionar dados/fontes/evidências concretas do texto segundo a pesquisa realisada
+TODO: adicionar dados/fontes/evidências da pesquisa.
 
-*Método: revisão dos sites oficiais dos principais produtos (setembro 2026) + observação direta do statu quo. Os dados de lojas de apps e datas de lançamento indicados abaixo devem ser validados antes da entrega final.*
+*Método: sites oficiais dos principais produtos (setembro 2026) + observação direta. Dados de lojas de apps e datas de lançamento a validar antes da entrega final.*
 
-**Achado da pesquisa de trabalhos relacionados:** as soluções digitais de gestão de condomínio existentes (ex.: TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) são construídas à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos, orçamentos) e da **governança** (votações, atas), não da **gestão de problemas/informação** do dia a dia (reportar e acompanhar uma avaria, por exemplo). É esse o espaço que a nossa app ocupa.
+**Achado principal:** as soluções existentes (TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) giram à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos) e da **governança** (votações, atas), não da **gestão de problemas/informação do dia a dia**. É esse o espaço da nossa app.
 
 ### 2.1 Quadro comparativo de alternativas e concorrentes
 
-| Alternativa | Utilizadores-alvo | Funcionalidades principais | Pontos fortes | Pontos fracos | Modelo de negócio | UX e privacidade | Diferenciação da nossa proposta |
-|---|---|---|---|---|---|---|---|
-| **WhatsApp/Messenger, posters, papel** | Qualquer grupo, sem configuração nem literacia digital exigida | Mensagens de grupo em tempo real; posters físicos; folha de papel para reportar avarias | Adoção imediata e custo zero; papel acessível a não-digitais | Mensagens perdem-se, sem estado do reporte nem histórico; posters desatualizam-se ou somem | N/A (ferramentas genéricas gratuitas) | Familiar mas caótica para triagem; números de telefone expostos a todo o grupo | Reportes com estado, dono e histórico, sem perder a simplicidade do chat |
-| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais / gestoras de portefólio | Faturação, quotas, contas correntes, atas de assembleia, gestão de ocorrências (backoffice) | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio autogerido; foco em dinheiro/governança, não em avarias do dia a dia | SaaS B2B por subscrição, dependente do nº de frações | Corporativa e com curva de aprendizagem íngreme; RGPD estabelecido | Foco na coordenação do dia a dia, com onboarding e preço adequados a 1 prédio |
-| **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral, sem hierarquia de prédio | Feed social, recomendação de prestadores locais, alertas de segurança, mensagens privadas | Sentido de comunidade, recomendação de prestadores locais | Sem a figura do administrador nem tickets/estado para avarias | Grátis, financiado por publicidade geolocalizada | Orientada a engajamento social, não a tarefas; privacidade moderada/baixa | Estrutura à volta do edifício (propriedade horizontal), com administrador e reportes com estado |
-| **Software de tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios profissionais | Abertura e despacho de tickets, SLA, manutenção preventiva | SLA rigoroso, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; exige conta e input técnico para algo trivial | SaaS B2B por ativo/unidade gerido | Profissional, formulários técnicos; sem foco em privacidade entre vizinhos | Reporte em segundos, sem formação técnica nem contrato empresarial |
-| **Gecond** ("o meu condomínio") | Condóminos de prédios com administração já cliente do backend | Votação antecipada em assembleias; registo e acompanhamento de avarias | Votação antecipada + registo de avarias na mesma app | Só por convite (B2B2C); avaliação muito baixa nas lojas de apps (1,7/5) | B2B2C, vendido à administração | Inconsistente entre prédios; confiança baixa (rating) | Adotável diretamente por qualquer administrador voluntário, sem depender de terceiro |
-| **My LDC** (Loja do Condomínio) | Condóminos e administrador, relação direta | Consulta de informação do condomínio, pedidos, referência MB para pagamento | Gratuita, foco em transparência, referência MB para pagamentos | Sem atualizações desde 2017; possível abandono (a validar) | Gratuito, sustentabilidade não divulgada | Simples mas datada; sem política de privacidade pública | Mantém a proposta de transparência, mas com manutenção ativa e reportes com estado |
-| **Unitify** (smart building) | Administradoras profissionais e novos empreendimentos | Controlo de acesso, intercomunicador de vídeo, contadores inteligentes, cobrança de quotas por fração | UX moderna, pagamentos MB WAY/Multibanco, foco em Portugal | Exige investimento em hardware (controlo de acesso, intercomunicadores) | Pagamentos via Multibanco/MB WAY + Stripe | Moderna, mas dependente de fornecedores de hardware/pagamento terceiros | Sem hardware exigido, adotável por qualquer prédio de baixo orçamento |
+| Alternativa | Utilizadores-alvo e modelo | Pontos fortes | Pontos fracos | Diferenciação da nossa proposta |
+|---|---|---|---|---|
+| **WhatsApp/Messenger, posters, papel** | Qualquer grupo; gratuito | Adoção imediata, custo zero; papel acessível a não-digitais | Mensagens perdem-se, sem estado nem histórico; posters desatualizam; telefones expostos ao grupo | Reportes com estado, dono e histórico, sem perder a simplicidade do chat |
+| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais; SaaS B2B por nº de frações | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio; foco em dinheiro/governança; curva de aprendizagem íngreme | Coordenação do dia a dia, com onboarding e preço para 1 prédio |
+| **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral; grátis, publicidade geolocalizada | Sentido de comunidade, recomendação de prestadores | Sem administrador nem tickets/estado; orientada a engajamento; privacidade moderada/baixa | Estrutura à volta do edifício, com administrador e reportes com estado |
+| **Tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios; SaaS B2B por ativo | SLA, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; formulários técnicos; sem privacidade entre vizinhos | Reporte em segundos, sem formação técnica nem contrato |
+| **Gecond** ("o meu condomínio") | Condóminos cujo administrador já é cliente; B2B2C | Votação antecipada + registo de avarias | Só por convite; avaliação 1,7/5 nas lojas; experiência inconsistente | Adotável diretamente por qualquer administrador voluntário |
+| **My LDC** (Loja do Condomínio) | Condóminos e administrador; gratuito | Transparência; referência MB para pagamentos | Sem atualizações desde 2017 (possível abandono, a validar); sem política de privacidade pública | Mesma transparência, com manutenção ativa e reportes com estado |
+| **Unitify** (smart building) | Administradoras profissionais e novos empreendimentos; Multibanco/MB WAY + Stripe | UX moderna, pagamentos, foco em Portugal | Exige hardware (controlo de acesso, intercomunicadores) | Sem hardware, adotável por qualquer prédio de baixo orçamento |
 
 ### 2.2 Conclusão e oportunidade de diferenciação
 
-Não existe, no mercado português, um produto pensado de raiz para o administrador voluntário de um condomínio pequeno/médio autogerido: os concorrentes diretos assumem uma administração profissional já cliente (Gecond), um pacote financeiro completo e pesado (software de gestão profissional), ou investimento em hardware smart (Unitify). O WhatsApp continua a ganhar por defeito, não porque seja bom, mas porque é a única opção com fricção zero.
+Não existe em Portugal um produto pensado para o administrador voluntário de um prédio pequeno/médio autogerido: os concorrentes assumem administração profissional (Gecond), pacote financeiro pesado (software profissional) ou hardware (Unitify). O WhatsApp ganha por defeito, por ser a única opção com fricção zero.
 
 **Oportunidades de diferenciação:**
 1. Gestão de problemas/informação do dia a dia, não de dinheiro ou governança.
 2. Foco no residente (reportar em segundos), não no gestor/contabilidade.
-3. Zero-configuração para um único prédio autogerido, sem depender de terceiros nem de hardware.
-4. Privacidade por desenho: reportes visíveis a todos os residentes para acompanhamento coletivo, sem expor contactos pessoais nem o autor dos reportes aos outros residentes, salvo se o autor escolher mostrar o seu nome.
+3. Zero-configuração para um prédio, sem terceiros nem hardware.
+4. Privacidade por desenho: reportes visíveis a todos para acompanhamento coletivo, sem expor contactos nem o autor (salvo se este escolher mostrar o nome).
 
 ### 2.3 Proposta de Valor
 
-> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (regime de propriedade horizontal), que hoje coordenam avarias e avisos através de grupos de WhatsApp caóticos ou posters físicos desatualizados, o [Nome do Produto] é uma aplicação de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software de gestão profissional de condomínios (focado em contabilidade e governança) e das soluções "smart building" (que exigem hardware e investimento), o nosso produto é gratuito/low-cost, de configuração imediata para um único prédio, e desenhado para o residente, com privacidade por desenho (sem exposição de números de telefone nem perfis completos além do essencial).
+> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (propriedade horizontal), que hoje coordenam avarias e avisos por grupos de WhatsApp caóticos ou posters desatualizados, o [Nome do Produto] é uma app de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software profissional (contabilidade e governança) e das soluções smart building (hardware), é gratuito/low-cost, de configuração imediata para um prédio, desenhado para o residente e com privacidade por desenho (sem telefones nem perfis além do essencial).
 
 ---
 
 ## 3. Investigação de Utilizadores
 
 ### Método
-
-A investigação combina três fontes complementares:
-
-1. **Inquérito online** (Google Forms, distribuído pela rede da equipa e em grupos de Facebook/Reddit de moradores portugueses), ver questionário abaixo.
-
-2. **Leitura de reviews de apps concorrentes** nas lojas Google Play e App Store (foco: Gecond, "o meu condomínio", SolidSoft GC, My LDC), recolhendo padrões de queixas e elogios recorrentes.
-
-3. **Observação informal** - os membros da equipa habitam ou têm familiares em prédios autogeridos em Portugal; as situações descritas foram observadas diretamente (grupos de WhatsApp saturados, posters rasgados no elevador, administrador contactado por SMS ou chamada pessoal).
+1. **Inquérito online** (Google Forms, rede da equipa e grupos de Facebook/Reddit de moradores), ver questionário abaixo.
+2. **Reviews de apps concorrentes** no Google Play e App Store (Gecond, "o meu condomínio", SolidSoft GC, My LDC): padrões de queixas e elogios.
+3. **Observação informal**: membros da equipa vivem ou têm familiares em prédios autogeridos (grupos saturados, posters rasgados, administrador contactado por SMS/chamada).
 
 ### Questionário
 
-**Secção A - Perfil**
-1. Qual é o seu papel no condomínio? *(Proprietário residente / Inquilino / Administrador / Outro)*
-2. Quantas frações tem o seu prédio aproximadamente? *(Menos de 8 / 8–30 / 31–60 / Mais de 60)*
-3. O seu prédio tem administração profissional ou é autogerido por um condómino eleito? *(Profissional / Condómino voluntário / Não sei)*
+**A - Perfil**
+1. Papel no condomínio *(Proprietário residente / Inquilino / Administrador / Outro)*
+2. Nº aproximado de frações *(<8 / 8-30 / 31-60 / >60)*
+3. Administração *(Profissional / Condómino voluntário / Não sei)*
 
-**Secção B - Comunicação atual**
+**B - Comunicação atual**
+4. Como comunica avarias *(WhatsApp/Messenger / Poster / Contacto direto / E-mail / App dedicada / Outro)*
+5. Frequência de reportes *(Nunca / 1-2x/ano / 3-6x/ano / >6x/ano)*
+6. Fica a saber se foi resolvido? *(Sempre / Às vezes / Raramente / Nunca)*
 
-4. Como comunica habitualmente avarias ou problemas do prédio? *(Grupo de WhatsApp/Messenger / Poster/aviso físico no prédio / Contacto direto com o administrador / E-mail / App dedicada / Outro)*
-5. Com que frequência reporta um problema no prédio? *(Nunca / Raramente (1–2x/ano) / Às vezes (3–6x/ano) / Frequentemente (>6x/ano))*
-6. Depois de reportar um problema, costuma saber se foi resolvido? *(Sim, sou sempre informado/a / Às vezes / Raramente / Nunca)*
+**C - Frustrações (1 = nada, 5 = muito)**
+7. "As minhas mensagens perdem-se no grupo."
+8. "Não sei se o problema que reportei vai ser tratado."
+9. "O mesmo problema é reportado várias vezes."
+10. "Não fui avisado/a sobre decisões ou assembleias."
+11. "O meu telefone fica exposto a todo o grupo."
+12. "Os avisos em papel estão desatualizados."
 
-**Secção C - Frustrações (escala 1 = nada frustrado, 5 = muito frustrado)**
+**D - Adoção**
+13. Usaria uma app dedicada ao condomínio? *(Sim, definitivamente / Provavelmente sim / Provavelmente não / Definitivamente não)*
+14. Fator mais importante *(Rapidez / Privacidade / Preço / Vizinhos também usarem / Outro)*
+15. Maior inibidor *(Mais uma app / Vizinhos mais velhos não usam / Privacidade / O WhatsApp chega / Outro)*
+16. Disposição a pagar por fração/mês, sem publicidade *(Nada / Até 0,50 € / Até 1 € / Até 2 € / Mais de 2 €)*
 
-7. "As minhas mensagens perdem-se no meio de outras conversas no grupo."
-8. "Não sei se o problema que reportei já foi ou vai ser tratado."
-9. "O mesmo problema é reportado várias vezes por pessoas diferentes."
-10. "Não fui avisado/a sobre decisões ou assembleias do condomínio."
-11. "O meu número de telefone pessoal fica exposto a todos os membros do grupo."
-12. "Os avisos em papel no elevador/hall estão desatualizados ou em mau estado."
-
-**Secção D - Adoção de nova ferramenta**
-
-13. Usaria uma app dedicada ao seu condomínio para reportar avarias e ver avisos? *(Sim, definitivamente / Provavelmente sim / Provavelmente não / Definitivamente não)*
-14. O que seria mais importante para decidir usar essa app? *(Ser rápida de usar / Privacidade dos meus dados / Gratuita ou barata / Que os vizinhos também a usassem / Outro)*
-15. O que mais o/a inibiria de adotar uma app dessas? *(Mais uma app para instalar / Os vizinhos mais velhos não vão usar / Preocupações com privacidade / Já o WhatsApp chega / Outro)*
-16. Quanto estaria disposto/a a pagar por fração, por mês, por um serviço sem publicidade e com privacidade garantida? *(Nada / Até 0,50 € / Até 1 € / Até 2 € / Mais de 2 €)*
-
-**Secção E - Questão aberta**
-
-17. Descreva uma situação concreta em que a comunicação no seu condomínio falhou. *(resposta livre)*
+**E - Aberta**
+17. Descreva uma situação em que a comunicação no seu condomínio falhou.
 
 ### Resultados
-
 > *A aguardar resultados do inquérito.*
 
 ### Limitações
-
 > *A aguardar resultados do inquérito.*
 
 ### Decisões de produto resultantes
-
 > *A aguardar resultados do inquérito.*
 
 ---
 
 ## 4. Rascunho de Requisitos
 
-Esta é uma primeira lista de funcionalidades (agrupadas por epic) e de requisitos não funcionais, resultante da análise de mercado (capítulo 2) e da investigação de utilizadores (capítulo 3). Serve de ponte para a visão de produto (capítulo 5) e será refinada em user stories priorizadas no Product Backlog (capítulo 6), após validação com os clientes (docentes).
+Primeira lista de funcionalidades (por epic) e requisitos não funcionais, resultante dos capítulos 2 e 3. Faz a ponte para a visão de produto (capítulo 5) e será refinada em user stories no Product Backlog (capítulo 6) após validação com os docentes.
 
-A lista completa de requisitos vive num documento próprio, [docs/requisitos.md](../requisitos.md), onde cada funcionalidade/requisito tem uma **versão** e um **estado** (Draft, In Review e Approved), para acompanhar a validação com os clientes ao longo dos sprints sem misturar esse histórico com o resto deste relatório.
+A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão** e **estado** (Draft, In Review, Approved) por requisito.
 
-**Resumo dos epics propostos (ver detalhe e estado atual em [docs/requisitos.md](../requisitos.md)):**
-- **Gestão de avarias:** reportar problema, estado do reporte, histórico do prédio, notificações de estado, deteção de duplicados.
-- **Comunicação e governança do condomínio:** mural digital de avisos, calendário de atividades.
-- **Privacidade e confiança:** reportes visíveis a todos os residentes com o autor oculto por omissão (o autor pode escolher mostrar o seu nome), identificação do residente pelo nome (QR code partilhado por fração), gestão de identidades e QR codes pelo administrador.
-- **Requisitos não funcionais:** usabilidade (rapidez), acessibilidade, privacidade (minimização de dados), segurança (controlo de acesso), observabilidade (monitorização).
+**Epics propostos:**
+- **Gestão de avarias:** reportar, estado, histórico do prédio, notificações, duplicados, seguir reportes.
+- **Comunicação e governança:** mural de avisos, calendário, aviso ligado a reporte, indicador de progresso.
+- **Privacidade e confiança:** reportes visíveis a todos com autor oculto por omissão; identificação pelo nome via QR code da fração; gestão de identidades e QR codes pelo administrador.
+- **Não funcionais:** rapidez, acessibilidade, minimização de dados, controlo de acesso, observabilidade, resiliência (offline e serviços externos).
 
 ---
 
@@ -224,147 +209,127 @@ A lista completa de requisitos vive num documento próprio, [docs/requisitos.md]
 
 ### 5.1. Personas
 
-- **Administrador Voluntário** (ex.: "Rui", 58, reformado/ativo, eleito em assembleia): 
-  -  É um inquilino eleito para gerir o prédio, não pertecendo a uma empresa profissional de gestão. Faz esta gestão nas horas livres e não possui ferramentas de apoio. Sente regularmente dificuldade em fazer a triagem dos problemas e em provar a sua diligência na resolução dos mesmos perante os outros inquilinos. Precisa de uma solução para gerir as ocorrências e registar o histórico de decisões e reparações.
-
-- **Condómino Residente Ocupado** (ex.: "Marta", 34, proprietária):
-    - É proprietária de uma fração e trabalha fora de casa, pelo que acompanha o grupo do prédio de forma intermitente e raramente consegue estar presente nas assembleias. Quer poder reportar um problema em poucos segundos e saber, sem ter de perguntar a ninguém, se já foi comunicado e tratado. Sente dificuldade em perceber o estado dos problemas do edifício e depende de terceiros para saber o que foi decidido nas assembleias a que falta.
-
-- **Inquilino/Residente Recente** (ex.: "Tiago", 25, inquilino):
-    - Vive no prédio há pouco tempo, raramente passa pelo hall e não conhece bem os vizinhos, pelo que nunca chegou a ver os avisos afixados nem está necessariamente incluído no grupo de WhatsApp. Quer receber apenas os avisos que lhe dizem respeito e conseguir reportar um problema sem constrangimento e sem expor o seu número de telefone a todo o prédio. A sua dor principal é a falta de informação, porque muitas vezes só sabe que houve uma avaria ou uma decisão depois de o problema já o ter afetado.
-
-- **Condómino Sénior Pouco Digital** (ex.: "D. Amélia", 76, proprietária):
-    - Vive no prédio há muitos anos, usa um telemóvel com poucas funcionalidades e confia sobretudo no papel e no contacto presencial para se informar. Quer continuar a saber o que se passa no prédio e poder comunicar um problema sem depender de tecnologia que não domina. Sente-se frequentemente excluída, porque os posters ficam desatualizados e a informação lhe chega "de boca em boca", muitas vezes incompleta ou distorcida.
-
+- **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações.
+- **Condómina Residente Ocupada** ("Marta", 34, proprietária): trabalha fora, acompanha o grupo de forma intermitente e falta a assembleias. Quer reportar em segundos e saber o estado sem perguntar a ninguém.
+- **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem.
+- **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca".
 
 ### 5.2. Proposta de Valor
 
-- Para administradores voluntários e condóminos de prédios autogeridos, a nossa plataforma transforma a gestão do dia a dia do edifício de uma fonte de stress para um processo simples e colaborativo;
+- Para administradores voluntários e condóminos de prédios autogeridos, a plataforma transforma a gestão do dia a dia de fonte de stress em processo simples e colaborativo.
+- Em vez de ferramentas genéricas onde as mensagens se perdem, estrutura a comunicação em reportes com estado, responsável e histórico auditável, e leva avisos e decisões de assembleia a todos, incluindo quem falta ou raramente passa pelo hall.
+- Deixa deliberadamente de fora a contabilidade e a gestão financeira; foca-se na resolução rápida dos problemas e na privacidade, sem hardware nem custos de adoção.
 
-- Em vez de recorrer a ferramentas genéricas onde as mensagens perdem-se facilmente, estruturamos a comunicação em reportes com estado, responsável e histórico auditável, e levamos avisos e decisões de assembleias a todos os residentes, incluindo quem falta ou raramente passa pelo hall onde fica normalmente o poster físico;
+**Valor por persona:**
 
-- Diferenciamo-nos do software de administração profissional ao deixar deliberadamente de fora a contabilidade e a gestão financeira, concentrando-nos na resolução rápida dos problemas do prédio e na privacidade dos residentes, sem hardware nem custos de adoção para o administrador.
-
-
-**Proposta de Valor por Persona**:
-
-| Persona                        | Valor principal                                                          |
-|--------------------------------|--------------------------------------------------------------------------|
-| Administrador Voluntário       | Menos esforço de triagem e um histórico que prova a sua diligência       |
-| Condómino Residente Ocupado    | Reportar em segundos e saber o estado sem perguntar a ninguém            |
-| Inquilino / Residente Recente  | Receber os avisos relevantes e reportar sem expor o seu telemóvel        |
-| Condómino Sénior Pouco Digital | Não ficar excluído da informação do prédio, com a ajuda de um vizinho ou do porteiro que reporta e consulta por si |
+| Persona | Valor principal |
+|---|---|
+| Administrador Voluntário | Menos esforço de triagem e um histórico que prova diligência |
+| Condómina Residente Ocupada | Reportar em segundos e saber o estado sem perguntar |
+| Inquilino / Residente Recente | Receber os avisos relevantes e reportar sem expor o telemóvel |
+| Condómina Sénior Pouco Digital | Não ficar excluída, com um vizinho ou o porteiro a reportar e consultar por si |
 
 ### 5.3. User Journey
 
-Cada jornada corresponde a um workflow modelado em diagrama de atividade com raias por ator ([workflows.drawio](workflows.drawio)), e está ligada às user stories do backlog.
+Cada jornada é um workflow em diagrama de atividade com raias por ator ([workflows.drawio](workflows.drawio)), ligado às user stories do backlog.
 
-- **Onboarding do condomínio (Workflow 1, US-01, US-15)**: O administrador cria o condomínio, indicando o nome e o número de frações, e a aplicação gera um QR code único por fração, que pode ser partilhado por todos os residentes dessa fração. O administrador distribui o QR code aos residentes e cada residente faz scan com a aplicação. Se o QR code for válido e o dispositivo ainda não tiver identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existir identidade, não volta a pedir. Se o QR code for inválido ou tiver sido revogado, é mostrado um erro;
+- **Onboarding do condomínio (Workflow 1, US-01, US-15):** o administrador cria o condomínio (nome, nº de frações) e a app gera um QR code único por fração, partilhado pelos residentes dessa fração. Cada residente faz scan: se o QR code é válido e o dispositivo não tem identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existe identidade, não volta a pedir. QR code inválido ou revogado mostra erro.
 
 <!-- TODO (equipa): reexportar o SVG a partir de workflows.drawio (páginas 1 e 2 foram alteradas para incluir o nome do residente) -->
 ![Onboarding do condominio](images/workflow-1.drawio.png)
 
-- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11)**: O residente escolhe "Reportar avaria", descreve o problema e, opcionalmente, junta uma fotografia com texto alternativo, acessível a leitores de ecrã. O backend valida o reporte (campos obrigatórios, anexos e identidade do dispositivo) e, se for inválido, o residente corrige-o. Um reporte válido é guardado no estado "Aberto - pendente de triagem", com a identidade do residente como autor, visível a todos os residentes (o autor só é mostrado ao administrador, ou aos outros se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte novo, com o nome do autor e a fração, e analisa-o: se for duplicado, fecha-o com a mensagem "Reporte duplicado do #<id>" e o autor passa a co-reporter do original, que aparece em "Os meus reportes"; se o problema já estiver resolvido, fecha-o como "Resolvido" com uma nota; caso contrário, aceita-o como reporte novo e trata-o (Workflow 3). Cada decisão é registada no histórico e o reporter e os co-reporters são notificados, por notificação push com alternativa visual. Os residentes consultam a lista de reportes do prédio (e filtram "Os meus reportes") para ver o estado, a data de criação e a data da última atualização, e podem seguir um reporte para receber as notificações do seu estado (autores e co-reporters seguem automaticamente);
+- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto - pendente de triagem", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (push com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
 
 ![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
-- **Acompanhar e resolver reportes (Workflow 3, US-04, US-05, US-14)**: O administrador abre a lista única de reportes, filtra por estado e analisa cada reporte. Se o reporte representar um risco para os residentes, cria um aviso ligado ao reporte (título, texto e local), que é publicado no quadro de avisos e notifica todos os residentes, sem expor o autor do reporte. O administrador altera o estado do reporte (Aberto, Em curso, Resolvido) e acrescenta uma nota. O sistema regista cada alteração com data, hora e autor, num histórico imutável, e notifica o residente. Quando o reporte é resolvido, o aviso ligado a ele é arquivado e fica no histórico de avisos;
+- **Acompanhar e resolver reportes (Workflow 3, US-04, US-05, US-14):** o administrador filtra a lista por estado e analisa cada reporte. Se há risco para os residentes, cria um aviso ligado ao reporte (título, texto, local), publicado no quadro de avisos e notificado a todos, sem expor o autor. Altera o estado (Aberto, Em curso, Resolvido) e acrescenta uma nota. Cada alteração fica num histórico imutável com data, hora e autor, e o residente é notificado. Quando o reporte é resolvido, o aviso ligado é arquivado no histórico de avisos.
 
 ![Acompanhar e resolver reportes](images/workflow-3.drawio.png)
 
-- **Agendar assembleias e lembretes (Workflow 4, US-13, NFR-01)**: O administrador agenda a assembleia (data, hora e local) e a reunião é guardada localmente no telemóvel. Sem internet, fica numa fila local e sincroniza automaticamente quando a ligação regressar. Com internet, o evento é sincronizado com o Google Calendar ou, se este estiver indisponível, com um calendário alternativo (iCal/Outlook ou simulador). Se nenhum estiver disponível, a aplicação entra em modo degradado: usa os dados locais, mostra um aviso visível, regista o erro e volta a tentar mais tarde. É agendado um lembrete antes da reunião (por exemplo, 24 horas antes) e os residentes veem a reunião no calendário e recebem o lembrete;
+- **Agendar assembleias e lembretes (Workflow 4, US-13, NFR-01):** o administrador agenda a assembleia (data, hora, local), guardada localmente no telemóvel. Sem internet, fica em fila e sincroniza quando a ligação voltar. Com internet, sincroniza com o Google Calendar ou, se indisponível, com um calendário alternativo (iCal/Outlook ou simulador). Sem nenhum, a app entra em modo degradado: usa os dados locais, mostra um aviso, regista o erro e tenta mais tarde. É agendado um lembrete antes da reunião (ex.: 24 horas) e os residentes veem a reunião no calendário.
 
 ![Agendar assembleias e lembretes](images/workflow-4.drawio.png)
 
-- **Ata da assembleia assistida por IA (Workflow 5, US-10, NFR-01)**: Depois da assembleia, o administrador grava ou carrega o ficheiro de áudio, que é guardado no telemóvel e, sem internet, fica numa fila local até a ligação regressar. Com o serviço de IA disponível, este gera a transcrição e um rascunho da ata, marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova a ata, e só então ela é publicada aos residentes, incluindo os que faltaram. Se o serviço de IA estiver indisponível, o áudio mantém-se guardado e a transcrição é repetida mais tarde, e o administrador é avisado e pode escrever a ata manualmente;
+- **Ata da assembleia assistida por IA (Workflow 5, US-10, NFR-01):** o administrador grava ou carrega o áudio, guardado no telemóvel e, sem internet, em fila local. Com o serviço de IA disponível, este gera a transcrição e um rascunho de ata marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova; só então a ata é publicada aos residentes, incluindo quem faltou. Com o serviço indisponível, o áudio mantém-se guardado, a transcrição é repetida mais tarde e o administrador é avisado e pode escrever a ata manualmente.
 
 ![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
-- **Quadro de avisos (Workflow 6, US-06, US-07, US-14)**: O administrador publica um aviso, geral ou ligado a um reporte existente, sem expor o reporter. Os residentes consultam o quadro de avisos a partir do ecrã principal, com os mais recentes primeiro, e podem consultar os avisos antigos no histórico;
+- **Quadro de avisos (Workflow 6, US-06, US-07, US-14):** o administrador publica um aviso, geral ou ligado a um reporte, sem expor o reporter. Os residentes consultam o quadro a partir do ecrã principal, com os mais recentes primeiro, e os antigos no histórico.
 
 ![Quadro de avisos](images/workflow-6.drawio.png)
 
 ### 5.4. Critérios de Sucesso
 
-> Este projeto é de âmbito académico e o produto não será lançado em ambiente real nem testado com utilizadores externos. Os critérios abaixo são verificados pela própria equipa de desenvolvimento, através de testes automatizados (unitários, de integração e end-to-end), de cenários de demonstração com dados sintéticos, de testes de carga e acessibilidade em ambiente controlado e de uma avaliação de usabilidade. Estes critérios demonstram que o produto cumpre o que foi desenhado, mas não provam que os utilizadores reais beneficiam dele. Qualquer medição de tempo feita pela equipa reflete utilizadores experientes e conhecedores da aplicação, pelo que é apenas indicativa. 
+> Projeto académico: o produto não será lançado nem testado com utilizadores externos. Os critérios são verificados pela equipa com testes automatizados (unitários, integração, end-to-end), cenários de demonstração com dados sintéticos, testes de carga e acessibilidade, e avaliação de usabilidade. Mostram que o produto cumpre o que foi desenhado, não que utilizadores reais beneficiam dele. Tempos medidos pela equipa refletem utilizadores experientes e são apenas indicativos.
 
-- **Velocidade e eficiência**: O residente tem de conseguir reportar qualquer problema em menos de 1 minuto, mesmo com uma ligação à internet fraca. Este critério será verificado por um teste end-to-end automatizado que executa a jornada de reporte com a rede limitada por simulação de ligação lenta, confirmando que a jornada se conclui dentro de um orçamento de tempo definido e com um número reduzido de passos (a fixar no protótipo, com a hipótese de, no máximo, 5 interações). Os tempos serão também cronometrados pela equipa, sendo apenas indicativos;
+| Critério | Meta | Verificação |
+|---|---|---|
+| **Velocidade e eficiência** | Reportar qualquer problema em menos de 1 minuto, mesmo com internet fraca; hipótese de no máximo 5 interações (a fixar no protótipo) | Teste end-to-end com rede lenta simulada e orçamento de tempo definido; cronometragem pela equipa, indicativa |
+| **Valor com utilização mínima** | Valor imediato só com o administrador e alguns residentes | Cenário com prédio fictício (dados sintéticos): jornadas de reporte e triagem concluem-se sem mais utilizadores; criar o prédio e convidar residentes em poucos passos. Adoção real por % de frações fica como hipótese |
+| **Privacidade nativa e retenção** | RGPD; reportes visíveis a todos mas nome do autor só ao administrador (ou a todos, por escolha); só o nome é recolhido | Testes automatizados de autorização; período de retenção (incluindo áudios) com teste automatizado; só dados sintéticos |
+| **Redução do ruído comunicacional** | Nenhum duplicado em aberto; fim da incerteza sobre o que já foi tratado | Testes de integração: duplicado fica ligado ao original, autor passa a co-reporter, ambos notificados; cenário com guião a procurar uma avaria numa conversa de WhatsApp simulada com ruído vs na lista de reportes (nº de passos, ambiguidade) |
+| **Transparência do estado** | Cada reporte tem sempre estado atualizado e visível a todos | Testes de integração: 100% das mudanças de estado geram entrada no histórico e notificação ao residente e seguidores; tempo de entrega medido, alvo a definir no Technical Design |
+| **Capacidade de resposta do administrador** | Menos esforço de triagem | Cenário com guião: um membro no papel de administrador tria o mesmo conjunto de reportes no WhatsApp simulado e na app (passos, tempo, reportes esquecidos/mal classificados); indicativo |
+| **Alcance das decisões e avisos** | Convocatórias, atas e avisos chegam a quem faltou | Testes automatizados: cada publicação fica acessível a todos e gera notificação; cenário com guião a localizar uma decisão no quadro de avisos vs no WhatsApp simulado |
+| **Inclusão e acessibilidade** | Pouco digitais e pessoas com limitações de visão/audição não ficam excluídos | Ferramentas automáticas de acessibilidade + verificação manual com leitor de ecrã e teclado (WCAG 2.1 AA); um vizinho conclui o reporte por outro com a própria identidade; avaliação heurística (Nielsen) |
+| **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), Google Calendar em baixo (alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, valores a definir no Technical Design |
+| **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios de aceitação a fixar no capítulo 7); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
 
-- **Valor com utilização mínima**: A plataforma deverá gerar valor imediato mesmo que apenas o administrador e alguns residentes a utilizem, assumindo que pelo menos um residente assume o papel de administrador da aplicação no prédio. Este critério será validado por um cenário de demonstração com um edifício fictício (um administrador e alguns residentes com dados sintéticos), em que as jornadas de reporte e de triagem se concluem sem depender de mais utilizadores, e em que a criação do prédio e o convite dos primeiros residentes são concluídos em poucos passos. A adoção por uma percentagem das frações em contexto real fica como hipótese de produto;
-
-- **Privacidade nativa e retenção**: Os dados pessoais serão geridos de acordo com o RGPD. Os reportes são visíveis a todos os residentes, mas o nome do autor só ao administrador (ou a todos, se o autor escolher), e só se recolhe o nome, sem contactos pessoais. Este critério será verificado por testes automatizados de autorização que confirmam estas regras de visibilidade, pela implementação de um período de retenção dos dados (incluindo os ficheiros de áudio das assembleias) com teste automatizado da sua aplicação, e pelo uso exclusivo de dados sintéticos em todo o projeto;
-
-- **Redução do ruído comunicacional**: Pretende-se que nenhum reporte duplicado fique em aberto e que se elimine a incerteza sobre se um problema já foi tratado, por oposição à experiência atual em ferramentas como o WhatsApp. Este critério será verificado por testes de integração que confirmam que um reporte fechado como duplicado fica associado ao original, que o autor passa a co-reporter e que ambos são notificados, e por um cenário com guião em que a equipa procura saber se uma avaria já foi tratada, primeiro numa conversa de WhatsApp simulada com mensagens de ruído e depois na lista de reportes do prédio, comparando o número de passos e se a resposta é encontrada sem ambiguidade;
-
-- **Transparência do estado dos reportes**: Cada reporte deve ter sempre um estado atualizado e visível a todos os residentes, incluindo o que o reportou. Este critério será verificado por testes automatizados de integração que confirmam que 100% das alterações de estado geram uma entrada no histórico e uma notificação ao residente (e aos seguidores do reporte), com o tempo de entrega da notificação medido em ambiente de teste e com valor-alvo a definir no Technical Design;
-
-- **Capacidade de resposta do administrador**: A plataforma deve reduzir o esforço de triagem do administrador. Este critério será avaliado por um cenário com guião em que um membro da equipa, no papel de administrador, faz a triagem do mesmo conjunto de reportes simulados, primeiro numa conversa de WhatsApp simulada e depois na aplicação, comparando o número de passos, o tempo gasto e o número de reportes esquecidos ou mal classificados. O resultado é indicativo, porque quem executa a tarefa conhece a aplicação;
-
-- **Alcance das decisões e avisos**: As convocatórias, atas e avisos devem chegar também a quem faltou. Este critério será verificado por testes automatizados que confirmam que cada aviso, convocatória e ata publicados ficam acessíveis a todos os residentes do condomínio e geram a notificação correspondente, e por um cenário com guião em que a equipa localiza a decisão de uma assembleia simulada no quadro de avisos, comparando o número de passos com a procura da mesma informação numa conversa de WhatsApp simulada;
-
-- **Inclusão e acessibilidade**: Os residentes menos digitais ou com limitações de visão ou audição não devem ficar excluídos. Este critério será verificado por uma revisão com ferramentas automáticas de acessibilidade e por uma verificação manual das jornadas principais com leitor de ecrã e navegação por teclado, tendo como referência os critérios WCAG 2.1 de nível AA, e pela confirmação de que um vizinho consegue concluir a jornada de reporte, com a sua própria identidade, para ajudar outro residente (reporte assistido, sem funcionalidade dedicada). A equipa fará ainda uma avaliação heurística de usabilidade das jornadas principais, com base nas heurísticas de Nielsen;
-
-- **Fiabilidade e degradação controlada**: O produto deve continuar a ser útil quando algo falha. Este critério será verificado por testes de resiliência com falhas injetadas, que demonstram que, com o serviço de IA indisponível, o áudio é preservado e a ata pode ser escrita manualmente, que, com o Google Calendar indisponível, a aplicação recorre ao calendário alternativo e, se nenhum estiver disponível, entra em modo degradado com aviso visível, e que, sem internet, as reuniões e os áudios ficam em fila local e sincronizam quando a ligação regressa. Mede-se ainda a disponibilidade e a latência (percentil 95) da submissão de reportes num ambiente de teste containerizado sujeito a carga simulada, com valores concretos a definir no Technical Design.
-
-- **Qualidade da ata assistida por IA**: O rascunho de ata gerado a partir do áudio deve ser útil e fiável, e nunca deve ser publicado sem aprovação humana. Este critério será avaliado num conjunto de assembleias simuladas, gravadas pela equipa a partir de guiões com decisões conhecidas, com origem e limitações documentadas, comparando o rascunho com uma ata de referência escrita pela equipa. Serão medidas a percentagem de decisões do guião corretamente captadas, o número de informações inventadas por ata, a taxa de erro de palavras da transcrição e o tempo de processamento, com critérios de aceitação a fixar na avaliação de oportunidade de IA. A alternativa sem IA, a ata escrita manualmente, serve de baseline, e um teste automatizado confirma que a publicação fica bloqueada enquanto o rascunho estiver "pendente de revisão".
 ---
 
 ## 6. Product Backlog
 
-O Product Backlog completo, com prioridade MoSCoW, pontos de história, critérios de aceitação e estado de validação (Draft/In Review/Approved), está em [docs/backlog.md](../backlog.md). As histórias "Must have" são exatamente as que materializam a [proposta de valor](#2-análise-de-mercado-e-concorrência) definida no capítulo 2: transformar o reporte de avarias disperso em reportes com estado, dono e histórico, com privacidade por desenho.
+O Product Backlog completo (MoSCoW, pontos, critérios de aceitação, estado Draft/In Review/Approved) está em [docs/backlog.md](../backlog.md). As histórias "Must have" materializam a [proposta de valor](#2-análise-de-mercado-e-concorrência): reportes com estado, dono e histórico, com privacidade por desenho.
 
 ### 6.1 Objetivos dos sprints
 
-> O detalhe de que user stories entram em cada sprint já está no [plano de release](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint); esta secção regista apenas o objetivo de cada sprint.
+> As user stories de cada sprint estão no [plano de release](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint).
 
-- **Sprint A (Descoberta, Validação e Design):** validar que o problema é relevante e que o MVP proposto é o mais pequeno experimento credível; entregar o Walking Skeleton (versão mínima, ponta a ponta).
-- **Sprint B (Construir e operar a fatia vertical):** entregar de forma operacional a jornada principal do utilizador, reportar e acompanhar uma avaria, incluindo autenticação (pode ser mock no MVP), armazenamento persistente, pelo menos um workflow assíncrono, a primeira versão da capacidade assistida por IA com fallback não-IA, uma primeira integração com um sistema externo e a demonstração de pelo menos uma condição de falha, conforme exigido para este sprint no enunciado. Este conjunto é o **Sprint B Backlog**, detalhado e confirmado contra a Definition of Ready em [docs/sprintB/backlog.md](../sprintB/backlog.md).
-- **Sprint C (Avaliar, consolidar e apresentar):** robustecer e avaliar o que já existe, e consolidar a avaliação formal da capacidade de IA e do cenário de degradação, preparando a apresentação final.
+- **Sprint A (Descoberta, Validação e Design):** validar que o problema é relevante e que o MVP é o experimento mais pequeno credível; entregar o Walking Skeleton (versão mínima ponta a ponta).
+- **Sprint B (Construir e operar a fatia vertical):** jornada principal (reportar e acompanhar uma avaria) operacional, com autenticação (mock aceitável), persistência, pelo menos um workflow assíncrono, primeira versão da IA com fallback não-IA, primeira integração externa e demonstração de pelo menos uma condição de falha, como exige o enunciado. Detalhe no [Sprint B Backlog](../sprintB/backlog.md), confirmado contra a Definition of Ready.
+- **Sprint C (Avaliar, consolidar e apresentar):** robustecer e avaliar o que existe, consolidar a avaliação formal da IA e do cenário de degradação, preparar a apresentação final.
 
 ### 6.2 Plano de release inicial
 
-O plano de release multi-sprint (Sprint A/B/C -> entregável -> user stories) está documentado em [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint).
+Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint).
 
 ---
 
 ## 7. Responsible AI Opportunity Assessment
 
 ### 7.1 Fluxo assistido por IA
-
-Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio de uma assembleia, o serviço de IA gera a transcrição e um rascunho de ata, marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova, e só então a ata é publicada aos residentes. Serviço/modelo de transcrição e sumarização: TODO (equipa).
+Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio, o serviço de IA gera transcrição e rascunho marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova antes da publicação. Serviço/modelo: TODO (equipa).
 
 ### 7.2 Valor esperado
-
-Reduz o esforço do administrador voluntário, porque escrever a ata a partir do que foi dito na assembleia é uma tarefa morosa e aborrecida, e faz chegar as decisões a quem faltou (problema descrito no capítulo 1).
+Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as decisões a quem faltou (capítulo 1).
 
 ### 7.3 Riscos e mitigações
 
 | Risco | Mitigação |
 |---|---|
-| Transcrição ou ata com erros ou informação inventada | Rascunho identificado como gerado por IA, edição possível e obrigação de aprovação humana antes de publicar |
-| Prompt injection (instruções ditas em voz alta ou presentes no áudio) | O texto transcrito é tratado apenas como dados; o serviço de IA não tem acesso a ações nem a dados do condomínio |
-| Divulgação indevida de informação (o áudio contém a voz e nomes de várias pessoas) | Aviso aos presentes antes de gravar, retenção limitada do áudio, acesso só ao administrador |
-| Conteúdo impróprio ou difamatório numa ata | Revisão e aprovação do administrador antes da publicação |
-| Viés (sotaques, nomes próprios, idosos a falar baixo) | Casos difíceis incluídos no conjunto de avaliação e medidos separadamente |
+| Transcrição ou ata com erros ou informação inventada | Rascunho marcado como IA, editável, aprovação humana obrigatória antes de publicar |
+| Prompt injection (instruções ditas em voz alta no áudio) | O texto transcrito é só dados; a IA não tem acesso a ações nem a dados do condomínio |
+| Divulgação indevida (vozes e nomes de várias pessoas) | Aviso aos presentes antes de gravar; retenção limitada do áudio; acesso só do administrador |
+| Conteúdo impróprio ou difamatório na ata | Revisão e aprovação do administrador antes da publicação |
+| Viés (sotaques, nomes próprios, idosos a falar baixo) | Casos difíceis no conjunto de avaliação, medidos separadamente |
 
 ### 7.4 Abordagem de avaliação
 
 | Aspeto | Definição |
 |---|---|
-| Finalidade | Produzir um rascunho de ata útil para o administrador rever, nunca um documento final |
-| Entradas representativas | Assembleias simuladas, gravadas pela equipa a partir de guiões com decisões conhecidas (origem e limitações documentadas, sem dados reais) |
-| Casos difíceis | Ruído, vozes sobrepostas, sotaques, nomes próprios e valores monetários, decisões revogadas, tentativa de prompt injection no áudio |
-| Saídas esperadas | Ata de referência escrita pela equipa para cada guião |
-| Medidas de qualidade | % de decisões do guião captadas, nº de informações inventadas por ata, taxa de erro de palavras da transcrição |
+| Finalidade | Rascunho útil para o administrador rever, nunca documento final |
+| Entradas | Assembleias simuladas, gravadas pela equipa a partir de guiões com decisões conhecidas (sem dados reais) |
+| Casos difíceis | Ruído, vozes sobrepostas, sotaques, nomes próprios e valores monetários, decisões revogadas, prompt injection no áudio |
+| Saídas esperadas | Ata de referência escrita pela equipa por guião |
+| Medidas | % de decisões captadas, nº de informações inventadas por ata, taxa de erro de palavras |
 | Critérios de aceitação | TODO |
-| Latência | TODO: tempo máximo aceitável entre carregar o áudio e ter o rascunho |
+| Latência | TODO: tempo máximo entre carregar o áudio e ter o rascunho |
 | Custo | TODO: custo por hora de áudio do serviço escolhido |
-| Limitações conhecidas | Conjunto sintético e pequeno, falantes da equipa, sem validação com assembleias reais |
+| Limitações | Conjunto sintético e pequeno, falantes da equipa, sem assembleias reais |
 
 ### 7.5 Baseline e fallback
-
-- **Baseline não-IA:** ata escrita manualmente pelo administrador; serve de comparação (tempo e qualidade).
-- **Fallback:** com o serviço de IA indisponível, o áudio fica guardado, a transcrição é repetida mais tarde, o administrador é avisado (modo degradado, NFR-01) e pode publicar uma ata manual. A interface nunca apresenta conteúdo gerado por IA como facto verificado (US-10).
+- **Baseline não-IA:** ata escrita manualmente (comparação de tempo e qualidade).
+- **Fallback:** com a IA indisponível, o áudio fica guardado, a transcrição é repetida, o administrador é avisado (modo degradado, NFR-01) e pode publicar ata manual. A interface nunca apresenta conteúdo de IA como facto verificado (US-10).
 
 ---
 
@@ -382,10 +347,10 @@ Reduz o esforço do administrador voluntário, porque escrever a ata a partir do
 
 | Dado | Sensibilidade | Quem vê | Observações |
 |---|---|---|---|
-| Nome do residente (autodeclarado) | Dado pessoal | Administrador e o próprio; outros residentes só por escolha do autor, num reporte | Único dado pessoal do residente; não aparece em avisos, logs nem notificações a outros |
-| Fração | Pessoal (indireto, associada ao nome) | Administrador e o próprio | Nunca mostrada aos outros residentes |
-| Reportes (texto e fotos) | Podem conter dados pessoais de terceiros | Todos os residentes e o administrador | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
-| Áudio e transcrição de assembleias | Dado pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver 7.3 |
+| Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado pessoal; não aparece em avisos, logs nem notificações a outros |
+| Fração | Pessoal (indireto) | Administrador e o próprio | Nunca mostrada aos outros residentes |
+| Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
+| Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver 7.3 |
 | Credencial do dispositivo | Segredo | Dispositivo (servidor guarda só o hash) | |
 
 ### 10.2 Controlo de acessos
@@ -393,40 +358,37 @@ Reduz o esforço do administrador voluntário, porque escrever a ata a partir do
 | Recurso | Residente | Administrador |
 |---|---|---|
 | Criar reporte | Sim (autor = identidade do dispositivo) | - |
-| Ver reporte | Todos os reportes do prédio, sem fração do autor e com o nome só se o autor optou por o mostrar (o próprio vê o seu nome) | Todos, com nome do autor e fração |
+| Ver reporte | Todos os do prédio, sem fração e com nome só se o autor optou (o próprio vê o seu) | Todos, com nome e fração |
 | Mudar estado, remover identidade, revogar QR code | Não | Sim |
-| Seguir um reporte | Sim (identidade não visível aos outros residentes) | Vê apenas o número de seguidores |
+| Seguir um reporte | Sim (invisível aos outros residentes) | Vê só o nº de seguidores |
 | Ver avisos e atas aprovadas | Sim | Sim |
 
-A autorização é verificada no servidor, com testes automáticos que confirmam que as respostas aos residentes nunca incluem a fração do autor nem o nome (salvo `mostrar_nome`). A autenticação do administrador pode ser mock no MVP, sem desativar controlos de segurança.
+Autorização verificada no servidor, com testes automáticos que confirmam que as respostas aos residentes nunca incluem fração nem nome do autor (salvo `mostrar_nome`). A autenticação do administrador pode ser mock no MVP, sem desativar controlos.
 
 ### 10.3 Minimização e finalidade (RGPD)
-
-- Só se recolhe o **nome** (e a fração, que vem do QR code), para identificar o autor de um reporte perante o administrador; a finalidade é indicada no ecrã (US-15). O nome só é mostrado aos outros residentes por escolha do autor, reporte a reporte.
-- Não se recolhe telefone, e-mail nem localização. Os testes e a demonstração usam dados sintéticos.
-- O residente pode corrigir o nome e pedir o apagamento ao administrador (remoção da identidade).
+- Só se recolhe o **nome** (e a fração, vinda do QR code) para identificar o autor perante o administrador; finalidade indicada no ecrã (US-15). O nome só é mostrado aos outros por escolha do autor, reporte a reporte.
+- Sem telefone, e-mail nem localização. Testes e demonstração com dados sintéticos.
+- O residente pode corrigir o nome e pedir apagamento ao administrador (remoção da identidade).
 - Base de licitude proposta: interesse legítimo do condomínio. TODO (equipa): validar com os docentes.
 
 ### 10.4 Retenção
-
-- **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador remove a identidade (por exemplo, o residente deixa a fração).
-- **Reportes de identidades removidas:** mantêm-se sem nome ("Residente removido" + fração). Retenção proposta: áudio apagado após a aprovação da ata; prazo dos reportes e do histórico: TODO (equipa).
+- **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador a remove.
+- **Reportes de identidades removidas:** mantêm-se como "Residente removido" + fração. Áudio apagado após aprovação da ata. Prazo dos reportes e histórico: TODO (equipa).
 
 ### 10.5 QR code, revogação e abuso
-
-- O QR code contém um token aleatório (só o hash fica guardado). Ao revogar/regenerar, o antigo deixa de permitir novos acessos e as identidades existentes mantêm-se; o administrador remove as que não reconheça.
-- Criar identidades tem limite de tentativas e um máximo por fração (proposta: 10). TODO (equipa): confirmar.
+- O QR code contém um token aleatório (só o hash fica guardado). Revogar/regenerar bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
+- Criar identidades tem limite de tentativas e máximo por fração (proposta: 10). TODO (equipa): confirmar.
 
 ### 10.6 Modelo de ameaças inicial
 
 | Ameaça | Mitigação |
 |---|---|
-| QR code divulgado a terceiros | Revogação/regeneração, revisão de identidades pelo administrador |
-| Adivinhar tokens de QR code | Token aleatório longo, limitação de tentativas |
-| Personificação de um residente (mesmo nome) | Risco aceite como baixo: a fração fica sempre registada e o administrador esclarece junto dela; nome único por fração; remoção da identidade |
+| QR code divulgado a terceiros | Revogação/regeneração; revisão de identidades pelo administrador |
+| Adivinhar tokens | Token aleatório longo; limite de tentativas |
+| Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
-| Dados pessoais de terceiros em texto ou fotos de reportes visíveis a todos | Aviso no formulário, remoção de metadados das fotos; TODO (equipa): ocultar reporte pelo administrador |
-| Roubo da credencial do dispositivo | Credencial opaca, só o hash no servidor, comunicação cifrada, revogação ao remover a identidade |
+| Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; TODO (equipa): ocultar reporte pelo administrador |
+| Roubo da credencial do dispositivo | Credencial opaca, só hash no servidor, comunicação cifrada, revogação ao remover identidade |
 | Fila offline expõe dados no dispositivo | Dados mínimos na fila; envio recusado se a identidade foi removida |
 | Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; testes automáticos |
 | Prompt injection e dados pessoais no áudio | Ver 7.3 |
