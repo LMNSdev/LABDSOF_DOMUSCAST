@@ -89,7 +89,7 @@ Os problemas do edifício (fuga de água, luz fundida, elevador avariado) coorde
 - A maioria dos residentes tem smartphone e internet suficiente.
 - Existe sempre um administrador (exigência legal em Portugal), que cria o condomínio e gera os QR codes das frações.
 - Os residentes aceitam indicar o nome (por omissão visível só ao administrador), para que este os possa contactar.
-- O QR code é partilhado pela fração e só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado (ADR-001).
+- O QR code é partilhado pela fração e só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)).
 - Um único prédio é "comunidade" suficiente para gerar valor.
 
 **Riscos e mitigações** (cada risco liga a um pressuposto ou problema acima):
@@ -102,7 +102,7 @@ Os problemas do edifício (fuga de água, luz fundida, elevador avariado) coorde
 | Administrador sente perda de controlo | Posicionar como redução de esforço, não canal extra a vigiar |
 | Dados pessoais mal geridos ou guardados sem necessidade | Guardar só fração e nome; retenção limitada (RGPD) |
 | QR code divulgado a terceiros | Token aleatório; o administrador revoga/regenera o QR code e remove identidades (US-01, US-09) |
-| Nome duplicado ou a fazer-se passar por outro | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada (ADR-001) |
+| Nome duplicado ou a fazer-se passar por outro | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) |
 | Residentes recusam indicar o nome | Finalidade explicada no ecrã; só o nome é pedido |
 | Reportes visíveis a todos expõem dados de terceiros | Aviso no formulário; autor oculto por omissão |
 
@@ -193,7 +193,7 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 ## 4. Rascunho de Requisitos
 
-Primeira lista de funcionalidades (por epic) e requisitos não funcionais, resultante dos capítulos 2 e 3. Faz a ponte para a visão de produto (capítulo 5) e será refinada em user stories no Product Backlog (capítulo 6) após validação com os docentes.
+Primeira lista de funcionalidades (por epic) e requisitos não funcionais, resultante dos capítulos [2](#2-análise-de-mercado-e-concorrência) e [3](#3-investigação-de-utilizadores). Faz a ponte para a visão de produto ([capítulo 5](#5-product-vision)) e será refinada em user stories no Product Backlog ([capítulo 6](#6-product-backlog)) após validação com os docentes.
 
 A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão** e **estado** (Draft, In Review, Approved) por requisito.
 
@@ -238,7 +238,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 <!-- TODO (equipa): reexportar o SVG a partir de workflows.drawio (páginas 1 e 2 foram alteradas para incluir o nome do residente) -->
 ![Onboarding do condominio](images/workflow-1.drawio.png)
 
-- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto - pendente de triagem", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (push com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
+- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (push com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
 
 ![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
@@ -246,11 +246,11 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Acompanhar e resolver reportes](images/workflow-3.drawio.png)
 
-- **Agendar assembleias e lembretes (Workflow 4, US-13, NFR-01):** o administrador agenda a assembleia (data, hora, local), guardada localmente no telemóvel. Sem internet, fica em fila e sincroniza quando a ligação voltar. Com internet, sincroniza com o Google Calendar ou, se indisponível, com um calendário alternativo (iCal/Outlook ou simulador). Sem nenhum, a app entra em modo degradado: usa os dados locais, mostra um aviso, regista o erro e tenta mais tarde. É agendado um lembrete antes da reunião (ex.: 24 horas) e os residentes veem a reunião no calendário.
+- **Agendar assembleias e lembretes (Workflow 4, US-13, US-18):** o administrador agenda a assembleia (data, hora, local), guardada localmente no telemóvel. Sem internet, fica em fila e sincroniza quando a ligação voltar. Com internet, o backend publica a reunião no serviço de calendário externo (simulador) e no feed iCal do condomínio, que os residentes subscrevem na app de calendário que já usam. Se o serviço externo falhar, a reunião continua disponível pelo iCal; sem nenhum, a app entra em modo degradado: usa os dados locais, mostra um aviso, regista o erro e tenta mais tarde. A app agenda no telemóvel um lembrete antes da reunião (ex.: 24 horas).
 
 ![Agendar assembleias e lembretes](images/workflow-4.drawio.png)
 
-- **Ata da assembleia assistida por IA (Workflow 5, US-10, NFR-01):** o administrador grava ou carrega o áudio, guardado no telemóvel e, sem internet, em fila local. Com o serviço de IA disponível, este gera a transcrição e um rascunho de ata marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova; só então a ata é publicada aos residentes, incluindo quem faltou. Com o serviço indisponível, o áudio mantém-se guardado, a transcrição é repetida mais tarde e o administrador é avisado e pode escrever a ata manualmente.
+- **Ata da assembleia assistida por IA (Workflow 5, US-10, US-18):** o administrador grava ou carrega o áudio, guardado no telemóvel e, sem internet, em fila local. Com o serviço de IA disponível, este gera a transcrição e um rascunho de ata marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova; só então a ata é publicada aos residentes, incluindo quem faltou. Com o serviço indisponível, o áudio mantém-se guardado, a transcrição é repetida mais tarde e o administrador é avisado e pode escrever a ata manualmente.
 
 ![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
@@ -272,14 +272,30 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 | **Capacidade de resposta do administrador** | Menos esforço de triagem | Cenário com guião: um membro no papel de administrador tria o mesmo conjunto de reportes no WhatsApp simulado e na app (passos, tempo, reportes esquecidos/mal classificados); indicativo |
 | **Alcance das decisões e avisos** | Convocatórias, atas e avisos chegam a quem faltou | Testes automatizados: cada publicação fica acessível a todos e gera notificação; cenário com guião a localizar uma decisão no quadro de avisos vs no WhatsApp simulado |
 | **Inclusão e acessibilidade** | Pouco digitais e pessoas com limitações de visão/audição não ficam excluídos | Ferramentas automáticas de acessibilidade + verificação manual com leitor de ecrã e teclado (WCAG 2.1 AA); um vizinho conclui o reporte por outro com a própria identidade; avaliação heurística (Nielsen) |
-| **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), Google Calendar em baixo (alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, valores a definir no Technical Design |
-| **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios de aceitação a fixar no capítulo 7); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
+| **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), serviço de calendário em baixo (iCal como alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, valores a definir no Technical Design |
+| **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios de aceitação a fixar em [7.4](#74-abordagem-de-avaliação)); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
+
+---
+
+### 5.5. Mecanismo de participação ética
+
+O enunciado (5.5) pede pelo menos um mecanismo que incentive a participação construtiva, e que se responda a cinco perguntas sobre ele. O nosso é o **indicador de progresso do prédio** (US-16, RF-12): a app mostra quantos reportes foram resolvidos e quantos estão abertos no período atual.
+
+| Pergunta | Resposta |
+|---|---|
+| Que comportamento incentiva? | Reportar avarias em vez de as deixar passar, e confiar que o reporte leva a resolução. |
+| Porque beneficia o residente e a comunidade? | Avarias reportadas cedo custam menos (ver [capítulo 1](#1-relatório-de-problema-e-oportunidade)); ver resolvidos a subir mostra que reportar compensa e que a resolução é um esforço coletivo. |
+| Como se evita manipulação? | Só valores agregados, sem nomes, frações, pontos, rankings nem comparações entre residentes; fechar reportes sem os resolver não compensa ao administrador, porque o histórico (US-05) fica visível e a comissão pode auditá-lo (US-12). |
+| Pode excluir, expor ou desencorajar alguém? | Não expõe ninguém, porque nada é individual. Pode desencorajar se os abertos crescerem sem resolução; por isso o indicador é por período e não acumulado. |
+| Como se controla ou desliga? | O residente oculta o indicador nas definições; os valores são acessíveis a leitores de ecrã. |
+
+Pontos, badges e leaderboards ficam de fora de propósito: num prédio de 8 a 60 frações, comparações entre vizinhos geram mais conflito do que participação.
 
 ---
 
 ## 6. Product Backlog
 
-O Product Backlog completo (MoSCoW, pontos, critérios de aceitação, estado Draft/In Review/Approved) está em [docs/backlog.md](../backlog.md). As histórias "Must have" materializam a [proposta de valor](#2-análise-de-mercado-e-concorrência): reportes com estado, dono e histórico, com privacidade por desenho.
+O Product Backlog completo (MoSCoW, pontos, critérios de aceitação, estado Draft/In Review/Approved) está em [docs/backlog.md](../backlog.md). As histórias "Must have" materializam a [proposta de valor](#23-proposta-de-valor): reportes com estado, dono e histórico, com privacidade por desenho.
 
 ### 6.1 Objetivos dos sprints
 
@@ -301,7 +317,7 @@ Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-spri
 Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio, o serviço de IA gera transcrição e rascunho marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova antes da publicação. Serviço/modelo: TODO (equipa).
 
 ### 7.2 Valor esperado
-Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as decisões a quem faltou (capítulo 1).
+Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as decisões a quem faltou ([capítulo 1](#1-relatório-de-problema-e-oportunidade)).
 
 ### 7.3 Riscos e mitigações
 
@@ -329,11 +345,180 @@ Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as d
 
 ### 7.5 Baseline e fallback
 - **Baseline não-IA:** ata escrita manualmente (comparação de tempo e qualidade).
-- **Fallback:** com a IA indisponível, o áudio fica guardado, a transcrição é repetida, o administrador é avisado (modo degradado, NFR-01) e pode publicar ata manual. A interface nunca apresenta conteúdo de IA como facto verificado (US-10).
+- **Fallback:** com a IA indisponível, o áudio fica guardado, a transcrição é repetida, o administrador é avisado (modo degradado, US-18) e pode publicar ata manual. A interface nunca apresenta conteúdo de IA como facto verificado (US-10).
 
 ---
 
 ## 8. Technical Design
+
+Este capítulo conta como o produto funciona por dentro (diagramas em [technical-design.drawio](technical-design.drawio), uma página por vista), seguindo o caminho de um reporte e de uma ata desde o telemóvel até à base de dados e de volta. O objetivo é implementar uma app móvel com dois componentes backend independentes, uma única tecnologia de base de dados, um workflow assíncrono, uma integração externa, observabilidade e modo degradado. O desenho cobre o **sistema completo**, isto é, todas as user stories do [Product Backlog](../backlog.md). Cada escolha tecnológica tem a sua justificação numa ADR no [capítulo 9](#9-architecture-decision-records).
+
+### 8.1 Contexto do sistema
+
+Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com dois sistemas fora dele: o serviço de IA que transcreve as assembleias e um serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+
+![Contexto do sistema](images/td-01-contexto.png)
+
+<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-01-contexto.png -->
+
+| Ator / sistema externo | Interação |
+|---|---|
+| Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
+| Serviço de transcrição / IA | Recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Fornecedor ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
+| Serviço de calendário (simulador) | Contentor nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
+
+### 8.2 Vista de contentores
+
+Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como contentores separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
+
+![Vista de contentores](images/td-02-contentores.png)
+
+<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-02-contentores.png -->
+
+| Contentor | Responsabilidade | Dono dos dados |
+|---|---|---|
+| **App móvel** (Flutter, demonstrada em Android) | Jornadas dos [Workflows 1 a 6](#53-user-journey); guarda a credencial do dispositivo; fila local SQLite para reportes, reuniões e áudios criados sem internet (US-18), enviados por ordem quando a ligação volta; sincronização em segundo plano que gera notificações locais (US-11) e agenda lembretes de reuniões (US-13) | Identidade local, fila local, preferências (ex.: ocultar indicador) |
+| **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), escrita de jobs na tabela `job` | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião, ata (texto aprovado) |
+| **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata, publicação de reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
+| **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
+| **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
+| **Simulador de calendário** (contentor, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
+
+Três consequências desta separação, que o enunciado pede para justificar:
+
+- **Comunicação.** App para API é síncrona (REST/JSON). API para Worker é assíncrona, pela tabela `job` ([8.5](#85-workflow-assíncrono)); o Worker não expõe endpoints além de `/health` e `/metrics`.
+- **Acoplamento.** Os dois componentes partilham o esquema da base de dados e o código de domínio, por isso não evoluem o esquema de forma independente. Aceitamos isso por sermos 5 pessoas com um produto pequeno.
+- **Falhas.** Se o Worker cair, a API continua a aceitar reportes e a enfileirar jobs, que são processados quando ele voltar. Se a API cair, a app usa a fila local. Se a base de dados cair, a API responde 503 e a app mantém os dados na fila local.
+
+### 8.3 Modelo de dados
+
+Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador**, com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
+
+![Modelo de dados](images/td-03-dados.png)
+
+<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-03-dados.png -->
+
+| Entidade | Campos principais | Notas |
+|---|---|---|
+| `condominio` | id, nome, n_fracoes, criado_em | |
+| `administrador` | id, condominio_id, nome, credencial_hash | Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `fracao` | id, condominio_id, designacao | |
+| `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado; revogar cria um novo token e marca o antigo (US-01) |
+| `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12); remover apaga `nome` e preenche `removida_em` (US-09) |
+| `reporte` | id, condominio_id, autor_id, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-04) |
+| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05) |
+| `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-04, US-17) |
+| `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
+| `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo`, `degradado` (US-13) |
+| `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, estado, aprovada_em | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10) |
+| `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
+
+Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é criado na mesma transação que a alteração de domínio, por isso não há job sem registo nem registo sem job. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e o prazo dos reportes ainda está por decidir. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
+
+### 8.4 API (esboço)
+
+A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a do administrador na criação do condomínio (mock no MVP). Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
+
+Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o condomínio, entrar com o QR code, reportar, acompanhar, triar, avisar, reunir e aprovar a ata.
+
+| Método e rota | Quem | User Story |
+|---|---|---|
+| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial de administrador |
+| `GET /condominios/{id}/fracoes` | admin | US-01: frações, QR codes e identidades por fração |
+| `POST /fracoes/{id}/qr/regenerar` | admin | US-01: revoga e gera novo token |
+| `DELETE /identidades/{id}` | admin | US-09: remove identidade |
+| `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve credencial do dispositivo; limite de tentativas por IP e máximo de identidades por fração ([10.5](#105-qr-code-revogação-e-abuso)) |
+| `PATCH /identidades/me` | residente | US-15: editar nome |
+| `PUT /identidades/{id}/papel` | admin | US-12: `{papel: residente\|comissao}` |
+| `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; aceita `Idempotency-Key` da fila local |
+| `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03, US-04: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`); `atualizado_desde` serve a sincronização em segundo plano (US-11) |
+| `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
+| `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`; cria entrada no histórico; se `resolvido`, arquiva o aviso ligado (US-14) |
+| `POST /reportes/{id}/duplicado` | admin | US-04: `{original_id}`; fecha e adiciona co-reporter |
+| `POST /reportes/{id}/seguir`, `DELETE .../seguir` | residente | US-17 |
+| `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
+| `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
+| `POST /avisos`, `GET /avisos?arquivados=` | admin / todos | US-06, US-07, US-14 |
+| `POST /reunioes`, `GET /reunioes` | admin / todos | US-13: criar enfileira o job `publicar_calendario` |
+| `GET /condominios/{id}/calendario.ics` | todos (token do condomínio no URL) | US-13: feed iCal com as reuniões, subscrito pela app de calendário do residente |
+| `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
+| `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10: ler, editar, aprovar e publicar |
+| `GET /health`, `GET /metrics` | operação | [8.7](#87-observabilidade) |
+
+Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem, request_id}`: 401 sem credencial, 403 sem permissão, 404 para recursos de outro condomínio (sem revelar que existem), 409 para nome duplicado na fração, 503 com `Retry-After` quando a base de dados está em baixo.
+
+### 8.5 Workflow assíncrono
+
+Voltemos ao Rui. A assembleia acabou, ele carrega o áudio e segue com a sua vida; não faz sentido ficar com a app aberta à espera de uma transcrição que pode demorar minutos. É por isso que a transcrição é assíncrona (US-10, [Workflow 5](#53-user-journey)). O mesmo mecanismo serve a sincronização de calendário (US-13) e o envio de notificações (US-11).
+
+![Workflow assíncrono: transcrição da ata](images/td-04-workflow-assincrono.png)
+
+<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-04-workflow-assincrono.png -->
+
+O enunciado pede que o workflow lide com retries, duplicados, falhas e consistência eventual. Eis como:
+
+| Preocupação | Tratamento |
+|---|---|
+| Retries | Backoff exponencial (1, 2, 4, 8, 16 min), máximo 5 tentativas; depois `estado = falhou` e a ata fica `falhou_transcricao`, com aviso ao administrador, que pode reenviar o áudio ou escrever a ata à mão (US-18) |
+| Eventos duplicados | `chave_idempotencia` única por tipo de job (ex.: `transcrever:ata_id`): um segundo upload para a mesma ata não cria segundo job; `SKIP LOCKED` evita que dois Workers peguem no mesmo job |
+| Falhas | Worker em crash a meio: o lock da transação é libertado e o job volta a ficar pendente; jobs há mais de N minutos em `a_processar` são recuperados |
+| Consistência eventual | A app mostra sempre o estado real da ata (`a_transcrever`, `pendente_revisao`, `falhou_transcricao`) e nunca mostra um rascunho como ata final |
+| Observabilidade | Cada job regista o `request_id` de origem, tentativas, duração e erro; métricas `jobs_pendentes`, `jobs_falhados_total`, `job_duracao_segundos` por tipo |
+
+O mesmo mecanismo e as mesmas regras servem o job `publicar_calendario` (US-13): criado na transação de `POST /reunioes`, com chave `publicar_calendario:{reuniao_id}`, consumido pelo Worker que chama o serviço de calendário ([8.6](#86-integração-externa)).
+
+As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum fornecedor externo. A app corre uma tarefa periódica em segundo plano (plugin `workmanager`, de 15 em 15 minutos no Android, o mínimo que o sistema permite) que chama `GET /reportes?filtro=a_seguir&atualizado_desde=<última sincronização>` e, para cada reporte cujo estado mudou, gera uma notificação local com o número do reporte e o novo estado (`flutter_local_notifications`). O lembrete de reunião (US-13) usa o mesmo plugin: quando uma reunião chega à app, agenda-se uma notificação local para 24 horas antes. O custo é o atraso de até 15 minutos; o ganho é não haver projeto Firebase, token de dispositivo, segredo no servidor nem dados pessoais a passar por terceiros ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+
+### 8.6 Integração externa
+
+O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **serviço de calendário** (US-13) e o **serviço de IA** (US-10). O enunciado exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo"; a de calendário é a que descrevemos em detalhe ([Workflow 4](#53-user-journey), [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
+
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um contentor nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
+2. `IcsProvider`: a reunião entra no feed iCal do condomínio (`GET /condominios/{id}/calendario.ics`), que os residentes subscrevem uma vez no Google Calendar, Apple Calendar ou Outlook. Não depende de rede do lado do servidor, por isso serve de alternativa quando o serviço externo falha;
+3. nenhum: a reunião mantém-se na app com os dados locais e `estado_sync = degradado`.
+
+As regras são as mesmas para todas as chamadas externas (calendário e IA): timeout de 10 s; validação da resposta (datas válidas, campos obrigatórios; resposta inválida conta como falha); até 3 tentativas antes de passar ao nível seguinte; registo de cada falha em log com timestamp e componente (US-18); e um aviso visível na app quando o estado final é `alternativo` ou `degradado`. Chaves de API só por variável de ambiente.
+
+É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: serviço de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
+
+### 8.7 Observabilidade
+
+Para a equipa perceber o que se passa em produção sem adivinhar, cada componente conta o que faz:
+
+- **Logs estruturados** em JSON (`timestamp`, `nivel`, `componente`, `request_id`, `identidade_id`, nunca o nome), em API e Worker, para stdout.
+- **Health checks:** `GET /health` em API e Worker; liga à base de dados e, no Worker, reporta a idade do job pendente mais antigo.
+- **Métricas** Prometheus em `GET /metrics`: pedidos por rota e código, latência p95, jobs por estado, falhas de integração por provider.
+- **Correlação:** o `X-Request-ID` gerado pela app ou pela API é propagado aos jobs e aos logs, por isso um reporte pode ser seguido do telemóvel até ao Worker.
+- **Erros:** exceções não tratadas registadas com stack trace e `request_id`; contador `erros_total`.
+- **Dashboard operacional:** Prometheus + Grafana em contentores, a mostrar os SLIs abaixo.
+
+Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-sucesso), que remetiam os valores concretos para aqui:
+
+| SLI | Alvo proposto (a confirmar com os docentes) |
+|---|---|
+| Disponibilidade de `POST /reportes` | 99% em janela de 7 dias |
+| Latência p95 de `POST /reportes` | < 1 s em ambiente de teste sob carga simulada |
+| Jobs de transcrição concluídos com sucesso (incluindo retries) | > 95% |
+| Tempo até a ata ficar `pendente_revisao` | TODO, depende da latência da IA ([7.4](#74-abordagem-de-avaliação)) |
+
+### 8.8 Vista de deployment
+
+Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline, vira imagem Docker e é implantado com Docker Compose no ambiente de avaliação; a app chega aos docentes como APK.
+
+![Vista de deployment](images/td-05-deployment.png)
+
+<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-05-deployment.png -->
+
+- **Contentores:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
+- **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da IA, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
+- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. Esse ambiente (VM ou máquina da equipa) ainda está por decidir: TODO (equipa).
+- **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
+- **App móvel:** APK Android gerado na pipeline e distribuído aos docentes. Android é a plataforma de demonstração; o Flutter mantém o iOS possível, mas não é testado no projeto ([ADR-002](#adr-002-app-móvel-em-flutter-demonstrada-em-android)).
+
+### 8.9 Do desenho à entrega
+
+Este desenho é o destino; a ordem de construção segue o [plano de release](#62-plano-de-release-inicial). O Sprint A entrega o [Walking Skeleton](#11-walking-skeleton), a fatia mínima que prova o desenho ponta a ponta: app Flutter com o ecrã de reporte, `POST /reportes`, PostgreSQL, `GET /reportes` de volta na app, `/health`, um teste de API e um teste de widget, `docker compose up` a arrancar `api` e `postgres`, e a pipeline com lint e testes. O Sprint B acrescenta o Worker, a IA, o calendário e o resto da jornada principal; o Sprint C acrescenta notificações locais, relatório da comissão, indicador de progresso e o dashboard operacional. Nenhum componente novo aparece depois do Sprint A: só se preenchem os que já estão neste capítulo.
 
 ---
 
