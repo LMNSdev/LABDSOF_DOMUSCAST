@@ -382,25 +382,25 @@ Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) 
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
 | Serviço de transcrição / IA | Recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Fornecedor ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
-| Serviço de calendário (simulador) | Contentor nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| Serviço de calendário (simulador) | Container nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
 | App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
-### 8.2 Vista de contentores
+### 8.2 Vista de Containers
 
-Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como contentores separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
+Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
-![Vista de contentores](images/td-02-contentores.png)
+![Vista de containers](images/td-02-contentores.png)
 
 <!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-02-contentores.png -->
 
-| Contentor | Responsabilidade | Dono dos dados |
+| Container | Responsabilidade | Dono dos dados |
 |---|---|---|
 | **App móvel** (Flutter, demonstrada em Android) | Jornadas dos [Workflows 1 a 6](#53-user-journey); guarda a credencial do dispositivo; fila local SQLite para reportes, reuniões e áudios criados sem internet (US-18), enviados por ordem quando a ligação volta; sincronização em segundo plano que gera notificações locais (US-11) e agenda lembretes de reuniões (US-13) | Identidade local, fila local, preferências (ex.: ocultar indicador) |
 | **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), escrita de jobs na tabela `job` | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião, ata (texto aprovado) |
 | **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata, publicação de reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
 | **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
-| **Simulador de calendário** (contentor, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
+| **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
 
 Três consequências desta separação, que o enunciado pede para justificar:
 
@@ -491,7 +491,7 @@ As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum forn
 
 O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **serviço de calendário** (US-13) e o **serviço de IA** (US-10). O enunciado exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo"; a de calendário é a que descrevemos em detalhe ([Workflow 4](#53-user-journey), [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
 
-1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um contentor nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um container nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
 2. `IcsProvider`: a reunião entra no feed iCal do condomínio (`GET /condominios/{id}/calendario.ics`), que os residentes subscrevem uma vez no Google Calendar, Apple Calendar ou Outlook. Não depende de rede do lado do servidor, por isso serve de alternativa quando o serviço externo falha;
 3. nenhum: a reunião mantém-se na app com os dados locais e `estado_sync = degradado`.
 
@@ -508,7 +508,7 @@ Para a equipa perceber o que se passa em produção sem adivinhar, cada componen
 - **Métricas** Prometheus em `GET /metrics`: pedidos por rota e código, latência p95, jobs por estado, falhas de integração por provider.
 - **Correlação:** o `X-Request-ID` gerado pela app ou pela API é propagado aos jobs e aos logs, por isso um reporte pode ser seguido do telemóvel até ao Worker.
 - **Erros:** exceções não tratadas registadas com stack trace e `request_id`; contador `erros_total`.
-- **Dashboard operacional:** Prometheus + Grafana em contentores, a mostrar os SLIs abaixo.
+- **Dashboard operacional:** Prometheus + Grafana em containers, a mostrar os SLIs abaixo.
 
 Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-sucesso), que remetiam os valores concretos para aqui:
 
@@ -527,7 +527,7 @@ Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline,
 
 <!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-05-deployment.png -->
 
-- **Contentores:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
+- **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
 - **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da IA, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
 - **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. Esse ambiente (VM ou máquina da equipa) ainda está por decidir: TODO (equipa).
 - **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
@@ -563,14 +563,14 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-004 Dois componentes backend (API e Worker) com base de dados partilhada
 - **Contexto:** o enunciado exige pelo menos dois componentes backend independentemente implantáveis e um workflow assíncrono.
-- **Decisão:** API (síncrona) e Worker (assíncrono) como contentores separados, com o mesmo código de domínio e a mesma base de dados.
+- **Decisão:** API (síncrona) e Worker (assíncrono) como containers separados, com o mesmo código de domínio e a mesma base de dados.
 - **Alternativas:** modular monolith (um só deploy; exigiria justificar a exceção do enunciado); serviços por domínio (reportes, atas, notificações) com bases de dados próprias (mais operação e mais rede para um produto pequeno).
 - **Consequências:** o Worker pode cair ou escalar sem afetar a API, e o trabalho lento (IA, calendário) fica fora do caminho do pedido. Em troca, o esquema é partilhado: as migrações têm de ser compatíveis com os dois componentes (aditivas) e os dois são implantados juntos.
 
 ### ADR-005 PostgreSQL como única base de dados e como fila de jobs
 - **Contexto:** o enunciado desaconselha várias tecnologias de base de dados sem justificação; o volume de jobs é baixo (uma ata por assembleia, poucas reuniões).
 - **Decisão:** PostgreSQL para todos os dados, com uma tabela `job` consumida por `SELECT ... FOR UPDATE SKIP LOCKED` a servir de fila; ficheiros (fotos, áudios) num volume Docker referenciado por caminho.
-- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um contentor e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
+- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um containers e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
 - **Consequências:** uma única transação entre a alteração de domínio e a criação do job (sem perda nem duplicação) e menos infraestrutura. O polling introduz alguns segundos de latência, aceitáveis para transcrição e calendário.
 
 ### ADR-006 Fila local no dispositivo (offline-first para escrita)
@@ -581,7 +581,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-007 Integração de calendário por simulador e feed iCal
 - **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com indisponibilidade, atraso e dados inválidos; US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
-- **Decisão:** um simulador de calendário em contentor próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
+- **Decisão:** um simulador de calendário em container próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
 - **Alternativas:** Google Calendar API como serviço principal: exige projeto Google Cloud, OAuth por administrador ou service account num calendário partilhado, e não responde a "de quem é o calendário"; só iCal, sem simulador: não demonstra a falha de um serviço externo nem retries no servidor.
 - **Consequências:** zero custo e zero contas externas; a demonstração de falha é totalmente controlável; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O simulador não é um sistema real, o que o enunciado aceita explicitamente; se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
 
