@@ -524,6 +524,62 @@ Este desenho é o destino; a ordem de construção segue o [plano de release](#6
 
 ## 9. Architecture Decision Records
 
+Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o contexto que a motivou, a decisão, as alternativas postas de lado e o que ganhamos e perdemos com ela. Todas estão em **Draft** até à revisão com os docentes.
+
+### ADR-001 Identidade por QR code partilhado da fração e nome autodeclarado
+- **Contexto:** o produto não deve recolher telefone nem e-mail (RNF-03), o onboarding tem de demorar segundos e várias pessoas vivem na mesma fração.
+- **Decisão:** um QR code por fração, partilhável; no primeiro acesso a app pede só o nome (único na fração) e cria uma credencial opaca guardada no dispositivo. O nome não é verificado.
+- **Alternativas:** conta com e-mail/telefone e verificação (mais dados pessoais, mais fricção); um QR code por pessoa (o administrador teria de saber quem vive em cada fração); sem identificação (o administrador não saberia quem reportou).
+- **Consequências:** onboarding rápido e minimização de dados. O risco de personificação é aceite como baixo porque a fração fica sempre registada e o administrador pode remover identidades e regenerar o QR code ([10.5](#105-qr-code-revogação-e-abuso), [10.6](#106-modelo-de-ameaças-inicial)).
+
+### ADR-002 App móvel em Flutter, demonstrada em Android
+- **Contexto:** o enunciado aceita app móvel, web ou ambas; as jornadas principais acontecem no telemóvel (scan de QR code, foto da avaria, gravação de áudio, uso sem rede).
+- **Decisão:** uma app Flutter com fila local em SQLite. Android é a única plataforma testada e demonstrada; o iOS fica possível pelo Flutter mas fora do âmbito do projeto.
+- **Alternativas:** PWA (acesso a câmara, gravação, tarefas em segundo plano e armazenamento offline mais limitados); React Native (equivalente, mas a equipa não ganha com partilhar linguagem com um backend Python); Android nativo em Kotlin (fecha a porta ao iOS sem ganho para a equipa).
+- **Consequências:** bom suporte de acessibilidade (semântica para leitor de ecrã) e plugins oficiais para câmara, gravação, SQLite, tarefas em segundo plano e notificações locais; sem conta Apple Developer, nada do projeto depende de iOS.
+
+### ADR-003 Backend em Python com FastAPI
+- **Contexto:** a equipa já usa Python; o enunciado exige API documentada e testes automatizados.
+- **Decisão:** FastAPI para a API e Python para o Worker, no mesmo repositório e na mesma imagem.
+- **Alternativas:** Node/NestJS; Spring Boot (mais pesado para o tamanho do produto).
+- **Consequências:** OpenAPI gerado automaticamente, validação de entrada com Pydantic, testes com pytest; um só stack backend para 5 pessoas.
+
+### ADR-004 Dois componentes backend (API e Worker) com base de dados partilhada
+- **Contexto:** o enunciado exige pelo menos dois componentes backend independentemente implantáveis e um workflow assíncrono.
+- **Decisão:** API (síncrona) e Worker (assíncrono) como contentores separados, com o mesmo código de domínio e a mesma base de dados.
+- **Alternativas:** modular monolith (um só deploy; exigiria justificar a exceção do enunciado); serviços por domínio (reportes, atas, notificações) com bases de dados próprias (mais operação e mais rede para um produto pequeno).
+- **Consequências:** o Worker pode cair ou escalar sem afetar a API, e o trabalho lento (IA, calendário) fica fora do caminho do pedido. Em troca, o esquema é partilhado: as migrações têm de ser compatíveis com os dois componentes (aditivas) e os dois são implantados juntos.
+
+### ADR-005 PostgreSQL como única base de dados e como fila de jobs
+- **Contexto:** o enunciado desaconselha várias tecnologias de base de dados sem justificação; o volume de jobs é baixo (uma ata por assembleia, poucas reuniões).
+- **Decisão:** PostgreSQL para todos os dados, com uma tabela `job` consumida por `SELECT ... FOR UPDATE SKIP LOCKED` a servir de fila; ficheiros (fotos, áudios) num volume Docker referenciado por caminho.
+- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um contentor e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
+- **Consequências:** uma única transação entre a alteração de domínio e a criação do job (sem perda nem duplicação) e menos infraestrutura. O polling introduz alguns segundos de latência, aceitáveis para transcrição e calendário.
+
+### ADR-006 Fila local no dispositivo (offline-first para escrita)
+- **Contexto:** RNF-06 e US-18 exigem que reportes, reuniões e áudios criados sem internet não se percam.
+- **Decisão:** a app grava sempre primeiro em SQLite e envia para a API por ordem, com uma `Idempotency-Key` por item; a API ignora repetições.
+- **Alternativas:** bloquear a escrita sem rede (perde dados e viola US-18); sincronização bidirecional completa (complexidade desnecessária; as leituras podem exigir rede).
+- **Consequências:** escrever é sempre possível; ler continua a precisar de rede, exceto a cache da última lista; itens de identidades removidas são recusados pela API e ficam no dispositivo.
+
+### ADR-007 Integração de calendário por simulador e feed iCal
+- **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com indisponibilidade, atraso e dados inválidos; US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
+- **Decisão:** um simulador de calendário em contentor próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
+- **Alternativas:** Google Calendar API como serviço principal: exige projeto Google Cloud, OAuth por administrador ou service account num calendário partilhado, e não responde a "de quem é o calendário"; só iCal, sem simulador: não demonstra a falha de um serviço externo nem retries no servidor.
+- **Consequências:** zero custo e zero contas externas; a demonstração de falha é totalmente controlável; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O simulador não é um sistema real, o que o enunciado aceita explicitamente; se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
+
+### ADR-008 Autenticação do administrador mock no MVP, autorização real
+- **Contexto:** o enunciado aceita autenticação mock no MVP; a autorização (quem vê nome e fração) é central à privacidade do produto.
+- **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio e enviada como Bearer token, sem registo/login; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
+- **Alternativas:** OAuth/OIDC desde o início (tempo gasto fora das jornadas principais).
+- **Consequências:** mais tempo para as jornadas principais; o registo e a recuperação de conta do administrador ficam no roadmap pós-MVP; os controlos de segurança nunca são desativados para a demonstração.
+
+### ADR-009 Notificações locais por sincronização em segundo plano, sem fornecedor de push
+- **Contexto:** US-11 e US-17 pedem uma notificação quando um reporte seguido muda de estado, "para não ter de verificar manualmente"; US-13 pede um lembrete antes da reunião. Nenhuma exige tempo real.
+- **Decisão:** a app corre uma tarefa periódica em segundo plano (`workmanager`, 15 min) que consulta `GET /reportes?atualizado_desde=` e gera notificações locais (`flutter_local_notifications`); o lembrete de reunião é uma notificação local agendada quando a reunião chega à app. Não há fornecedor de push.
+- **Alternativas:** Firebase Cloud Messaging: entrega imediata, mas exige projeto Firebase, token por dispositivo guardado no servidor, segredo da service account, chave APNs para iOS, e faz passar dados por um terceiro; OneSignal: o mesmo, com mais uma dependência.
+- **Consequências:** nenhuma infraestrutura nem tabela nova; nenhum dado pessoal sai para terceiros; os lembretes funcionam offline. Em troca, a notificação chega com até 15 minutos de atraso, e o sistema pode adiá-la mais em poupança de bateria. O estado fica sempre visível na lista (US-03), por isso a notificação é um extra e não o único caminho.
+
 ---
 
 ## 10. Security and Privacy Assessment
@@ -535,7 +591,7 @@ Este desenho é o destino; a ordem de construção segue o [plano de release](#6
 | Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado pessoal; não aparece em avisos, logs nem notificações a outros |
 | Fração | Pessoal (indireto) | Administrador e o próprio | Nunca mostrada aos outros residentes |
 | Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
-| Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver 7.3 |
+| Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver [7.3](#73-riscos-e-mitigações) |
 | Credencial do dispositivo | Segredo | Dispositivo (servidor guarda só o hash) | |
 
 ### 10.2 Controlo de acessos
@@ -547,6 +603,7 @@ Este desenho é o destino; a ordem de construção segue o [plano de release](#6
 | Mudar estado, remover identidade, revogar QR code | Não | Sim |
 | Seguir um reporte | Sim (invisível aos outros residentes) | Vê só o nº de seguidores |
 | Ver avisos e atas aprovadas | Sim | Sim |
+| Ver relatório de reportes por período (US-12) | Só com `papel = comissao` (leitura) | Sim |
 
 Autorização verificada no servidor, com testes automáticos que confirmam que as respostas aos residentes nunca incluem fração nem nome do autor (salvo `mostrar_nome`). A autenticação do administrador pode ser mock no MVP, sem desativar controlos.
 
@@ -575,8 +632,9 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; TODO (equipa): ocultar reporte pelo administrador |
 | Roubo da credencial do dispositivo | Credencial opaca, só hash no servidor, comunicação cifrada, revogação ao remover identidade |
 | Fila offline expõe dados no dispositivo | Dados mínimos na fila; envio recusado se a identidade foi removida |
-| Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; testes automáticos |
-| Prompt injection e dados pessoais no áudio | Ver 7.3 |
+| Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; notificações locais só com nº do reporte e estado; testes automáticos |
+| Feed iCal do condomínio acessível por URL | O URL leva um token aleatório do condomínio, regenerável pelo administrador; o feed só tem data, hora e local das reuniões, sem nomes |
+| Prompt injection e dados pessoais no áudio | Ver [7.3](#73-riscos-e-mitigações) |
 
 ---
 
