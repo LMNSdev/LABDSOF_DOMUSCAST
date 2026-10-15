@@ -366,7 +366,7 @@ Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as d
 |---|---|---|---|
 | Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado pessoal; não aparece em avisos, logs nem notificações a outros |
 | Fração | Pessoal (indireto) | Administrador e o próprio | Nunca mostrada aos outros residentes |
-| Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
+| Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). Admin deve revisar reportes para que não contenham dados sensíveis acidentais |
 | Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver 7.3 |
 | Credencial do dispositivo | Segredo | Dispositivo (servidor guarda só o hash) | |
 
@@ -386,7 +386,6 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 - Só se recolhe o **nome** (e a fração, vinda do QR code) para identificar o autor perante o administrador; finalidade indicada no ecrã (US-15). O nome só é mostrado aos outros por escolha do autor, reporte a reporte.
 - Sem telefone, e-mail nem localização. Testes e demonstração com dados sintéticos.
 - O residente pode corrigir o nome e pedir apagamento ao administrador (remoção da identidade).
-- Base de licitude proposta: interesse legítimo do condomínio. TODO (equipa): validar com os docentes.
 
 ### 10.4 Retenção
 - **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador a remove.
@@ -394,7 +393,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 
 ### 10.5 QR code, revogação e abuso
 - O QR code contém um token aleatório (só o hash fica guardado). Revogar/regenerar bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
-- Criar identidades tem limite de tentativas e máximo por fração (proposta: 10). TODO (equipa): confirmar.
+- Criar identidades tem limite de tentativas e máximo por fração (proposta: 10).
 
 ### 10.6 Modelo de ameaças inicial
 
@@ -404,7 +403,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Adivinhar tokens | Token aleatório longo; limite de tentativas |
 | Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
-| Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; TODO (equipa): ocultar reporte pelo administrador |
+| Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; possibilidade de ocultar reporte pelo administrador |
 | Roubo da credencial do dispositivo | Credencial opaca, só hash no servidor, comunicação cifrada, revogação ao remover identidade |
 | Fila offline expõe dados no dispositivo | Dados mínimos na fila; envio recusado se a identidade foi removida |
 | Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; testes automáticos |
