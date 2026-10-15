@@ -104,7 +104,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 **Pressupostos:**
 - A maioria dos residentes tem smartphone e internet suficiente.
-- Existe sempre um administrador (exigência legal em Portugal), que cria o condomínio e gera os QR codes das frações.
+- Existe sempre pelo menos um administrador (exigência legal em Portugal); o primeiro cria o condomínio e gera os QR codes das frações, e pode convidar outros administradores com as mesmas permissões (US-19).
 - Os residentes aceitam indicar o nome (por omissão visível só ao administrador), para que este os possa contactar.
 - O QR code é partilhado pela fração e só associa a fração à identidade criada no primeiro acesso (nome + dispositivo, um dispositivo por pessoa). O nome é autodeclarado e não verificado ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)).
 - Um único prédio é "comunidade" suficiente para gerar valor.
@@ -381,23 +381,23 @@ Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) 
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
 | Serviço de transcrição / IA | Recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Fornecedor ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
-| Serviço de calendário (simulador) | Contentor nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| Serviço de calendário (simulador) | Container nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
 | App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
-### 8.2 Vista de contentores
+### 8.2 Vista de Containers
 
-Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como contentores separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
+Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
 ![alt text](<images/Vista de contentores.svg>)
 
-| Contentor | Responsabilidade | Dono dos dados |
+| Container | Responsabilidade | Dono dos dados |
 |---|---|---|
 | **App móvel** (Flutter, demonstrada em Android) | Jornadas dos [Workflows 1 a 6](#53-user-journey); guarda a credencial do dispositivo; fila local SQLite para reportes, reuniões e áudios criados sem internet (US-18), enviados por ordem quando a ligação volta; sincronização em segundo plano que gera notificações locais (US-11) e agenda lembretes de reuniões (US-13) | Identidade local, fila local, preferências (ex.: ocultar indicador) |
 | **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), escrita de jobs na tabela `job` | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião, ata (texto aprovado) |
 | **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata, publicação de reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
 | **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
-| **Simulador de calendário** (contentor, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
+| **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
 
 Três consequências desta separação, que o enunciado pede para justificar:
 
@@ -407,19 +407,20 @@ Três consequências desta separação, que o enunciado pede para justificar:
 
 ### 8.3 Modelo de dados
 
-Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador**, com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
+Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
 
 ![alt text](<images/Modelo de dados.svg>)
 
 | Entidade | Campos principais | Notas |
 |---|---|---|
 | `condominio` | id, nome, n_fracoes, criado_em | |
-| `administrador` | id, condominio_id, nome, credencial_hash | Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em | Um ou mais por condomínio, todos com as mesmas permissões (US-19); o último não pode ser removido. Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
 | `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado; revogar cria um novo token e marca o antigo (US-01) |
 | `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12); remover apaga `nome` e preenche `removida_em` (US-09) |
 | `reporte` | id, condominio_id, autor_id, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-04) |
-| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05) |
+| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-04, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
 | `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo`, `degradado` (US-13) |
@@ -430,13 +431,16 @@ Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é
 
 ### 8.4 API (esboço)
 
-A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a do administrador na criação do condomínio (mock no MVP). Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
+A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a de um administrador na criação do condomínio ou ao usar um convite (US-19), ambas mock no MVP. Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
 
 Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o condomínio, entrar com o QR code, reportar, acompanhar, triar, avisar, reunir e aprovar a ata.
 
 | Método e rota | Quem | User Story |
 |---|---|---|
-| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial de administrador |
+| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial do primeiro administrador |
+| `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
+| `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
+| `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19: lista e remove; 409 ao tentar remover o último |
 | `GET /condominios/{id}/fracoes` | admin | US-01: frações, QR codes e identidades por fração |
 | `POST /fracoes/{id}/qr/regenerar` | admin | US-01: revoga e gera novo token |
 | `DELETE /identidades/{id}` | admin | US-09: remove identidade |
@@ -484,7 +488,7 @@ As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum forn
 
 O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **serviço de calendário** (US-13) e o **serviço de IA** (US-10). O enunciado exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo"; a de calendário é a que descrevemos em detalhe ([Workflow 4](#53-user-journey), [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
 
-1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um contentor nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um container nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
 2. `IcsProvider`: a reunião entra no feed iCal do condomínio (`GET /condominios/{id}/calendario.ics`), que os residentes subscrevem uma vez no Google Calendar, Apple Calendar ou Outlook. Não depende de rede do lado do servidor, por isso serve de alternativa quando o serviço externo falha;
 3. nenhum: a reunião mantém-se na app com os dados locais e `estado_sync = degradado`.
 
@@ -501,7 +505,7 @@ Para a equipa perceber o que se passa em produção sem adivinhar, cada componen
 - **Métricas** Prometheus em `GET /metrics`: pedidos por rota e código, latência p95, jobs por estado, falhas de integração por provider.
 - **Correlação:** o `X-Request-ID` gerado pela app ou pela API é propagado aos jobs e aos logs, por isso um reporte pode ser seguido do telemóvel até ao Worker.
 - **Erros:** exceções não tratadas registadas com stack trace e `request_id`; contador `erros_total`.
-- **Dashboard operacional:** Prometheus + Grafana em contentores, a mostrar os SLIs abaixo.
+- **Dashboard operacional:** Prometheus + Grafana em containers, a mostrar os SLIs abaixo.
 
 Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-sucesso), que remetiam os valores concretos para aqui:
 
@@ -518,7 +522,7 @@ Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline,
 
 ![alt text](<images/Vista de deployment.svg>)
 
-- **Contentores:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
+- **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
 - **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da IA, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
 - **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. Esse ambiente (VM ou máquina da equipa) ainda está por decidir: TODO (equipa).
 - **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
@@ -554,14 +558,14 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-004 Dois componentes backend (API e Worker) com base de dados partilhada
 - **Contexto:** o enunciado exige pelo menos dois componentes backend independentemente implantáveis e um workflow assíncrono.
-- **Decisão:** API (síncrona) e Worker (assíncrono) como contentores separados, com o mesmo código de domínio e a mesma base de dados.
+- **Decisão:** API (síncrona) e Worker (assíncrono) como containers separados, com o mesmo código de domínio e a mesma base de dados.
 - **Alternativas:** modular monolith (um só deploy; exigiria justificar a exceção do enunciado); serviços por domínio (reportes, atas, notificações) com bases de dados próprias (mais operação e mais rede para um produto pequeno).
 - **Consequências:** o Worker pode cair ou escalar sem afetar a API, e o trabalho lento (IA, calendário) fica fora do caminho do pedido. Em troca, o esquema é partilhado: as migrações têm de ser compatíveis com os dois componentes (aditivas) e os dois são implantados juntos.
 
 ### ADR-005 PostgreSQL como única base de dados e como fila de jobs
 - **Contexto:** o enunciado desaconselha várias tecnologias de base de dados sem justificação; o volume de jobs é baixo (uma ata por assembleia, poucas reuniões).
 - **Decisão:** PostgreSQL para todos os dados, com uma tabela `job` consumida por `SELECT ... FOR UPDATE SKIP LOCKED` a servir de fila; ficheiros (fotos, áudios) num volume Docker referenciado por caminho.
-- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um contentor e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
+- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um containers e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
 - **Consequências:** uma única transação entre a alteração de domínio e a criação do job (sem perda nem duplicação) e menos infraestrutura. O polling introduz alguns segundos de latência, aceitáveis para transcrição e calendário.
 
 ### ADR-006 Fila local no dispositivo (offline-first para escrita)
@@ -572,13 +576,13 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-007 Integração de calendário por simulador e feed iCal
 - **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com indisponibilidade, atraso e dados inválidos; US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
-- **Decisão:** um simulador de calendário em contentor próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
+- **Decisão:** um simulador de calendário em container próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
 - **Alternativas:** Google Calendar API como serviço principal: exige projeto Google Cloud, OAuth por administrador ou service account num calendário partilhado, e não responde a "de quem é o calendário"; só iCal, sem simulador: não demonstra a falha de um serviço externo nem retries no servidor.
 - **Consequências:** zero custo e zero contas externas; a demonstração de falha é totalmente controlável; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O simulador não é um sistema real, o que o enunciado aceita explicitamente; se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
 
 ### ADR-008 Autenticação do administrador mock no MVP, autorização real
 - **Contexto:** o enunciado aceita autenticação mock no MVP; a autorização (quem vê nome e fração) é central à privacidade do produto.
-- **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio e enviada como Bearer token, sem registo/login; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
+- **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio, ou ao usar um código de convite de outro administrador (US-19), e enviada como Bearer token, sem registo/login; um condomínio pode ter vários administradores com as mesmas permissões; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
 - **Alternativas:** OAuth/OIDC desde o início (tempo gasto fora das jornadas principais).
 - **Consequências:** mais tempo para as jornadas principais; o registo e a recuperação de conta do administrador ficam no roadmap pós-MVP; os controlos de segurança nunca são desativados para a demonstração.
 
@@ -608,7 +612,8 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 |---|---|---|
 | Criar reporte | Sim (autor = identidade do dispositivo) | - |
 | Ver reporte | Todos os do prédio, sem fração e com nome só se o autor optou (o próprio vê o seu) | Todos, com nome e fração |
-| Mudar estado, remover identidade, revogar QR code | Não | Sim |
+| Mudar estado, remover identidade, revogar QR code | Não | Sim (qualquer administrador; a ação fica registada com o seu id) |
+| Convidar ou remover administradores | Não | Sim; o último administrador não pode ser removido |
 | Seguir um reporte | Sim (invisível aos outros residentes) | Vê só o nº de seguidores |
 | Ver avisos e atas aprovadas | Sim | Sim |
 | Ver relatório de reportes por período (US-12) | Só com `papel = comissao` (leitura) | Sim |
@@ -633,7 +638,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Ameaça | Mitigação |
 |---|---|
 | QR code divulgado a terceiros | Revogação/regeneração; revisão de identidades pelo administrador |
-| Adivinhar tokens | Token aleatório longo; limite de tentativas |
+| Adivinhar tokens de QR code ou códigos de convite de administrador | Token/código aleatório longo; limite de tentativas; convite de uso único com validade curta |
 | Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
 | Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; possibilidade de ocultar reporte pelo administrador |
