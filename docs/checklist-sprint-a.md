@@ -9,7 +9,7 @@
 
 | # | Entregável (Assignment §7.1.2) | Estado | Localização |
 |---|---|---|---|
-| 1 | Problem and Opportunity Report | ⚠️ | [sprintA/sprintA.md §1](sprintA/sprintA.md#1-relatório-de-problema-e-oportunidade) |
+| 1 | Problem and Opportunity Report | ✅ | [sprintA/sprintA.md §1](sprintA/sprintA.md#1-relatório-de-problema-e-oportunidade) |
 | 2 | Market and Competitor Analysis | ⚠️ | [sprintA/sprintA.md §2](sprintA/sprintA.md#2-análise-de-mercado-e-concorrência) |
 | 3 | User Research | ⚠️ | [sprintA/sprintA.md §3](sprintA/sprintA.md#3-investigação-de-utilizadores) |
 | 4 | Product Vision | ✅ | [sprintA/sprintA.md §5](sprintA/sprintA.md#5-product-vision) |
@@ -67,10 +67,10 @@
 | Target community | ✅ | Presente |
 | Problem statement | ✅ | Presente |
 | Stakeholder map | ✅ | Presente |
-| **Problem evidence** | ❌ | Marcado como `TODO` — inquérito criado mas sem resultados |
+| Problem evidence | ✅ | 3 posts de fóruns Reddit (r/TudoCasa, r/tudoCondominio) com padrão identificado e limitações documentadas |
 | Assumptions and risks | ✅ | Presente |
 
-**O que falta:** preencher a secção "Evidência do problema" com resultados reais do questionário (Google Forms) ou, no mínimo, citar as reviews de apps concorrentes e as observações diretas como evidência, documentando limitações.
+> Resultados do questionário Google Forms ainda pendentes. Quando disponíveis, atualizar a secção de evidência com dados primários.
 
 ---
 
@@ -212,4 +212,15 @@ Os critérios de aceitação do US-16 tocam parcialmente nestes pontos mas não 
 
 ### Investor Engagement (assignment §5.7)
 O assignment exige que **pelo menos uma decisão de produto ou técnica seja revisada em resposta ao feedback dos docentes (investidores)**, e que a alteração e o seu racional sejam documentados. Não existe nenhuma secção a registar este histórico de feedback.
+
+---
+
+## 5. Pendente de validação com os docentes (investidores)
+
+> Colocar ao professor na próxima sprint review. Registar a resposta e atualizar o estado das histórias afetadas em [backlog.md](backlog.md) para **In Review** → **Approved**.
+
+- [ ] **MVP**: O professor concorda que as histórias "Must have" (US-01, 02, 03, 04, 05, 09, 15 + NFR-01) são o experimento mínimo credível? Há algo essencial em falta, ou algo Must have que deva descer de prioridade?
+- [ ] **Prioridades MoSCoW**: As histórias "Should have" (US-06, 07, 08, 10, 13, 14) e "Could have" (US-11, 12, 16, 17) estão corretamente posicionadas na perspetiva do cliente?
+- [ ] **Plano de release**: A distribuição Sprint B (fatia vertical) / Sprint C (robustez e avaliação) faz sentido ou há histórias que devam mudar de sprint?
+- [ ] **Won't have**: O professor concorda com o que foi excluído (quotas, gestão financeira, votações, multi-prédio)?
 
