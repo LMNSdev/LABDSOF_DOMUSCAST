@@ -81,7 +81,24 @@ Os problemas do edifício (fuga de água, luz fundida, elevador avariado) coorde
 | Município/fornecedores de utilities | Fora do MVP; escalonamento futuro |
 
 ### Evidência do problema
-- **TODO (equipa):** questionário/forms e fóruns; registar aqui fontes e resultados.
+
+A evidência qualitativa foi recolhida através da observação de três publicações em fóruns públicos portugueses no Reddit (subreddits r/TudoCasa e r/tudoCondominio), consultadas em outubro de 2026. Os posts foram encontrados através de pesquisa por termos como "condomínio problema", "gestão condomínio app" e "empresa condomínio não responde". Não foi possível contactar os autores; toda a evidência é anónima e de observação.
+
+| Fonte | Perfil do autor | Problemas relatados | Relevância |
+|---|---|---|---|
+| [r/TudoCasa — "Problema com empresa de gestão do condomínio"](https://www.reddit.com/r/TudoCasa/comments/1pnxai2/problema_com_empresa_de_gest%C3%A3o_do_condom%C3%ADnio/) | Condómino afetado por infiltração num prédio com empresa profissional | Avaria sem resolução durante meses; empresa não devolve datas; buraco na parede deixado aberto; morador questiona negligência legal da empresa | Valida: avaria que se agrava por falta de acompanhamento; ausência de estado do reporte; risco legal/de seguro para o responsável |
+| [r/tudoCondominio — "App / software recomendado para gestão do condomínio"](https://www.reddit.com/r/tudoCondominio/comments/1w9wv5z/app_software_recomendado_para_gest%C3%A3o_do_condominio/) | Administrador voluntário sem empresa, a gerir o próprio prédio "em part-time" | Vizinhos que "nunca recebem" avisos nem convocatórias; procura apps acessíveis a não-profissionais; preço é critério crítico; a maioria das apps é pensada para empresas | Valida: persona do administrador voluntário; problema de decisões que não chegam a todos; gap de mercado para gestão interna sem empresa |
+| [r/tudoCondominio — "Condomínio não presta e moradores não se importam"](https://www.reddit.com/r/tudoCondominio/comments/1smgg9c/condom%C3%ADnio_n%C3%A3o_presta_e_moradores_n%C3%A3o_se_importam/) | Moradora com empresa profissional de gestão | E-mails sem resposta durante 2 meses; obras de 20.000€ mal executadas sem prestação de contas; reuniões inexistentes ou sem quórum; administrador sem provas do trabalho feito | Valida: ausência de histórico auditável; comunicação que falha; baixo envolvimento dos moradores; risco de responsabilidade do gestor |
+
+**Padrão identificado nas três fontes:**
+- A comunicação sobre avarias e decisões depende de canais informais (e-mail, telefone, presença física) sem estado nem histórico, em contextos tanto de administração profissional como voluntária;
+- A ausência de rastreabilidade cria riscos legais para o responsável pela gestão e frustração nos moradores;
+- Os administradores voluntários não encontram ferramentas adequadas ao seu contexto (baixo orçamento, gestão a tempo parcial, sem formação técnica).
+
+**Limitações desta evidência:**
+- Amostra de conveniência: três publicações anónimas em fóruns públicos do Reddit, sem representatividade estatística;
+- Os posts descrevem maioritariamente condomínios com empresa profissional, enquanto o produto foca condomínios autogeridos — os problemas de comunicação e rastreabilidade são comuns a ambos os contextos, mas a sua intensidade no contexto autogerido não está diretamente demonstrada;
+- Os resultados do questionário distribuído pela equipa (Google Forms) ainda não estão disponíveis; quando estiverem, esta secção será atualizada com dados primários.
 
 ### Pressupostos e riscos
 
@@ -590,8 +607,8 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 |---|---|---|---|
 | Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado pessoal; não aparece em avisos, logs nem notificações a outros |
 | Fração | Pessoal (indireto) | Administrador e o próprio | Nunca mostrada aos outros residentes |
-| Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). TODO (equipa): confirmar |
-| Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver [7.3](#73-riscos-e-mitigações) |
+| Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). Admin deve revisar reportes para que não contenham dados sensíveis acidentais |
+| Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver [7.3](#73-riscos-e-mitigações)  |
 | Credencial do dispositivo | Segredo | Dispositivo (servidor guarda só o hash) | |
 
 ### 10.2 Controlo de acessos
@@ -611,7 +628,6 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 - Só se recolhe o **nome** (e a fração, vinda do QR code) para identificar o autor perante o administrador; finalidade indicada no ecrã (US-15). O nome só é mostrado aos outros por escolha do autor, reporte a reporte.
 - Sem telefone, e-mail nem localização. Testes e demonstração com dados sintéticos.
 - O residente pode corrigir o nome e pedir apagamento ao administrador (remoção da identidade).
-- Base de licitude proposta: interesse legítimo do condomínio. TODO (equipa): validar com os docentes.
 
 ### 10.4 Retenção
 - **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador a remove.
@@ -619,7 +635,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 
 ### 10.5 QR code, revogação e abuso
 - O QR code contém um token aleatório (só o hash fica guardado). Revogar/regenerar bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
-- Criar identidades tem limite de tentativas e máximo por fração (proposta: 10). TODO (equipa): confirmar.
+- Criar identidades tem limite de tentativas e máximo por fração (proposta: 10).
 
 ### 10.6 Modelo de ameaças inicial
 
@@ -629,7 +645,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Adivinhar tokens | Token aleatório longo; limite de tentativas |
 | Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
-| Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; TODO (equipa): ocultar reporte pelo administrador |
+| Dados de terceiros em reportes visíveis a todos | Aviso no formulário; remoção de metadados; possibilidade de ocultar reporte pelo administrador |
 | Roubo da credencial do dispositivo | Credencial opaca, só hash no servidor, comunicação cifrada, revogação ao remover identidade |
 | Fila offline expõe dados no dispositivo | Dados mínimos na fila; envio recusado se a identidade foi removida |
 | Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; notificações locais só com nº do reporte e estado; testes automáticos |
