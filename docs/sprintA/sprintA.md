@@ -651,3 +651,103 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 ---
 
 ## 11. Walking Skeleton
+
+O Walking Skeleton prova o desenho ponta a ponta com a fatia mínima funcional: o residente submete um reporte na app Flutter → `POST /reportes` → PostgreSQL → `GET /reportes` volta à lista na app. Sem autenticação real (ADR-008), sem IA, sem calendário — esses componentes entram no Sprint B.
+
+Todo o código vive em `DomusCast/`.
+
+### Estrutura do repositório
+
+```
+DomusCast/
+  api/
+    app/
+      main.py           # FastAPI app + /health
+      database.py       # SQLAlchemy engine + get_db
+      models.py         # Reporte (SQLAlchemy ORM)
+      schemas.py        # ReporteCreate / ReporteOut (Pydantic)
+      routers/
+        reportes.py     # POST /reportes, GET /reportes
+    alembic/
+      versions/
+        0001_initial.py # Cria tabela reporte + enum estado_reporte
+    tests/
+      conftest.py       # SQLite em memória + TestClient
+      test_reportes.py  # 4 testes: health, criar, listar, idempotência
+    Dockerfile
+    entrypoint.sh       # alembic upgrade head → uvicorn
+    requirements.txt
+  mobile/
+    lib/
+      main.dart                        # CondoApp (MaterialApp)
+      screens/
+        reportes_list_screen.dart      # Lista de reportes + pull-to-refresh
+        novo_reporte_screen.dart       # Formulário + fallback para fila local
+      services/
+        api_service.dart               # HTTP GET/POST /reportes
+      local/
+        queue_db.dart                  # Fila SQLite offline (sqflite)
+    test/
+      widget_test.dart                 # Smoke test: AppBar + loading spinner
+    pubspec.yaml
+  docker-compose.yml    # api + postgres (postgres com health check)
+.github/
+  workflows/
+    ci.yml              # job api: ruff + pytest | job mobile: analyze + test
+```
+
+### Como correr localmente
+
+```bash
+# Subir API + PostgreSQL
+cd DomusCast
+docker compose up --build
+
+# Verificar saúde
+curl http://localhost:8000/health
+# → {"status":"ok","db":"ok"}
+
+# Correr testes da API (SQLite, sem Docker)
+cd DomusCast/api
+pip install -r requirements.txt
+pytest tests/ -v
+
+# Scaffolding Android (uma vez, na primeira instalação Flutter)
+cd DomusCast/mobile
+flutter create . --platforms android --org com.condoapp
+flutter pub get
+flutter run
+```
+
+### Funcionalidade implementada
+
+| Componente | O que faz |
+|---|---|
+| `GET /health` | Verifica ligação à BD via sessão injectada; retorna `{"status":"ok","db":"ok"}` |
+| `POST /reportes` | Cria reporte; idempotente via `idempotency_key` (offline-first) |
+| `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
+| Alembic `0001` | Cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
+| Flutter list screen | Carrega reportes; mostra loading → lista / erro com "Tentar de novo" |
+| Flutter create screen | Formulário com validação; cai para `QueueDb` (SQLite) se sem internet |
+| `QueueDb` | Fila local persistente; cada item tem `idempotency_key` para envio sem duplicados |
+| `docker compose up` | Sobe `api` + `postgres`; health check garante ordem de arranque; migrations no `entrypoint.sh` |
+
+### Testes automatizados
+
+| Ficheiro | Testes |
+|---|---|
+| `api/tests/test_reportes.py` | `test_health`, `test_criar_reporte`, `test_listar_reportes`, `test_idempotencia` |
+| `mobile/test/widget_test.dart` | Smoke test: `CondoApp` renderiza AppBar "Reportes" + `CircularProgressIndicator` |
+
+### CI/CD
+
+Pipeline `.github/workflows/ci.yml` — dois jobs paralelos em cada PR e push para `main`:
+
+| Job | Passos |
+|---|---|
+| `api` | `pip install` → `ruff check` → `pytest tests/ -v` (SQLite; sem serviço externo) |
+| `mobile` | `flutter pub get` → `flutter analyze` → `flutter test` |
+
+### Componentes excluídos (Sprint B)
+
+O Worker, a IA de transcrição, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).

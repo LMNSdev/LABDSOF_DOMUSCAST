@@ -15,10 +15,10 @@
 | 4 | Product Vision | ✅ | [sprintA/sprintA.md §5](sprintA/sprintA.md#5-product-vision) |
 | 5 | Product Backlog | ⚠️ | [backlog.md](backlog.md) |
 | 6 | Responsible AI Opportunity Assessment | ⚠️ | [sprintA/sprintA.md §7](sprintA/sprintA.md#7-responsible-ai-opportunity-assessment) |
-| 7 | Technical Design | ❌ | [sprintA/sprintA.md §8](sprintA/sprintA.md#8-technical-design) — vazio |
-| 8 | Architecture Decision Records | ❌ | [sprintA/sprintA.md §9](sprintA/sprintA.md#9-architecture-decision-records) — vazio |
+| 7 | Technical Design | ✅ | [sprintA/sprintA.md §8](sprintA/sprintA.md#8-technical-design) |
+| 8 | Architecture Decision Records | ✅ | [sprintA/sprintA.md §9](sprintA/sprintA.md#9-architecture-decision-records) |
 | 9 | Security and Privacy Assessment | ✅ | [sprintA/sprintA.md §10](sprintA/sprintA.md#10-security-and-privacy-assessment) |
-| 10 | Walking Skeleton | ❌ | [sprintA/sprintA.md §11](sprintA/sprintA.md#11-walking-skeleton) — vazio |
+| 10 | Walking Skeleton | ✅ | [sprintA/sprintA.md §11](sprintA/sprintA.md#11-walking-skeleton) — `DomusCast/` |
 
 ---
 
@@ -126,53 +126,52 @@ Não existe como secção própria nos docs. Mencionado parcialmente como `TODO`
 
 ---
 
-### ❌ Em falta (vazio ou por criar)
+### ✅ Feito (adicionado após criação da checklist)
 
-#### 7 — Technical Design — [§8](sprintA/sprintA.md#8-technical-design) — **completamente vazio**
+#### 7 — Technical Design — [§8](sprintA/sprintA.md#8-technical-design)
 
-O assignment §7.1.2 exige:
+| Sub-item | Estado | Nota |
+|---|---|---|
+| System context | ✅ | §8.1 — tabela de atores/sistemas externos; diagrama em `technical-design.drawio` |
+| Container/component view | ✅ | §8.2 — App Flutter, API FastAPI, Worker, PostgreSQL, Simulador Calendário |
+| Data model | ✅ | §8.3 — 13 entidades com campos, relações e notas de retenção |
+| API outline | ✅ | §8.4 — tabela completa de endpoints com método, rota e US associada |
+| Asynchronous workflow | ✅ | §8.5 — retries com backoff, idempotência, SKIP LOCKED, consistência eventual |
+| External integration | ✅ | §8.6 — 3 níveis de degradação (simulador → iCal → dados locais) |
+| Deployment view | ✅ | §8.8 — containers, CI/CD, rollback, APK |
+| **Observabilidade** | ✅ | §8.7 — logs JSON, health checks, métricas Prometheus, Grafana, SLIs |
+| **TODO pendente** | ⚠️ | Exportar diagramas do `technical-design.drawio` para PNG (`td-01` a `td-05`); decidir ambiente de deploy (VM ou máquina da equipa) |
 
-| Sub-item | O que criar |
-|---|---|
-| System context | Diagrama C4 nível 1: a app, os utilizadores e os sistemas externos |
-| Container/component view | Diagrama C4 nível 2: frontend, backend(s), DB, serviço de IA, calendário externo |
-| Data model | Entidades principais e relações (Condomínio, Fração, Identidade, Reporte, Aviso, Assembleia, HistóricoEstado) |
-| API outline | Endpoints principais com método, rota, request/response resumido |
-| Asynchronous workflow | Diagrama ou descrição do workflow de processamento de áudio (retries, deduplicação, eventual consistency) |
-| External integration | Como se integra o Google Calendar / alternativa; como se integra o serviço de transcrição |
-| Deployment view | Diagrama de deployment (containers Docker, onde corre cada componente) |
+#### 8 — Architecture Decision Records — [§9](sprintA/sprintA.md#9-architecture-decision-records)
 
----
-
-#### 8 — Architecture Decision Records — [§9](sprintA/sprintA.md#9-architecture-decision-records) — **completamente vazio**
-
-Existe apenas um ADR mencionado em texto (ADR-001: nome autodeclarado não verificado) mas nunca foi formalizado. O assignment exige:
-
-- Escolhas arquiteturais e tecnológicas principais (linguagem, framework, BD, serviço de IA, calendário)
-- Alternativas consideradas
-- Racional da decisão
-- Consequências e trade-offs
-
-Pelo menos 3-5 ADRs são esperados:
-- ADR-001: Identificação por nome autodeclarado (mencionado mas não formalizado)
-- ADR-002: Escolha de stack tecnológico (frontend/backend)
-- ADR-003: Escolha de base de dados
-- ADR-004: Serviço de transcrição de áudio por IA
-- ADR-005: Estratégia de autenticação (mock no MVP)
+9 ADRs formalizados, todos em Draft até revisão com os docentes:
+- ADR-001: QR code partilhado + nome autodeclarado
+- ADR-002: Flutter demonstrado em Android
+- ADR-003: Backend Python / FastAPI
+- ADR-004: API + Worker como dois containers com BD partilhada
+- ADR-005: PostgreSQL como única BD e fila de jobs
+- ADR-006: Fila local SQLite offline-first
+- ADR-007: Calendário por simulador + feed iCal
+- ADR-008: Autenticação de administrador mock no MVP
+- ADR-009: Notificações locais sem fornecedor de push
 
 ---
 
-#### 10 — Walking Skeleton — [§11](sprintA/sprintA.md#11-walking-skeleton) — **completamente vazio**
+### ✅ Feito (adicionado após criação da checklist)
 
-O assignment exige:
+#### 10 — Walking Skeleton — [§11](sprintA/sprintA.md#11-walking-skeleton)
 
-| Sub-item | O que criar |
-|---|---|
-| Minimal end-to-end implementation | Código funcional ponta-a-ponta mínimo (ex.: residente cria reporte → admin vê na lista) |
-| Source repository | ✅ Repositório Git existe |
-| Automated build | Pipeline de CI que compila/empacota o projeto |
-| Initial test | Pelo menos um teste automatizado a passar na CI |
-| Containerized deployment | `Dockerfile` (ou `docker-compose`) que sobe a app localmente |
+| Sub-item | Estado | Localização |
+|---|---|---|
+| Minimal end-to-end implementation | ✅ | Flutter → `POST /reportes` → PostgreSQL → `GET /reportes` → lista na app |
+| Source repository | ✅ | Repositório Git existe; código em `DomusCast/` |
+| Automated build | ✅ | `.github/workflows/ci.yml` (jobs `api` + `mobile`) |
+| Initial test | ✅ | 4 testes API (`test_reportes.py`) + 1 widget test (`widget_test.dart`); todos a passar |
+| Containerized deployment | ✅ | `DomusCast/docker-compose.yml` + `DomusCast/api/Dockerfile` |
+
+**Notas de setup para Android:**
+- O `mobile/` tem o código Dart mas ainda não tem o scaffolding Android gerado (`flutter create . --platforms android --org com.condoapp` deve ser corrido uma vez por cada elemento da equipa que tenha Flutter instalado).
+- A CI valida `flutter analyze` + `flutter test` sem necessitar de scaffolding Android.
 
 ---
 
@@ -183,8 +182,8 @@ O assignment exige:
 | Product vision | ✅ | [sprintA.md §5](sprintA/sprintA.md#5-product-vision) |
 | User personas | ✅ | [sprintA.md §5.1](sprintA/sprintA.md#51-personas) |
 | Customer journeys / General user workflow | ✅ | [sprintA.md §5.3](sprintA/sprintA.md#53-user-journey) + [imagens](sprintA/images/) |
-| Domain model | ❌ | Faz parte do Technical Design (§8) — **não existe** |
-| Architecture & Technology | ❌ | Technical Design (§8) + ADR (§9) — **ambos vazios** |
+| Domain model | ✅ | [sprintA.md §8.3](sprintA/sprintA.md#83-modelo-de-dados) — 13 entidades com campos e relações |
+| Architecture & Technology | ✅ | [sprintA.md §8](sprintA/sprintA.md#8-technical-design) + [§9](sprintA/sprintA.md#9-architecture-decision-records) — stack definida (Flutter, FastAPI, PostgreSQL) + 9 ADRs |
 | Assumptions & Dependencies | ✅ | [sprintA.md §1](sprintA/sprintA.md#pressupostos-e-riscos) |
 | Operating costs estimation | ⚠️ | Só mencionado como TODO no §7.4 (custo por hora de áudio) |
 | Prioritized Product Backlog (epics) | ✅ | [backlog.md](backlog.md) |
