@@ -1,0 +1,12 @@
+target-version = "py312"
+
+[lint]
+# Regras por omissão (E4, E7, E9, F) + B: bugbear + S: segurança (bandit)
+select = ["E4", "E7", "E9", "F", "B", "S"]
+ignore = [
+  "B008",  # Depends() em argumentos é o idioma do FastAPI
+]
+
+[lint.per-file-ignores]
+# assert é o idioma normal dos testes
+"tests/**" = ["S101"]

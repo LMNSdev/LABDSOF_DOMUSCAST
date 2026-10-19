@@ -1,158 +1,489 @@
-<mxfile host="app.diagrams.net" pages="5">
-  <diagram id="td1" name="1. Contexto do sistema">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="680" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="td1-2" value="Technical Design 8.1 - Contexto do sistema: quem usa a app e com que sistemas externos o backend fala" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1100" height="30" as="geometry"/></mxCell>
-        <mxCell id="td1-3" value="Residente" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="30" height="60" as="geometry"/></mxCell>
-        <mxCell id="td1-4" value="Administrador" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1"><mxGeometry x="60" y="330" width="30" height="60" as="geometry"/></mxCell>
-        <mxCell id="td1-5" value="App móvel&lt;br&gt;(Flutter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="220" y="210" width="160" height="70" as="geometry"/></mxCell>
-        <mxCell id="td1-6" value="API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="460" y="210" width="140" height="70" as="geometry"/></mxCell>
-        <mxCell id="td1-7" value="PostgreSQL" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="700" y="200" width="120" height="90" as="geometry"/></mxCell>
-        <mxCell id="td1-8" value="Worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="690" y="360" width="140" height="70" as="geometry"/></mxCell>
-        <mxCell id="td1-9" value="Serviço de transcrição (IA)&lt;br&gt;componente de IA, não conta&lt;br&gt;como integração externa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="960" y="350" width="200" height="90" as="geometry"/></mxCell>
-        <mxCell id="td1-10" value="Serviço de calendário&lt;br&gt;(simulador)&lt;br&gt;integração externa" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="960" y="470" width="200" height="90" as="geometry"/></mxCell>
-        <mxCell id="td1-11" value="App de calendário&lt;br&gt;do residente (iCal)" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="960" y="110" width="200" height="90" as="geometry"/></mxCell>
-        <mxCell id="td1-20" value="Residentes e administrador usam a mesma app; o papel vem da identidade (US-15) ou da conta de administrador (US-01). O Worker fala com o serviço de IA (componente de IA) e com o serviço de calendário, a única integração externa (6.5); a API publica o feed iCal. Sem fornecedor de push: notificações geradas no telemóvel." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" vertex="1" parent="1"><mxGeometry x="60" y="600" width="900" height="40" as="geometry"/></mxCell>
-        <mxCell id="td1-12" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.3000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-3" target="td1-5"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="190" y="140"/><mxPoint x="190" y="231"/></Array></mxGeometry></mxCell>
-        <mxCell id="td1-13" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.7000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-4" target="td1-5"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="190" y="360"/><mxPoint x="190" y="259"/></Array></mxGeometry></mxCell>
-        <mxCell id="td1-14" value="HTTPS / REST" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-5" target="td1-6"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td1-15" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-6" target="td1-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td1-16" value="feed iCal" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-6" target="td1-11"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="530" y="155"/></Array></mxGeometry></mxCell>
-        <mxCell id="td1-17" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-8" target="td1-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td1-18" value="áudio" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-8" target="td1-9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td1-19" value="reuniões" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td1-8" target="td1-10"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="515"/></Array></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="td2" name="2. Vista de contentores">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="720" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="td2-2" value="Technical Design 8.2 - Vista de contentores: App, API, Worker, PostgreSQL e volume de ficheiros" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1100" height="30" as="geometry"/></mxCell>
-        <mxCell id="td2-3" value="Dispositivo" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="80" width="260" height="200" as="geometry"/></mxCell>
-        <mxCell id="td2-4" value="App móvel (Flutter)&lt;br&gt;&lt;br&gt;jornadas dos Workflows 1 a 6&lt;br&gt;credencial do dispositivo&lt;br&gt;fila local SQLite&lt;br&gt;sincronização em segundo plano&lt;br&gt;notificações locais" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="60" y="115" width="220" height="130" as="geometry"/></mxCell>
-        <mxCell id="td2-5" value="Backend (Docker Compose)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="380" y="80" width="640" height="540" as="geometry"/></mxCell>
-        <mxCell id="td2-6" value="API (FastAPI)&lt;br&gt;&lt;br&gt;REST, autenticação, autorização,&lt;br&gt;validação, regras de negócio,&lt;br&gt;escreve jobs no outbox" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="410" y="120" width="240" height="120" as="geometry"/></mxCell>
-        <mxCell id="td2-7" value="Volume media&lt;br&gt;fotos e áudios" style="shape=folder;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;tabWidth=60;tabHeight=14;" vertex="1" parent="1"><mxGeometry x="410" y="300" width="240" height="90" as="geometry"/></mxCell>
-        <mxCell id="td2-8" value="Worker (Python)&lt;br&gt;&lt;br&gt;consome a tabela job:&lt;br&gt;transcrição, publicação&lt;br&gt;no serviço de calendário" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="410" y="450" width="240" height="120" as="geometry"/></mxCell>
-        <mxCell id="td2-9" value="PostgreSQL&lt;br&gt;dados + tabela job" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="780" y="125" width="160" height="110" as="geometry"/></mxCell>
-        <mxCell id="td2-10" value="Serviço de transcrição (IA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1090" y="500" width="200" height="80" as="geometry"/></mxCell>
-        <mxCell id="td2-11" value="Simulador de calendário&lt;br&gt;(container)" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="1090" y="600" width="200" height="80" as="geometry"/></mxCell>
-        <mxCell id="td2-19" value="API e Worker partilham o mesmo código Python e a mesma imagem Docker; arrancam como contentores separados (ADR-004). PostgreSQL é a única base de dados e serve de fila de jobs (ADR-005)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" vertex="1" parent="1"><mxGeometry x="40" y="310" width="300" height="110" as="geometry"/></mxCell>
-        <mxCell id="td2-12" value="REST/JSON (síncrono)" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-4" target="td2-6"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td2-13" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-6" target="td2-9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td2-14" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-6" target="td2-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td2-15" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-8" target="td2-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td2-16" value="tabela job" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.2500;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.8818;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-8" target="td2-9"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="720" y="480"/><mxPoint x="720" y="222"/></Array></mxGeometry></mxCell>
-        <mxCell id="td2-17" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5833;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-8" target="td2-10"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1050" y="520"/><mxPoint x="1050" y="540"/></Array></mxGeometry></mxCell>
-        <mxCell id="td2-18" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.8750;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td2-8" target="td2-11"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1060" y="555"/><mxPoint x="1060" y="640"/></Array></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="td3" name="3. Modelo de dados">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1640" pageHeight="760" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="td3-2" value="Technical Design 8.3 - Modelo de dados (entidades e relações principais)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1100" height="30" as="geometry"/></mxCell>
-        <mxCell id="td3-3" value="&lt;b&gt;condominio&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, nome, n_fracoes, criado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="500" y="40" width="300" height="58" as="geometry"/></mxCell>
-        <mxCell id="td3-4" value="&lt;b&gt;administrador&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, nome, credencial_hash&lt;br&gt;criado_em, removido_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="900" y="30" width="300" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-5" value="&lt;b&gt;convite_admin&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, codigo_hash&lt;br&gt;criado_por, expira_em, usado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="1280" y="30" width="260" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-6" value="&lt;b&gt;fracao&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, designacao&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="60" y="180" width="320" height="58" as="geometry"/></mxCell>
-        <mxCell id="td3-7" value="&lt;b&gt;aviso&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, reporte_id?&lt;br&gt;titulo, texto, local&lt;br&gt;publicado_em, arquivado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="520" y="180" width="260" height="98" as="geometry"/></mxCell>
-        <mxCell id="td3-8" value="&lt;b&gt;reuniao&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, data_hora, local&lt;br&gt;calendario_externo_id, estado_sync&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="1280" y="180" width="260" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-9" value="&lt;b&gt;qr_token&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, fracao_id, token_hash&lt;br&gt;criado_em, revogado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="20" y="350" width="240" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-10" value="&lt;b&gt;identidade&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, fracao_id, nome, nome_normalizado, papel&lt;br&gt;credencial_hash, criado_em, removida_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="300" y="350" width="300" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-11" value="&lt;b&gt;reporte&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, condominio_id, autor_id, descricao&lt;br&gt;foto_path, foto_alt, mostrar_nome&lt;br&gt;estado, duplicado_de_id&lt;br&gt;criado_em, atualizado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="660" y="330" width="260" height="118" as="geometry"/></mxCell>
-        <mxCell id="td3-12" value="&lt;b&gt;reporte_historico&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, reporte_id, estado_anterior&lt;br&gt;estado_novo, nota, autor_tipo&lt;br&gt;autor_id, criado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="960" y="330" width="260" height="98" as="geometry"/></mxCell>
-        <mxCell id="td3-13" value="&lt;b&gt;reporte_seguidor&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;reporte_id, identidade_id&lt;br&gt;tipo (autor, co_reporter, seguidor)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="660" y="520" width="260" height="78" as="geometry"/></mxCell>
-        <mxCell id="td3-14" value="&lt;b&gt;ata&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, reuniao_id, audio_path&lt;br&gt;transcricao, rascunho, texto_aprovado&lt;br&gt;estado, aprovada_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="1280" y="310" width="260" height="98" as="geometry"/></mxCell>
-        <mxCell id="td3-15" value="&lt;b&gt;job&lt;/b&gt;&lt;br&gt;&lt;span style=&#x27;font-size:11px&#x27;&gt;id, tipo, chave_idempotencia&lt;br&gt;payload, estado, tentativas&lt;br&gt;proxima_tentativa_em, erro, criado_em&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" vertex="1" parent="1"><mxGeometry x="1280" y="470" width="260" height="98" as="geometry"/></mxCell>
-        <mxCell id="td3-31" value="Notação pé-de-galinha (um, zero ou um, muitos). reporte.duplicado_de_id aponta para outro reporte (US-04). Um condominio tem um ou mais administradores (US-19). reporte_historico é só inserção (US-05). job é o outbox consumido pelo Worker (8.5). identidade.papel: residente ou comissao (US-12). nome_normalizado é único por fração (US-15)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" vertex="1" parent="1"><mxGeometry x="20" y="640" width="1000" height="60" as="geometry"/></mxCell>
-        <mxCell id="td3-16" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-3" target="td3-4"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-17" value="criado_por" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-4" target="td3-5"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-18" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.1333;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-3" target="td3-6"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="540" y="140"/><mxPoint x="220" y="140"/></Array></mxGeometry></mxCell>
-        <mxCell id="td3-19" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-3" target="td3-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-20" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.8667;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-3" target="td3-8"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="150"/><mxPoint x="1410" y="150"/></Array></mxGeometry></mxCell>
-        <mxCell id="td3-21" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.2188;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.4583;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-6" target="td3-9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-22" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.9062;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1667;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-6" target="td3-10"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-23" value="autor" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-10" target="td3-11"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-24" value="ligado_a" style="html=1;rounded=0;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.6923;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1538;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-7" target="td3-11"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-25" value="segue" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.8333;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-10" target="td3-13"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="550" y="559"/></Array></mxGeometry></mxCell>
-        <mxCell id="td3-26" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.6020;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-11" target="td3-12"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-27" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-11" target="td3-13"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-28" value="" style="html=1;rounded=0;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-8" target="td3-14"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-29" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-14" target="td3-15"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td3-30" value="" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.3980;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td3-8" target="td3-15"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1590" y="219"/><mxPoint x="1590" y="509"/></Array></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="td4" name="4. Workflow assincrono - transcricao da ata">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="940" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="td4-2" value="Technical Design 8.5 - Workflow assíncrono: transcrição e rascunho de ata (US-10)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1100" height="30" as="geometry"/></mxCell>
-        <mxCell id="td4-3" value="App móvel" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="60" y="80" width="140" height="790" as="geometry"/></mxCell>
-        <mxCell id="td4-4" value="API" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="340" y="80" width="140" height="790" as="geometry"/></mxCell>
-        <mxCell id="td4-5" value="PostgreSQL" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="620" y="80" width="140" height="790" as="geometry"/></mxCell>
-        <mxCell id="td4-6" value="Worker" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="900" y="80" width="140" height="790" as="geometry"/></mxCell>
-        <mxCell id="td4-7" value="Serviço de IA" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1180" y="80" width="140" height="790" as="geometry"/></mxCell>
-        <mxCell id="td4-8" value="loop  [a cada poll]" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" vertex="1" parent="1"><mxGeometry x="620" y="330" width="700" height="380" as="geometry"/></mxCell>
-        <mxCell id="td4-9" value="alt  [sucesso]" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" vertex="1" parent="1"><mxGeometry x="640" y="450" width="660" height="215" as="geometry"/></mxCell>
-        <mxCell id="td4-20" value="[falha ou timeout]" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1"><mxGeometry x="645" y="580" width="200" height="20" as="geometry"/></mxCell>
-        <mxCell id="td4-21" value="Retries: backoff 1, 2, 4, 8, 16 min, máximo 5 tentativas; depois a ata fica falhou_transcricao e o administrador pode escrever a ata à mão (NFR-01). Duplicados: chave_idempotencia única por tipo de job; SKIP LOCKED evita dois Workers no mesmo job." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" vertex="1" parent="1"><mxGeometry x="60" y="885" width="1300" height="40" as="geometry"/></mxCell>
-        <mxCell id="td4-10" value="POST /reunioes/{id}/ata/audio" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="130" y="170" as="sourcePoint"/><mxPoint x="410" y="170" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-11" value="ata (a_transcrever) + job(transcrever, chave=ata_id)&lt;br&gt;na mesma transação" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="410" y="235" as="sourcePoint"/><mxPoint x="690" y="235" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-12" value="202 Accepted" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="410" y="290" as="sourcePoint"/><mxPoint x="130" y="290" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-13" value="SELECT ... FOR UPDATE SKIP LOCKED" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="390" as="sourcePoint"/><mxPoint x="690" y="390" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-14" value="envia áudio" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="430" as="sourcePoint"/><mxPoint x="1250" y="430" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-15" value="transcrição + rascunho" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1250" y="505" as="sourcePoint"/><mxPoint x="970" y="505" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-16" value="ata = pendente_revisao; job = concluido" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="550" as="sourcePoint"/><mxPoint x="690" y="550" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-17" value="tentativas + 1; proxima_tentativa_em = backoff exponencial" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="640" as="sourcePoint"/><mxPoint x="690" y="640" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-18" value="GET /reunioes/{id}/ata (polling)" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="130" y="770" as="sourcePoint"/><mxPoint x="410" y="770" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-19" value="estado atual da ata" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="410" y="820" as="sourcePoint"/><mxPoint x="130" y="820" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="td4-22" value="" style="html=1;dashed=1;endArrow=none;strokeColor=#666666;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="640" y="600" as="sourcePoint"/><mxPoint x="1300" y="600" as="targetPoint"/></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="td5" name="5. Vista de deployment">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="780" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="td5-2" value="Technical Design 8.8 - Vista de deployment: pipeline, contentores e app" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1100" height="30" as="geometry"/></mxCell>
-        <mxCell id="td5-3" value="GitHub Actions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="70" width="1060" height="150" as="geometry"/></mxCell>
-        <mxCell id="td5-4" value="lint + testes&lt;br&gt;ruff, pytest,&lt;br&gt;flutter analyze/test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="70" y="120" width="190" height="80" as="geometry"/></mxCell>
-        <mxCell id="td5-5" value="build de imagens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="310" y="120" width="190" height="80" as="geometry"/></mxCell>
-        <mxCell id="td5-6" value="push GHCR&lt;br&gt;(tag do commit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="550" y="120" width="190" height="80" as="geometry"/></mxCell>
-        <mxCell id="td5-7" value="deploy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="790" y="120" width="190" height="80" as="geometry"/></mxCell>
-        <mxCell id="td5-8" value="APK Android&lt;br&gt;(distribuído aos docentes)" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1160" y="115" width="200" height="80" as="geometry"/></mxCell>
-        <mxCell id="td5-9" value="Docker Compose - ambiente de avaliação (TODO: VM ou máquina da equipa)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="290" width="1060" height="430" as="geometry"/></mxCell>
-        <mxCell id="td5-10" value="simulador-&lt;br&gt;calendario" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="900" y="560" width="120" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-11" value="api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="700" y="340" width="160" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-12" value="media&lt;br&gt;(volume)" style="shape=folder;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;tabWidth=60;tabHeight=14;" vertex="1" parent="1"><mxGeometry x="700" y="450" width="160" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-13" value="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="700" y="560" width="160" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-14" value="postgres" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="300" y="460" width="140" height="90" as="geometry"/></mxCell>
-        <mxCell id="td5-15" value="prometheus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="900" y="340" width="120" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-16" value="grafana" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="900" y="450" width="120" height="70" as="geometry"/></mxCell>
-        <mxCell id="td5-29" value="api e worker partilham a mesma imagem (comando diferente). Prometheus recolhe /metrics de api e worker. Configuração por variáveis de ambiente; segredos (chave de IA) só em .env não versionado ou GitHub secrets. Rollback: docker compose up com a tag anterior; migrações Alembic só aditivas no MVP." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" vertex="1" parent="1"><mxGeometry x="40" y="735" width="1300" height="40" as="geometry"/></mxCell>
-        <mxCell id="td5-17" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-4" target="td5-5"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-18" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-5" target="td5-6"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-19" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-6" target="td5-7"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-20" value="build da app" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-5" target="td5-8"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="405" y="100"/><mxPoint x="1260" y="100"/></Array></mxGeometry></mxCell>
-        <mxCell id="td5-21" value="docker compose up" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7972;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-7" target="td5-9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-22" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.0000;exitY=0.3571;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.3333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-11" target="td5-14"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="630" y="365"/><mxPoint x="630" y="490"/></Array></mxGeometry></mxCell>
-        <mxCell id="td5-23" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-11" target="td5-12"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-24" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-13" target="td5-12"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-25" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-13" target="td5-14"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="370" y="595"/></Array></mxGeometry></mxCell>
-        <mxCell id="td5-26" value="scrape" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-15" target="td5-11"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-27" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-16" target="td5-15"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-        <mxCell id="td5-28" value="" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="td5-13" target="td5-10"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e" pages="5">
+    <diagram id="td1" name="1. Contexto do sistema">
+        <mxGraphModel dx="1458" dy="1206" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="680" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="td1-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.1 - Contexto do sistema: quem usa a app e com que sistemas externos o backend fala" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Residente" vertex="1">
+                    <mxGeometry height="60" width="30" x="60" y="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-4" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Administrador" vertex="1">
+                    <mxGeometry height="60" width="30" x="60" y="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="App móvel&lt;br&gt;(Flutter)" vertex="1">
+                    <mxGeometry height="70" width="160" x="220" y="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="API" vertex="1">
+                    <mxGeometry height="70" width="140" x="460" y="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-7" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="PostgreSQL" vertex="1">
+                    <mxGeometry height="90" width="120" x="700" y="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker" vertex="1">
+                    <mxGeometry height="70" width="140" x="690" y="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-9" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de transcrição / IA" vertex="1">
+                    <mxGeometry height="90" width="200" x="960" y="350" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-10" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de calendário&lt;br&gt;(simulador)" vertex="1">
+                    <mxGeometry height="90" width="200" x="960" y="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-11" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="App de calendário&lt;br&gt;do residente (iCal)" vertex="1">
+                    <mxGeometry height="90" width="200" x="960" y="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-20" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Residentes e administrador usam a mesma app; o papel vem da identidade (US-15) ou da conta de administrador (US-01). O Worker fala com a IA e com o serviço de calendário; a API publica o feed iCal. Sem fornecedor de push: notificações geradas no telemóvel." vertex="1">
+                    <mxGeometry height="40" width="900" x="60" y="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-12" edge="1" parent="1" source="td1-3" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.3000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-5" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="190" y="140"/>
+                            <mxPoint x="190" y="231"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td1-13" edge="1" parent="1" source="td1-4" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.7000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-5" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="190" y="360"/>
+                            <mxPoint x="190" y="259"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td1-14" edge="1" parent="1" source="td1-5" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-6" value="HTTPS / REST">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-15" edge="1" parent="1" source="td1-6" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-16" edge="1" parent="1" source="td1-6" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-11" value="feed iCal">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="530" y="155"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td1-17" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-18" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-9" value="áudio">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td1-19" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-10" value="reuniões">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="760" y="515"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="td2" name="2. Vista de contentores">
+        <mxGraphModel dx="1302" dy="1077" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="720" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="td2-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.2 - Vista de contentores: App, API, Worker, PostgreSQL e volume de ficheiros" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Dispositivo" vertex="1">
+                    <mxGeometry height="200" width="260" x="40" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="App móvel (Flutter)&lt;br&gt;&lt;br&gt;jornadas dos Workflows 1 a 6&lt;br&gt;credencial do dispositivo&lt;br&gt;fila local SQLite&lt;br&gt;sincronização em segundo plano&lt;br&gt;notificações locais" vertex="1">
+                    <mxGeometry height="130" width="220" x="60" y="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Backend (Docker Compose)" vertex="1">
+                    <mxGeometry height="540" width="640" x="380" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="API (FastAPI)&lt;br&gt;&lt;br&gt;REST, autenticação, autorização,&lt;br&gt;validação, regras de negócio,&lt;br&gt;escreve jobs no outbox" vertex="1">
+                    <mxGeometry height="120" width="240" x="410" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-7" parent="1" style="shape=folder;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;tabWidth=60;tabHeight=14;" value="Volume media&lt;br&gt;fotos e áudios" vertex="1">
+                    <mxGeometry height="90" width="240" x="410" y="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker (Python)&lt;br&gt;&lt;br&gt;consome a tabela job:&lt;br&gt;transcrição, publicação&lt;br&gt;no serviço de calendário" vertex="1">
+                    <mxGeometry height="120" width="240" x="410" y="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-9" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="PostgreSQL&lt;br&gt;dados + tabela job" vertex="1">
+                    <mxGeometry height="110" width="160" x="780" y="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-10" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de IA" vertex="1">
+                    <mxGeometry height="80" width="200" x="1090" y="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-11" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Simulador de calendário&lt;br&gt;(contentor)" vertex="1">
+                    <mxGeometry height="80" width="200" x="1090" y="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-19" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="API e Worker partilham o mesmo código Python e a mesma imagem Docker; arrancam como contentores separados (ADR-004). PostgreSQL é a única base de dados e serve de fila de jobs (ADR-005)." vertex="1">
+                    <mxGeometry height="110" width="300" x="40" y="310" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-12" edge="1" parent="1" source="td2-4" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-6" value="REST/JSON (síncrono)">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-13" edge="1" parent="1" source="td2-6" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-9" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-14" edge="1" parent="1" source="td2-6" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-15" edge="1" parent="1" source="td2-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-16" edge="1" parent="1" source="td2-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.2500;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.8818;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-9" value="tabela job">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="720" y="480"/>
+                            <mxPoint x="720" y="222"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td2-17" edge="1" parent="1" source="td2-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5833;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-10" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1050" y="520"/>
+                            <mxPoint x="1050" y="540"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td2-18" edge="1" parent="1" source="td2-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.8750;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-11" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1060" y="555"/>
+                            <mxPoint x="1060" y="640"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="td3" name="3. Modelo de dados">
+        <mxGraphModel dx="1620" dy="1340" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1640" pageHeight="760" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="td3-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.3 - Modelo de dados (entidades e relações principais)" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;condominio&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, nome, n_fracoes, criado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="58" width="300" x="500" y="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;administrador&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, nome, credencial_hash&lt;br&gt;criado_em, removido_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="300" x="900" y="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;convite_admin&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, codigo_hash&lt;br&gt;criado_por, expira_em, usado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="260" x="1280" y="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;fracao&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, designacao&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="58" width="320" x="60" y="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;aviso&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, reporte_id?&lt;br&gt;titulo, texto, local&lt;br&gt;publicado_em, arquivado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="98" width="260" x="520" y="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reuniao&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, data_hora, local&lt;br&gt;calendario_externo_id, estado_sync&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="260" x="1280" y="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;qr_token&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, fracao_id, token_hash&lt;br&gt;criado_em, revogado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="240" x="20" y="350" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;identidade&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, fracao_id, nome, nome_normalizado, papel&lt;br&gt;credencial_hash, criado_em, removida_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="300" x="300" y="350" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, autor_id, descricao&lt;br&gt;foto_path, foto_alt, mostrar_nome&lt;br&gt;estado, duplicado_de_id&lt;br&gt;criado_em, atualizado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="118" width="260" x="660" y="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte_historico&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, reporte_id, estado_anterior&lt;br&gt;estado_novo, nota, autor_tipo&lt;br&gt;autor_id, criado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="98" width="260" x="960" y="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte_seguidor&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;reporte_id, identidade_id&lt;br&gt;tipo (autor, co_reporter, seguidor)&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="260" x="660" y="520" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;ata&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, reuniao_id, audio_path&lt;br&gt;transcricao, rascunho, texto_aprovado&lt;br&gt;estado, aprovada_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="98" width="260" x="1280" y="310" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;job&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, tipo, chave_idempotencia&lt;br&gt;payload, estado, tentativas&lt;br&gt;proxima_tentativa_em, erro, criado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="98" width="260" x="1280" y="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-31" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Notação pé-de-galinha (um, zero ou um, muitos). reporte.duplicado_de_id aponta para outro reporte (US-04). Um condominio tem um ou mais administradores (US-19). reporte_historico é só inserção (US-05). job é o outbox consumido pelo Worker (8.5). identidade.papel: residente ou comissao (US-12). nome_normalizado é único por fração (US-15)." vertex="1">
+                    <mxGeometry height="60" width="1000" x="20" y="640" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-16" edge="1" parent="1" source="td3-3" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-4" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-17" edge="1" parent="1" source="td3-4" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-5" value="criado_por">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-18" edge="1" parent="1" source="td3-3" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.1333;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-6" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="140"/>
+                            <mxPoint x="220" y="140"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td3-19" edge="1" parent="1" source="td3-3" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-20" edge="1" parent="1" source="td3-3" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.8667;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-8" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="760" y="150"/>
+                            <mxPoint x="1410" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td3-21" edge="1" parent="1" source="td3-6" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.2188;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.4583;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-9" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-22" edge="1" parent="1" source="td3-6" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.9062;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1667;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-10" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-23" edge="1" parent="1" source="td3-10" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-11" value="autor">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-24" edge="1" parent="1" source="td3-7" style="html=1;rounded=0;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.6923;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1538;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-11" value="ligado_a">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-25" edge="1" parent="1" source="td3-10" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.8333;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-13" value="segue">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="550" y="559"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td3-26" edge="1" parent="1" source="td3-11" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.6020;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-12" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-27" edge="1" parent="1" source="td3-11" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-13" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-28" edge="1" parent="1" source="td3-8" style="html=1;rounded=0;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-14" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-29" edge="1" parent="1" source="td3-14" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-15" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td3-30" edge="1" parent="1" source="td3-8" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.3980;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-15" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1590" y="219"/>
+                            <mxPoint x="1590" y="509"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="td4" name="4. Workflow assincrono - transcricao da ata">
+        <mxGraphModel dx="1375" dy="1138" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="940" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="td4-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.5 - Workflow assíncrono: transcrição e rascunho de ata (US-10)" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="App móvel" vertex="1">
+                    <mxGeometry height="790" width="140" x="60" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-4" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="API" vertex="1">
+                    <mxGeometry height="790" width="140" x="340" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-5" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="PostgreSQL" vertex="1">
+                    <mxGeometry height="790" width="140" x="620" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-6" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker" vertex="1">
+                    <mxGeometry height="790" width="140" x="900" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-7" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Serviço de IA" vertex="1">
+                    <mxGeometry height="790" width="140" x="1180" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-8" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" value="loop  [a cada poll]" vertex="1">
+                    <mxGeometry height="380" width="700" x="620" y="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-9" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" value="alt  [sucesso]" vertex="1">
+                    <mxGeometry height="215" width="660" x="640" y="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-20" parent="1" style="text;html=1;fontSize=11;align=left;" value="[falha ou timeout]" vertex="1">
+                    <mxGeometry height="20" width="200" x="645" y="580" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-21" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Retries: backoff 1, 2, 4, 8, 16 min, máximo 5 tentativas; depois a ata fica falhou_transcricao e o administrador pode escrever a ata à mão (NFR-01). Duplicados: chave_idempotencia única por tipo de job; SKIP LOCKED evita dois Workers no mesmo job." vertex="1">
+                    <mxGeometry height="40" width="1300" x="60" y="885" as="geometry"/>
+                </mxCell>
+                <mxCell id="td4-10" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="POST /reunioes/{id}/ata/audio">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="130" y="170" as="sourcePoint"/>
+                        <mxPoint x="410" y="170" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-11" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="ata (a_transcrever) + job(transcrever, chave=ata_id)&lt;br&gt;na mesma transação">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="410" y="235" as="sourcePoint"/>
+                        <mxPoint x="690" y="235" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-12" edge="1" parent="1" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="202 Accepted">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="410" y="290" as="sourcePoint"/>
+                        <mxPoint x="130" y="290" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-13" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="SELECT ... FOR UPDATE SKIP LOCKED">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="970" y="390" as="sourcePoint"/>
+                        <mxPoint x="690" y="390" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-14" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="envia áudio">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="970" y="430" as="sourcePoint"/>
+                        <mxPoint x="1250" y="430" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-15" edge="1" parent="1" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="transcrição + rascunho">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1250" y="505" as="sourcePoint"/>
+                        <mxPoint x="970" y="505" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-16" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="ata = pendente_revisao; job = concluido">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="970" y="550" as="sourcePoint"/>
+                        <mxPoint x="690" y="550" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-17" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="tentativas + 1; proxima_tentativa_em = backoff exponencial">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="970" y="640" as="sourcePoint"/>
+                        <mxPoint x="690" y="640" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-18" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="GET /reunioes/{id}/ata (polling)">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="130" y="770" as="sourcePoint"/>
+                        <mxPoint x="410" y="770" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-19" edge="1" parent="1" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="estado atual da ata">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="410" y="820" as="sourcePoint"/>
+                        <mxPoint x="130" y="820" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td4-22" edge="1" parent="1" style="html=1;dashed=1;endArrow=none;strokeColor=#666666;" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="640" y="600" as="sourcePoint"/>
+                        <mxPoint x="1300" y="600" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="td5" name="5. Vista de deployment">
+        <mxGraphModel dx="1375" dy="1138" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="780" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="td5-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.8 - Vista de deployment: pipeline, contentores e app" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="GitHub Actions" vertex="1">
+                    <mxGeometry height="150" width="1060" x="40" y="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="lint + testes&lt;br&gt;ruff, pytest,&lt;br&gt;flutter analyze/test" vertex="1">
+                    <mxGeometry height="80" width="190" x="70" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="build de imagens" vertex="1">
+                    <mxGeometry height="80" width="190" x="310" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="push GHCR&lt;br&gt;(tag do commit)" vertex="1">
+                    <mxGeometry height="80" width="190" x="550" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="deploy" vertex="1">
+                    <mxGeometry height="80" width="190" x="790" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-8" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;" value="APK Android&lt;br&gt;(distribuído aos docentes)" vertex="1">
+                    <mxGeometry height="80" width="200" x="1160" y="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Docker Compose - ambiente de avaliação (TODO: VM ou máquina da equipa)" vertex="1">
+                    <mxGeometry height="430" width="1060" x="40" y="290" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="simulador-&lt;br&gt;calendario" vertex="1">
+                    <mxGeometry height="70" width="120" x="900" y="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="api" vertex="1">
+                    <mxGeometry height="70" width="160" x="700" y="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-12" parent="1" style="shape=folder;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;tabWidth=60;tabHeight=14;" value="media&lt;br&gt;(volume)" vertex="1">
+                    <mxGeometry height="70" width="160" x="700" y="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="worker" vertex="1">
+                    <mxGeometry height="70" width="160" x="700" y="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-14" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="postgres" vertex="1">
+                    <mxGeometry height="90" width="140" x="300" y="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="prometheus" vertex="1">
+                    <mxGeometry height="70" width="120" x="900" y="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="grafana" vertex="1">
+                    <mxGeometry height="70" width="120" x="900" y="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-29" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="api e worker partilham a mesma imagem (comando diferente). Prometheus recolhe /metrics de api e worker. Configuração por variáveis de ambiente; segredos (chave de IA) só em .env não versionado ou GitHub secrets. Rollback: docker compose up com a tag anterior; migrações Alembic só aditivas no MVP." vertex="1">
+                    <mxGeometry height="40" width="1300" x="40" y="735" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-17" edge="1" parent="1" source="td5-4" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-5" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-18" edge="1" parent="1" source="td5-5" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-6" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-19" edge="1" parent="1" source="td5-6" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-20" edge="1" parent="1" source="td5-5" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-8" value="build da app">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="405" y="100"/>
+                            <mxPoint x="1260" y="100"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td5-21" edge="1" parent="1" source="td5-7" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7972;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-9" value="docker compose up">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-22" edge="1" parent="1" source="td5-11" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.0000;exitY=0.3571;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.3333;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-14" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="365"/>
+                            <mxPoint x="630" y="490"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td5-23" edge="1" parent="1" source="td5-11" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-12" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-24" edge="1" parent="1" source="td5-13" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-12" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-25" edge="1" parent="1" source="td5-13" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-14" value="">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="370" y="595"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td5-26" edge="1" parent="1" source="td5-15" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-11" value="scrape">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-27" edge="1" parent="1" source="td5-16" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-15" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-28" edge="1" parent="1" source="td5-13" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-10" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>
