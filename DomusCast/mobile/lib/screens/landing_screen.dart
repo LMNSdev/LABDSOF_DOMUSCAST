@@ -158,7 +158,7 @@ class _LandingScreenState extends State<LandingScreen>
 const _features = [
   (Icons.report_problem_outlined, 'Reporta avarias em menos de 1 minuto'),
   (Icons.history_rounded, 'Acompanha o estado e histórico de cada problema'),
-  (Icons.wifi_off_rounded, 'Funciona sem internet — sincroniza quando voltar'),
+  (Icons.wifi_off_rounded, 'Funciona sem internet - sincroniza quando voltar'),
 ];
 
 class _FeatureTile extends StatelessWidget {

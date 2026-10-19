@@ -166,11 +166,11 @@ Não existe como secção própria nos docs. Mencionado parcialmente como `TODO`
 | Minimal end-to-end implementation | ✅ | Flutter → `POST /reportes` → PostgreSQL → `GET /reportes` → lista na app |
 | Source repository | ✅ | Repositório Git existe; código em `DomusCast/` |
 | Automated build | ✅ | `.github/workflows/ci.yml` (jobs `api` + `mobile`) |
-| Initial test | ✅ | 4 testes API (`test_reportes.py`) + 1 widget test (`widget_test.dart`); todos a passar |
+| Initial test | ✅ | 4 testes API (`test_reportes.py`) + 2 widget tests (`widget_test.dart`); todos a passar |
 | Containerized deployment | ✅ | `DomusCast/docker-compose.yml` + `DomusCast/api/Dockerfile` |
 
 **Notas de setup para Android:**
-- O `mobile/` tem o código Dart mas ainda não tem o scaffolding Android gerado (`flutter create . --platforms android --org com.condoapp` deve ser corrido uma vez por cada elemento da equipa que tenha Flutter instalado).
+- O `mobile/` já inclui o scaffolding Android (`android/`, `applicationId` `com.condoapp.condoapp`); só é preciso correr `flutter pub get`. Quem precisar de o regenerar usa `flutter create . --platforms android --org com.condoapp`.
 - A CI valida `flutter analyze` + `flutter test` sem necessitar de scaffolding Android.
 
 ---

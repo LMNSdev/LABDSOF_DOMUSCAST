@@ -6,7 +6,7 @@ from ..database import get_db
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.ReporteOut, status_code=201)
+@router.post("", response_model=schemas.ReporteOut, status_code=201)
 def criar_reporte(payload: schemas.ReporteCreate, db: Session = Depends(get_db)):
     if payload.idempotency_key:
         existing = (
@@ -28,6 +28,6 @@ def criar_reporte(payload: schemas.ReporteCreate, db: Session = Depends(get_db))
     return reporte
 
 
-@router.get("/", response_model=list[schemas.ReporteOut])
+@router.get("", response_model=list[schemas.ReporteOut])
 def listar_reportes(db: Session = Depends(get_db)):
     return db.query(models.Reporte).order_by(models.Reporte.criado_em.desc()).all()

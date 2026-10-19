@@ -12,7 +12,7 @@ Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | 24+ | Correr API + base de dados |
 | [Flutter SDK](https://docs.flutter.dev/get-started/install/windows/mobile) | 3.24+ | Compilar e correr a app Android |
 | [Android Studio](https://developer.android.com/studio) | Qualquer | Emulador Android (AVD) |
-| Python 3.11+ | — | Só para correr os testes da API localmente (opcional) |
+| Python 3.11+ | -- | Só para correr os testes da API localmente (opcional) |
 
 > **Nota:** o Docker Desktop tem de estar a correr antes de qualquer comando `docker compose`.
 
@@ -22,17 +22,17 @@ Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
 
 
 
-### 1 — Scaffolding Android (só quem ainda não o fez)
+### 1 - Scaffolding Android (só quem ainda não o fez)
 
 ```powershell
 cd DomusCast\mobile
-flutter create . --platforms android --org com.domuscast
+flutter create . --platforms android --org com.condoapp
 flutter pub get
 ```
 
 > Este comando gera os ficheiros nativos Android (`android/`) sem sobrescrever o código Dart existente.
 
-### 2 — Criar o emulador Android (Android Studio)
+### 2 - Criar o emulador Android (Android Studio)
 
 1. Abre o Android Studio
 2. **More Actions → Virtual Device Manager → +**
@@ -56,8 +56,8 @@ A base de dados é criada e as migrações correm automaticamente.
 | Endpoint | Descrição |
 |---|---|
 | `GET  /health` | Estado da API e da base de dados |
-| `POST /reportes/` | Criar reporte |
-| `GET  /reportes/` | Listar reportes |
+| `POST /reportes` | Criar reporte |
+| `GET  /reportes` | Listar reportes |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
 
 ### App Flutter
@@ -75,11 +75,11 @@ flutter run
 
 ## Testes
 
-### API (sem Docker — usa SQLite)
+### API (sem Docker, usa SQLite)
 
 ```powershell
 cd DomusCast\api
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
@@ -100,8 +100,13 @@ Ficheiro: `.github/workflows/ci.yml`
 
 | Job | O que faz |
 |---|---|
-| `api` | `ruff check` (lint) + `pytest tests/` |
+| `api` | `ruff check` (lint + segurança, ver `api/ruff.toml`) + `pip-audit` (SCA Python) + `pytest tests/` |
 | `mobile` | `flutter analyze` + `flutter test` |
+| `sast` | `semgrep` (regras `p/python` e `p/dockerfile`) |
+| `sca-dart` | `osv-scanner` sobre `pubspec.lock` (SCA Dart) |
+| `secrets` | `gitleaks` (deteta credenciais commitadas) |
+
+A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA do commit e o Dependabot (`.github/dependabot.yml`) propõe atualizações semanais. A imagem da API corre como utilizador não-root e o PostgreSQL só escuta em `127.0.0.1`.
 
 ---
 
@@ -119,7 +124,10 @@ DomusCast/
     alembic/            ← Migrações de base de dados
     tests/              ← 4 testes automatizados
     Dockerfile
-    requirements.txt
+    .dockerignore        ← Exclui .env, testes e ficheiros de desenvolvimento da imagem
+    requirements.txt    ← Dependências de produção (imagem Docker)
+    requirements-dev.txt ← + pytest, ruff, httpx, pip-audit (testes, lint e segurança)
+    ruff.toml            ← Regras de lint e segurança (bandit)
   mobile/
     lib/
       main.dart                    ← Entrada da app
@@ -153,7 +161,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | **Lista de reportes** | Cards com badge de estado colorido (Aberto / Em curso / Resolvido), data de criação e pull-to-refresh |
 | **Criar reporte** | Formulário com validação, contador de caracteres e aviso de privacidade |
 | **Modo offline** | Sem internet, o reporte é guardado localmente (SQLite) e enviado automaticamente quando a ligação voltar |
-| **Idempotência** | Cada reporte tem uma chave aleatória única — reenvios não criam duplicados |
+| **Idempotência** | Cada reporte tem uma chave aleatória única, reenvios não criam duplicados |
 | **Estado de erro** | Ecrã de "Sem ligação" com botão de retry |
 | **Estado vazio** | Mensagem de empty state quando não há reportes |
 
@@ -161,10 +169,10 @@ docs/                              ← Documentação do projeto (Sprint A, back
 
 | Funcionalidade | Detalhe |
 |---|---|
-| `POST /reportes/` | Cria reporte; idempotente via `idempotency_key` |
-| `GET /reportes/` | Lista todos os reportes por ordem de criação descendente |
+| `POST /reportes` | Cria reporte; idempotente via `idempotency_key` |
+| `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
 | `GET /health` | Verifica ligação à BD; retorna `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
-| Migrações Alembic | `0001_initial` — cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
+| Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
 | Swagger UI | Documentação interativa automática em `/docs` |
 
 ---

@@ -1,4 +1,4 @@
-"""initial schema — tabela reporte
+"""initial schema - tabela reporte
 
 Revision ID: 0001
 Revises:

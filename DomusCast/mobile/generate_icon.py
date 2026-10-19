@@ -27,7 +27,7 @@ draw.rectangle([bx, by, bx + bw, by + bh], fill=WHITE)
 roof_y = by - 100
 draw.polygon([(CX, roof_y), (bx - 30, by + 6), (bx + bw + 30, by + 6)], fill=WHITE)
 
-# janelas — 3 × 2
+# janelas - 3 × 2
 win, gap = 60, 22
 rows = [(by + 30, by + 30 + win), (by + 30 + win + gap, by + 30 + win + gap + win)]
 for wy1, wy2 in rows:
@@ -41,7 +41,7 @@ px = CX - pw // 2
 draw.rectangle([px, by + bh - ph, px + pw, by + bh], fill=CREAM)
 
 # ── sinal de broadcast (arcos) ────────────────────────────────────────────
-# Ponto central do sinal — no topo do telhado
+# Ponto central do sinal - no topo do telhado
 sx, sy = CX, roof_y - 18
 draw.ellipse([sx - 14, sy - 14, sx + 14, sy + 14], fill=WHITE)
 

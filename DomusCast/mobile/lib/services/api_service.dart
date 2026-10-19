@@ -11,7 +11,7 @@ class ApiService {
   }) : _client = client ?? http.Client();
 
   Future<List<Map<String, dynamic>>> getReportes() async {
-    final response = await _client.get(Uri.parse('$baseUrl/reportes/'));
+    final response = await _client.get(Uri.parse('$baseUrl/reportes'));
     if (response.statusCode == 200) {
       final list = jsonDecode(response.body) as List<dynamic>;
       return list.cast<Map<String, dynamic>>();
@@ -25,7 +25,7 @@ class ApiService {
     required String idempotencyKey,
   }) async {
     final response = await _client.post(
-      Uri.parse('$baseUrl/reportes/'),
+      Uri.parse('$baseUrl/reportes'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'descricao': descricao,

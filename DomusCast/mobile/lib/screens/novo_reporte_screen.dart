@@ -60,7 +60,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
               children: [
                 Icon(Icons.wifi_off, color: Colors.white, size: 18),
                 SizedBox(width: 8),
-                Expanded(child: Text('Sem ligação — reporte guardado para envio posterior')),
+                Expanded(child: Text('Sem ligação - reporte guardado para envio posterior')),
               ],
             ),
             backgroundColor: Colors.orange.shade700,

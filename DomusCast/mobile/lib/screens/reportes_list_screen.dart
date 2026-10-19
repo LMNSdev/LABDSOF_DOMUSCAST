@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import 'novo_reporte_screen.dart';
 
@@ -21,11 +22,30 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     _load();
   }
 
+  // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
+  // A idempotency_key evita duplicados em reenvios.
+  Future<void> _syncPending() async {
+    try {
+      final pending = await QueueDb.getPending();
+      for (final p in pending) {
+        await _api.criarReporte(
+          descricao: p['descricao'] as String,
+          fotoUrl: p['foto_url'] as String?,
+          idempotencyKey: p['idempotency_key'] as String,
+        );
+        await QueueDb.remove(p['id'] as int);
+      }
+    } catch (_) {
+      // Sem ligação ou fila indisponível: tenta de novo no próximo refresh.
+    }
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
+    await _syncPending();
     try {
       final reportes = await _api.getReportes();
       setState(() {
@@ -84,7 +104,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         foregroundColor: scheme.onPrimary,
         elevation: 0,
         title: const Text(
-          'DomusCast',
+          'Reportes',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
