@@ -374,9 +374,8 @@ Este capítulo conta como o produto funciona por dentro (diagramas em [technical
 
 Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com um único sistema externo, o serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. O serviço de IA que transcreve as assembleias também é chamado pelo Worker, mas é um componente de IA do produto e não conta como integração externa. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
 
-![Contexto do sistema](images/td-01-contexto.png)
+![alt text](<images/Contexto do sistema.svg>)
 
-<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-01-contexto.png -->
 
 | Ator / sistema externo | Interação |
 |---|---|
@@ -389,9 +388,7 @@ Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) 
 
 Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
-![Vista de containers](images/td-02-contentores.png)
-
-<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-02-contentores.png -->
+![alt text](<images/Vista de contentores.svg>)
 
 | Container | Responsabilidade | Dono dos dados |
 |---|---|---|
@@ -412,9 +409,7 @@ Três consequências desta separação, que o enunciado pede para justificar:
 
 Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
 
-![Modelo de dados](images/td-03-dados.png)
-
-<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-03-dados.png -->
+![alt text](<images/Modelo de dados.svg>)
 
 | Entidade | Campos principais | Notas |
 |---|---|---|
@@ -473,9 +468,7 @@ Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem
 
 Voltemos ao Rui. A assembleia acabou, ele carrega o áudio e segue com a sua vida; não faz sentido ficar com a app aberta à espera de uma transcrição que pode demorar minutos. É por isso que a transcrição é assíncrona (US-10, [Workflow 5](#53-user-journey)). O mesmo mecanismo serve a sincronização de calendário (US-13) e o envio de notificações (US-11).
 
-![Workflow assíncrono: transcrição da ata](images/td-04-workflow-assincrono.png)
-
-<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-04-workflow-assincrono.png -->
+![alt text](<images/Workflow assincrono - transcricao da ata.svg>)
 
 O enunciado pede que o workflow lide com retries, duplicados, falhas e consistência eventual. Eis como:
 
@@ -545,9 +538,7 @@ Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-suce
 
 Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline, vira imagem Docker e é implantado com Docker Compose no ambiente de avaliação; a app chega aos docentes como APK.
 
-![Vista de deployment](images/td-05-deployment.png)
-
-<!-- TODO (equipa): exportar a página correspondente de technical-design.drawio para images/td-05-deployment.png -->
+![alt text](<images/Vista de deployment.svg>)
 
 - **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
 - **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da IA, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
