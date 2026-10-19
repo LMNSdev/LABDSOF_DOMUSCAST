@@ -58,5 +58,5 @@
 | RNF-04 | Segurança | Controlo de acesso | Só residentes com QR code válido da sua fração entram; token não adivinhável e revogável; administrador com permissões diferentes | v0.3 | Draft |
 | RNF-05 | Observabilidade | Monitorização | Registo de erros para a equipa perceber rapidamente falhas | v0.1 | Draft |
 | RNF-06 | Resiliência | Funcionamento sem internet | O que o utilizador cria (reportes, reuniões, áudio) fica em fila local e é enviado automaticamente quando a internet voltar, sem perda; os itens mantêm o autor | v0.3 | Draft |
-| RNF-07 | Resiliência | Falha de serviços externos | Se um serviço externo falhar (calendário, IA), tenta alternativa quando existir, preserva os dados (ex.: áudio guardado, transcrição repetida) e informa que está em modo degradado | v0.1 | Draft |
+| RNF-07 | Resiliência | Falha de serviços de que dependemos | Se o serviço de calendário externo ou o serviço de IA falhar, tenta alternativa quando existir, preserva os dados (ex.: áudio guardado, transcrição repetida) e informa que está em modo degradado | v0.1 | Draft |
 | RNF-08 | Privacidade | Identidade e retenção do nome | Nome visível só ao administrador e ao próprio (e aos outros se o autor o mostrar), nunca em logs nem avisos; apagado ao remover a identidade ("Residente removido"); retenção dos reportes: TODO (equipa) | v0.3 | Draft |

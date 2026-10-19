@@ -331,7 +331,7 @@ Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-spri
 ## 7. Responsible AI Opportunity Assessment
 
 ### 7.1 Fluxo assistido por IA
-Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio, o serviço de IA gera transcrição e rascunho marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova antes da publicação. Serviço/modelo: TODO (equipa).
+Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio, o serviço de IA gera transcrição e rascunho marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova antes da publicação. O serviço de IA é um componente de IA do produto (enunciado 5.6) e não conta como a integração externa do projeto (6.5), que é o calendário ([8.6](#86-integração-externa)). Serviço/modelo: TODO (equipa).
 
 ### 7.2 Valor esperado
 Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as decisões a quem faltou ([capítulo 1](#1-relatório-de-problema-e-oportunidade)).
@@ -372,7 +372,7 @@ Este capítulo conta como o produto funciona por dentro (diagramas em [technical
 
 ### 8.1 Contexto do sistema
 
-Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com dois sistemas fora dele: o serviço de IA que transcreve as assembleias e um serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com um único sistema externo, o serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. O serviço de IA que transcreve as assembleias também é chamado pelo Worker, mas é um componente de IA do produto e não conta como integração externa. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
 
 ![Contexto do sistema](images/td-01-contexto.png)
 
@@ -381,8 +381,8 @@ Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) 
 | Ator / sistema externo | Interação |
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
-| Serviço de transcrição / IA | Recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Fornecedor ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
-| Serviço de calendário (simulador) | Container nosso que simula a API de um calendário externo, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| Serviço de transcrição (IA) | Componente de IA do produto, não conta como integração externa (6.5): recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Serviço/modelo ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
+| Serviço de calendário (simulador) | A integração externa do projeto: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
 | App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
 ### 8.2 Vista de Containers
@@ -400,7 +400,7 @@ Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da a
 | **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata, publicação de reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
 | **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
-| **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo: aceita eventos, devolve ids, e por configuração falha, atrasa ou devolve dados inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
+| **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo, com o contrato descrito em [8.6](#86-integração-externa): aceita eventos, devolve ids, e a pedido falha, atrasa ou devolve dados incompletos ou inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
 
 Três consequências desta separação, que o enunciado pede para justificar:
 
@@ -493,13 +493,31 @@ As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum forn
 
 ### 8.6 Integração externa
 
-O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **serviço de calendário** (US-13) e o **serviço de IA** (US-10). O enunciado exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo"; a de calendário é a que descrevemos em detalhe ([Workflow 4](#53-user-journey), [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
+O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo", que trate dados indisponíveis, atrasados, incompletos ou inválidos. A nossa é o **serviço de calendário** (US-13, [Workflow 4](#53-user-journey)), chamado só pelo Worker, e é um simulador. O serviço de IA (US-10) é também chamado pelo Worker e segue as mesmas regras de timeout e falha, mas é um componente de IA do produto e não conta para este requisito.
 
-1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário, um container nosso que imita a API de um serviço externo (criar evento, devolver id) e que, por configuração, falha, atrasa ou devolve datas inválidas. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
+**Porquê um simulador e não um serviço real gratuito.** O Google Calendar é gratuito, mas exige uma conta e credenciais da equipa, e os docentes não conseguiriam executá-lo (enunciado, secção 12); além disso não se consegue fazer falhar à ordem durante a demonstração. Um servidor CalDAV real num container (ex.: Radicale) seria reproduzível, mas só dá a falha "indisponível" (parar o container), e a equipa continuaria a ser dona do serviço, por isso o ganho de realismo é pequeno face ao esforço ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O simulador é reproduzível com `docker compose up` e dispara qualquer das quatro condições por comando.
+
+**Contrato do simulador.** Para ser "realista", imita um subconjunto da API de eventos do Google Calendar em vez de inventar um formato próprio:
+
+- `POST /calendars/{calendarId}/events` com `{summary, location, start: {dateTime}, end: {dateTime}}` devolve `200 {id, status: "confirmed", start, end}`; respostas de erro `400`, `429` (com `Retry-After`) e `503`;
+- `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento: `ok`, `indisponivel`, `lento`, `incompleto`, `invalido`.
+
+O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
+
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
 2. `IcsProvider`: a reunião entra no feed iCal do condomínio (`GET /condominios/{id}/calendario.ics`), que os residentes subscrevem uma vez no Google Calendar, Apple Calendar ou Outlook. Não depende de rede do lado do servidor, por isso serve de alternativa quando o serviço externo falha;
 3. nenhum: a reunião mantém-se na app com os dados locais e `estado_sync = degradado`.
 
-As regras são as mesmas para todas as chamadas externas (calendário e IA): timeout de 10 s; validação da resposta (datas válidas, campos obrigatórios; resposta inválida conta como falha); até 3 tentativas antes de passar ao nível seguinte; registo de cada falha em log com timestamp e componente (US-18); e um aviso visível na app quando o estado final é `alternativo` ou `degradado`. Chaves de API só por variável de ambiente.
+**As quatro condições do enunciado**, como o simulador as dispara e como o Worker reage:
+
+| Condição | Modo do simulador | Deteção | Tratamento |
+|---|---|---|---|
+| Indisponível | `indisponivel` (503) ou container parado | Erro de ligação ou 5xx | Retry com backoff, até 3 tentativas; depois passa ao `IcsProvider` |
+| Atrasado | `lento` (resposta depois de `atraso_ms`) ou `429` | Timeout de 10 s; `429` respeita `Retry-After` | Conta como falha; mesmo retry e mesma passagem ao nível seguinte |
+| Incompleto | `incompleto` (200 sem `id` ou sem `start`) | Validação dos campos obrigatórios | Conta como falha |
+| Inválido | `invalido` (200 com datas mal formadas ou `end` antes de `start`) | Validação de formato e de coerência das datas | Conta como falha |
+
+As regras valem para todas as chamadas externas e de IA: timeout de 10 s; até 3 tentativas antes de passar ao nível seguinte; registo de cada falha em log com timestamp e componente (US-18); e um aviso visível na app quando o estado final é `alternativo` ou `degradado`. Chaves de API só por variável de ambiente.
 
 É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: serviço de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
 
@@ -574,7 +592,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 ### ADR-005 PostgreSQL como única base de dados e como fila de jobs
 - **Contexto:** o enunciado desaconselha várias tecnologias de base de dados sem justificação; o volume de jobs é baixo (uma ata por assembleia, poucas reuniões).
 - **Decisão:** PostgreSQL para todos os dados, com uma tabela `job` consumida por `SELECT ... FOR UPDATE SKIP LOCKED` a servir de fila; ficheiros (fotos, áudios) num volume Docker referenciado por caminho.
-- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um containers e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
+- **Alternativas:** broker dedicado (RabbitMQ, Redis): mais um container e mais um ponto de falha sem ganho para este volume; object storage (S3) para ficheiros: custo e dependência externa desnecessários no MVP.
 - **Consequências:** uma única transação entre a alteração de domínio e a criação do job (sem perda nem duplicação) e menos infraestrutura. O polling introduz alguns segundos de latência, aceitáveis para transcrição e calendário.
 
 ### ADR-006 Fila local no dispositivo (offline-first para escrita)
@@ -584,10 +602,10 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 - **Consequências:** escrever é sempre possível; ler continua a precisar de rede, exceto a cache da última lista; itens de identidades removidas são recusados pela API e ficam no dispositivo.
 
 ### ADR-007 Integração de calendário por simulador e feed iCal
-- **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com indisponibilidade, atraso e dados inválidos; US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
-- **Decisão:** um simulador de calendário em container próprio (API HTTP mínima com falhas configuráveis) como serviço externo, um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário), e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
-- **Alternativas:** Google Calendar API como serviço principal: exige projeto Google Cloud, OAuth por administrador ou service account num calendário partilhado, e não responde a "de quem é o calendário"; só iCal, sem simulador: não demonstra a falha de um serviço externo nem retries no servidor.
-- **Consequências:** zero custo e zero contas externas; a demonstração de falha é totalmente controlável; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O simulador não é um sistema real, o que o enunciado aceita explicitamente; se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
+- **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com dados indisponíveis, atrasados, incompletos ou inválidos, e que o que não possa ser executado pelos docentes seja identificado (secção 12). O serviço de IA não conta como integração externa, por isso a do calendário é a única. US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
+- **Decisão:** um simulador de calendário em container próprio, que imita um subconjunto da API de eventos do Google Calendar e muda de comportamento por comando (`ok`, `indisponivel`, `lento`, `incompleto`, `invalido`), como serviço externo; um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário); e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
+- **Alternativas:** Google Calendar API: gratuita, mas exige projeto Google Cloud, OAuth ou service account e uma conta da equipa, os docentes não a conseguem executar, não responde a "de quem é o calendário" e não se pode fazer falhar à ordem; servidor CalDAV real em container (ex.: Radicale): reproduzível e com protocolo real, mas só se consegue simular "indisponível" (parar o container), exigiria um proxy de falhas para as outras três condições, e a equipa continua a ser dona do serviço; só iCal, sem simulador: não haveria integração externa nem falha a demonstrar.
+- **Consequências:** zero custo e zero contas externas; as quatro condições do enunciado disparam-se por comando, em demonstração e em testes automáticos sem rede; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O risco é o simulador parecer artificial: mitiga-se copiando o contrato de uma API real e testando o `ServicoCalendarioProvider` contra esse contrato. Se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
 
 ### ADR-008 Autenticação do administrador mock no MVP, autorização real
 - **Contexto:** o enunciado aceita autenticação mock no MVP; a autorização (quem vê nome e fração) é central à privacidade do produto.
