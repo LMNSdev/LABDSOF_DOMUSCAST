@@ -24,7 +24,7 @@ Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, spr
 ### Controlo de versões (Git) - GitHub Flow
 - `main` é a branch de produção, sempre estável; nunca se commita diretamente.
 - Uma branch curta por funcionalidade/tarefa, integrada em `main` por PR após code review.
-- Mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é a issue associada.
+- Mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é a issue associada. Um hook `commit-msg` ([.githooks/commit-msg](../../.githooks/commit-msg)) rejeita commits fora deste formato. Ativar uma vez por clone com `git config core.hooksPath .githooks` (em Linux/macOS, também `chmod +x .githooks/commit-msg`).
 
 ![GitHub Flow: branch principal `main` sempre estável, branches de funcionalidade curtas, integradas de volta via PR após code review e deployment/CI](./images/github_flow.png)
 
