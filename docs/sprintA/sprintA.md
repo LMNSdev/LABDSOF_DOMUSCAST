@@ -86,9 +86,9 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 | Fonte | Perfil do autor | Problemas relatados | Relevância |
 |---|---|---|---|
-| [r/TudoCasa — "Problema com empresa de gestão do condomínio"](https://www.reddit.com/r/TudoCasa/comments/1pnxai2/problema_com_empresa_de_gest%C3%A3o_do_condom%C3%ADnio/) | Condómino afetado por infiltração num prédio com empresa profissional | Avaria sem resolução durante meses; empresa não devolve datas; buraco na parede deixado aberto; morador questiona negligência legal da empresa | Valida: avaria que se agrava por falta de acompanhamento; ausência de estado do reporte; risco legal/de seguro para o responsável |
-| [r/tudoCondominio — "App / software recomendado para gestão do condomínio"](https://www.reddit.com/r/tudoCondominio/comments/1w9wv5z/app_software_recomendado_para_gest%C3%A3o_do_condominio/) | Administrador voluntário sem empresa, a gerir o próprio prédio "em part-time" | Vizinhos que "nunca recebem" avisos nem convocatórias; procura apps acessíveis a não-profissionais; preço é critério crítico; a maioria das apps é pensada para empresas | Valida: persona do administrador voluntário; problema de decisões que não chegam a todos; gap de mercado para gestão interna sem empresa |
-| [r/tudoCondominio — "Condomínio não presta e moradores não se importam"](https://www.reddit.com/r/tudoCondominio/comments/1smgg9c/condom%C3%ADnio_n%C3%A3o_presta_e_moradores_n%C3%A3o_se_importam/) | Moradora com empresa profissional de gestão | E-mails sem resposta durante 2 meses; obras de 20.000€ mal executadas sem prestação de contas; reuniões inexistentes ou sem quórum; administrador sem provas do trabalho feito | Valida: ausência de histórico auditável; comunicação que falha; baixo envolvimento dos moradores; risco de responsabilidade do gestor |
+| [r/TudoCasa - "Problema com empresa de gestão do condomínio"](https://www.reddit.com/r/TudoCasa/comments/1pnxai2/problema_com_empresa_de_gest%C3%A3o_do_condom%C3%ADnio/) | Condómino afetado por infiltração num prédio com empresa profissional | Avaria sem resolução durante meses; empresa não devolve datas; buraco na parede deixado aberto; morador questiona negligência legal da empresa | Valida: avaria que se agrava por falta de acompanhamento; ausência de estado do reporte; risco legal/de seguro para o responsável |
+| [r/tudoCondominio - "App / software recomendado para gestão do condomínio"](https://www.reddit.com/r/tudoCondominio/comments/1w9wv5z/app_software_recomendado_para_gest%C3%A3o_do_condominio/) | Administrador voluntário sem empresa, a gerir o próprio prédio "em part-time" | Vizinhos que "nunca recebem" avisos nem convocatórias; procura apps acessíveis a não-profissionais; preço é critério crítico; a maioria das apps é pensada para empresas | Valida: persona do administrador voluntário; problema de decisões que não chegam a todos; gap de mercado para gestão interna sem empresa |
+| [r/tudoCondominio - "Condomínio não presta e moradores não se importam"](https://www.reddit.com/r/tudoCondominio/comments/1smgg9c/condom%C3%ADnio_n%C3%A3o_presta_e_moradores_n%C3%A3o_se_importam/) | Moradora com empresa profissional de gestão | E-mails sem resposta durante 2 meses; obras de 20.000€ mal executadas sem prestação de contas; reuniões inexistentes ou sem quórum; administrador sem provas do trabalho feito | Valida: ausência de histórico auditável; comunicação que falha; baixo envolvimento dos moradores; risco de responsabilidade do gestor |
 
 **Padrão identificado nas três fontes:**
 - A comunicação sobre avarias e decisões depende de canais informais (e-mail, telefone, presença física) sem estado nem histórico, em contextos tanto de administração profissional como voluntária;
@@ -97,7 +97,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 **Limitações desta evidência:**
 - Amostra de conveniência: três publicações anónimas em fóruns públicos do Reddit, sem representatividade estatística;
-- Os posts descrevem maioritariamente condomínios com empresa profissional, enquanto o produto foca condomínios autogeridos — os problemas de comunicação e rastreabilidade são comuns a ambos os contextos, mas a sua intensidade no contexto autogerido não está diretamente demonstrada;
+- Os posts descrevem maioritariamente condomínios com empresa profissional, enquanto o produto foca condomínios autogeridos, os problemas de comunicação e rastreabilidade são comuns a ambos os contextos, mas a sua intensidade no contexto autogerido não está diretamente demonstrada;
 - Os resultados do questionário distribuído pela equipa (Google Forms) ainda não estão disponíveis; quando estiverem, esta secção será atualizada com dados primários.
 
 ### Pressupostos e riscos
@@ -651,3 +651,132 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 ---
 
 ## 11. Walking Skeleton
+
+O Walking Skeleton prova o desenho ponta a ponta com a fatia mínima funcional: o residente submete um reporte na app Flutter -> `POST /reportes` -> PostgreSQL -> `GET /reportes` volta à lista na app. Sem autenticação real (ADR-008), sem IA, sem calendário, esses componentes entram no Sprint B.
+
+Todo o código vive em `DomusCast/`.
+
+### Estrutura do repositório
+
+```
+DomusCast/
+  api/
+    app/
+      main.py           # FastAPI app + /health
+      database.py       # SQLAlchemy engine + get_db
+      models.py         # Reporte (SQLAlchemy ORM)
+      schemas.py        # ReporteCreate / ReporteOut (Pydantic)
+      routers/
+        reportes.py     # POST /reportes, GET /reportes
+    alembic/
+      versions/
+        0001_initial.py # Cria tabela reporte + enum estado_reporte
+    tests/
+      conftest.py       # SQLite em memória + TestClient
+      test_reportes.py  # 4 testes: health, criar, listar, idempotência
+    Dockerfile
+    .dockerignore       # Exclui .env, testes e ficheiros de desenvolvimento da imagem
+    entrypoint.sh       # alembic upgrade head -> uvicorn
+    requirements.txt        # Dependências de produção (imagem Docker)
+    requirements-dev.txt    # + pytest, ruff, httpx, pip-audit (testes, lint e segurança)
+    ruff.toml               # Regras de lint e segurança (bandit)
+  mobile/
+    lib/
+      main.dart                        # DomusCastApp (MaterialApp)
+      theme.dart                       # Tema centralizado (azul #0F3478)
+      screens/
+        landing_screen.dart            # Ecrã inicial de marca (DomusCast) com botão "Entrar"
+        reportes_list_screen.dart      # Lista de reportes + pull-to-refresh + envio da fila offline
+        novo_reporte_screen.dart       # Formulário + fallback para fila local
+      services/
+        api_service.dart               # HTTP GET/POST /reportes
+      local/
+        queue_db.dart                  # Fila SQLite offline (sqflite)
+    test/
+      widget_test.dart                 # Smoke tests: landing e lista (AppBar + loading spinner)
+    assets/icon/icon.png               # Ícone da app
+    generate_icon.py                   # Gera o ícone da app
+    pubspec.yaml
+  landing/
+    index.html                         # Landing page web
+  README.md             # Setup, endpoints e testes
+  docker-compose.yml    # api + postgres (postgres com health check)
+.github/
+  workflows/
+    ci.yml              # jobs: api (ruff + pip-audit + pytest) | mobile | sast (semgrep) | sca-dart (osv) | secrets (gitleaks)
+  dependabot.yml        # atualizações semanais: pip, pub, docker, github-actions
+```
+
+### Como correr localmente
+
+```bash
+# Subir API + PostgreSQL
+cd DomusCast
+docker compose up --build
+
+# Verificar saúde
+curl http://localhost:8000/health
+# -> {"status":"ok","db":"ok"}
+
+# Correr testes da API (SQLite, sem Docker)
+cd DomusCast/api
+pip install -r requirements-dev.txt
+pytest tests/ -v
+
+# Scaffolding Android (uma vez, na primeira instalação Flutter)
+cd DomusCast/mobile
+flutter create . --platforms android --org com.condoapp
+flutter pub get
+flutter run
+```
+
+### Funcionalidade implementada
+
+| Componente | O que faz |
+|---|---|
+| `GET /health` | Verifica ligação à BD via sessão injectada; retorna `{"status":"ok","db":"ok"}` |
+| `POST /reportes` | Cria reporte; idempotente via `idempotency_key` (offline-first) |
+| `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
+| Alembic `0001` | Cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
+| Flutter landing screen | Ecrã inicial de marca (gradiente azul, animação, funcionalidades) com botão "Entrar" que abre a lista de reportes |
+| Flutter list screen | Envia a fila offline pendente, carrega reportes; mostra loading -> lista / erro com "Tentar de novo" |
+| Flutter create screen | Formulário com validação; cai para `QueueDb` (SQLite) se sem internet |
+| `QueueDb` | Fila local persistente; cada item tem `idempotency_key` para envio sem duplicados; a lista envia-os por ordem a cada carregamento/refresh e remove os enviados |
+| `docker compose up` | Sobe `api` + `postgres`; health check garante ordem de arranque; migrations no `entrypoint.sh` |
+
+### Testes automatizados
+
+| Ficheiro | Testes |
+|---|---|
+| `api/tests/test_reportes.py` | `test_health`, `test_criar_reporte`, `test_listar_reportes`, `test_idempotencia` |
+| `mobile/test/widget_test.dart` | Smoke tests: `DomusCastApp` renderiza a landing (marca + botão "Entrar"); `ReportesListScreen` renderiza AppBar "Reportes" + `CircularProgressIndicator` |
+
+### CI/CD
+
+Pipeline `.github/workflows/ci.yml`, cinco jobs paralelos em cada PR e push para `main`:
+
+| Job | Tipo | Passos |
+|---|---|---|
+| `api` | Qualidade + SCA + testes | `pip install -r requirements-dev.txt` -> `ruff check` (lint + regras de segurança bandit, `ruff.toml`) -> `pip-audit` (SCA: vulnerabilidades conhecidas nas dependências Python de produção, incluindo transitivas) -> `pytest tests/ -v` (SQLite; sem serviço externo) |
+| `mobile` | Análise estática + testes | `flutter pub get` -> `flutter analyze` (`flutter_lints`) -> `flutter test` |
+| `sast` | SAST | `semgrep` com as regras da comunidade `p/python` e `p/dockerfile` sobre `DomusCast/api`; falha em qualquer achado |
+| `sca-dart` | SCA | `osv-scanner` sobre `pubspec.lock` (o `pip-audit` não cobre Dart) |
+| `secrets` | Segredos | `gitleaks` sobre o histórico do repositório (deteta credenciais commitadas) |
+
+**Secure by default na pipeline:**
+- `permissions: contents: read` ao nível do workflow: o `GITHUB_TOKEN` só lê o repositório (menor privilégio); cada job que precise de mais declara-o explicitamente.
+- Actions de terceiros fixadas ao SHA do commit, não a tags móveis, para travar ataques à cadeia de fornecimento; o `osv-scanner` é descarregado numa versão fixa e validado por SHA-256. O Dependabot propõe as atualizações.
+- `persist-credentials: false` no checkout: o token não fica guardado no `.git` do runner.
+- `timeout-minutes` por job e `concurrency` com cancelamento das execuções antigas do mesmo PR.
+- `.github/dependabot.yml`: atualizações semanais de `pip`, `pub`, `docker` e `github-actions`.
+- Segredos (chaves, credenciais) apenas por secrets do GitHub Actions ou variáveis de ambiente, nunca no código; o job `secrets` verifica-o. Ver [§10 Security and Privacy Assessment](#10-security-and-privacy-assessment).
+
+**Secure by default no container e no ambiente local:**
+- A imagem da API corre como utilizador sem privilégios (`appuser`, uid 10001), e o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
+- No `docker-compose.yml`, o PostgreSQL só escuta em `127.0.0.1`.
+
+Limitações assumidas no Sprint A: o CodeQL e o `dependency-review-action` ficam de fora porque exigem repositório público ou GitHub Advanced Security; não há ainda scan da imagem Docker nem build/push para o GitHub Container Registry; e as credenciais do `docker-compose.yml` (`condoapp`) são valores de desenvolvimento, a substituir por secrets em qualquer ambiente partilhado.
+
+### Componentes excluídos (Sprint B)
+
+O Worker, a IA de transcrição, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
