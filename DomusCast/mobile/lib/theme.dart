@@ -34,7 +34,7 @@ final appTheme = ThemeData(
       textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     ),
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     elevation: 1,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     margin: EdgeInsets.zero,
