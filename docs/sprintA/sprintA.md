@@ -44,10 +44,25 @@ GitHub Issues/Projects; cada issue é referenciada nos commits e PRs.
 | Frontend Developer | Parte visual e interativa da app |
 
 ### Definition of Ready (DoR)
-Uma User Story entra num sprint quando: tem critérios de aceitação claros e testáveis; não depende de outra tarefa; está estimada pela equipa; o seu valor é compreendido por todos sem ambiguidade.
+Uma User Story só entra num sprint quando todos os pontos aplicáveis estão confirmados:
+
+- **Valor e âmbito claros:** a equipa compreende quem beneficia, qual o problema resolvido e o que fica fora da tarefa; a história tem dimensão estimável para ser concluída num sprint.
+- **Diagrama de Sequência:** a tarefa de produto inclui o percurso completo necessário para cumprir a história: interface/frontend, API/backend, persistência e integração entre componentes, quando aplicável. Não se divide a mesma funcionalidade em tarefas independentes de frontend e backend; trabalho exclusivamente técnico ou sem interface deve ter essa exceção identificada e justificada.
+- **Comportamento definido:** critérios de aceitação claros, verificáveis e alinhados com as regras de negócio, incluindo estados relevantes (por exemplo, carregamento, sucesso, vazio, erro e modo offline, quando aplicáveis).
+- **Desenho da interface preparado:** se a história altera ou cria uma interface, existe um wireframe, mockup ou protótipo acessível à equipa, com os ecrãs e interações principais definidos. O nível de detalhe deve permitir implementar e validar a experiência; não é necessário um mockup para tarefas sem impacto visual, que devem ser marcadas como não aplicável.
+- **Contrato técnico conhecido:** endpoints e formatos de pedido/resposta, dados a persistir, validações, permissões e respostas de erro estão identificados ou têm uma decisão acordada. Se algum destes elementos não se aplicar, isso fica explícito.
+- **Dependências tratadas:** dependências externas estão disponíveis ou têm alternativa definida; dependências internas estão concluídas ou sequenciadas no sprint sem bloquear a conclusão da história.
+- **Validação planeada:** estão identificados os testes necessários para o percurso completo, incluindo frontend, backend e integração quando aplicáveis, com exemplos de sucesso e falha que permitam verificar os critérios de aceitação.
 
 ### Definition of Done (DoD)
-Uma User Story está concluída quando: o PR foi revisto e aprovado por pelo menos 1 pessoa; a CI passa (build, testes automatizados, linting/análise estática); tem testes automatizados relevantes; está integrada em `main`; a documentação foi atualizada; cumpre os critérios de aceitação.
+Uma User Story só é considerada concluída quando todos os pontos aplicáveis estão satisfeitos:
+
+- **Sequência cumprida:** a funcionalidade está implementada de ponta a ponta, incluindo frontend, backend, persistência e integração entre componentes, quando aplicáveis. Uma camada não fica como trabalho pendente separado para a mesma funcionalidade.
+- **Interface validada:** quando existe impacto visual, a interface implementada corresponde ao wireframe, mockup ou protótipo acordado; diferenças necessárias foram revistas e aprovadas pela equipa. Tarefas sem impacto visual ficam assinaladas como não aplicável.
+- **Critérios cumpridos:** todos os critérios de aceitação da história foram verificados, incluindo permissões, validações e requisitos de acessibilidade, quando aplicáveis.
+- **Testes concluídos:** os testes automatizados relevantes para as camadas alteradas foram adicionados ou atualizados e passam; o percurso integrado foi validado quando a história envolve mais de uma camada. A CI passa (build, testes automatizados e linting/análise estática).
+- **Revisão e integração:** o PR foi revisto e aprovado por pelo menos uma pessoa e a alteração foi integrada em `main`.
+- **Documentação atualizada:** a documentação técnica e de utilização afetada pela alteração foi atualizada.
 
 ---
 
@@ -127,10 +142,6 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 ## 2. Análise de Mercado e Concorrência
 
-TODO: adicionar dados/fontes/evidências da pesquisa.
-
-*Método: sites oficiais dos principais produtos (setembro 2026) + observação direta. Dados de lojas de apps e datas de lançamento a validar antes da entrega final.*
-
 **Achado principal:** as soluções existentes (TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) giram à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos) e da **governança** (votações, atas), não da **gestão de problemas/informação do dia a dia**. É esse o espaço da nossa app.
 
 ### 2.1 Quadro comparativo de alternativas e concorrentes
@@ -157,7 +168,7 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 ### 2.3 Proposta de Valor
 
-> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (propriedade horizontal), que hoje coordenam avarias e avisos por grupos de WhatsApp caóticos ou posters desatualizados, o [Nome do Produto] é uma app de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software profissional (contabilidade e governança) e das soluções smart building (hardware), é gratuito/low-cost, de configuração imediata para um prédio, desenhado para o residente e com privacidade por desenho (sem telefones nem perfis além do essencial).
+> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (propriedade horizontal), que hoje coordenam avarias e avisos por grupos de WhatsApp caóticos ou posters desatualizados, o DomusCast é uma app de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software profissional (contabilidade e governança) e das soluções smart building (hardware), é gratuito/low-cost, de configuração imediata para um prédio, desenhado para o residente e com privacidade por desenho (sem telefones nem perfis além do essencial).
 
 ---
 
