@@ -769,7 +769,26 @@ flutter run
 | `api/tests/test_reportes.py` | `test_health`, `test_criar_reporte`, `test_listar_reportes`, `test_idempotencia` |
 | `mobile/test/widget_test.dart` | Smoke tests: `DomusCastApp` renderiza a landing (marca + botão "Entrar"); `ReportesListScreen` renderiza AppBar "Reportes" + `CircularProgressIndicator` |
 
-### CI/CD
+### Container
+
+O ambiente local e de avaliação sobe com um único comando (`docker compose up --build`) a partir de `DomusCast/docker-compose.yml`, que define dois serviços e um volume:
+
+| Serviço | Imagem / Build | Responsabilidade |
+|---|---|---|
+| `postgres` | `postgres:16` | Base de dados PostgreSQL; dados persistidos no volume `pgdata` |
+| `api` | Build local (`DomusCast/api/Dockerfile`) | FastAPI + Alembic; arranca só depois do `postgres` estar saudável |
+
+**Ordem de arranque garantida por health check.** O `postgres` declara um health check (`pg_isready -U condoapp`, intervalo de 5 s, até 10 tentativas); o serviço `api` tem `depends_on: postgres: condition: service_healthy`, pelo que o Uvicorn só sobe depois de a base de dados aceitar ligações.
+
+**Configuração por variáveis de ambiente.** A `DATABASE_URL` é injetada no container `api` via `environment`; em qualquer ambiente partilhado substitui-se por secrets — os valores de desenvolvimento (`condoapp`) nunca entram em produção.
+
+**Segurança no container.** O PostgreSQL só escuta em `127.0.0.1:5432` (não exposto na rede do host). A imagem da API usa `python:3.12-slim` como base e corre como utilizador sem privilégios (`appuser`, uid 10001); o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
+
+**Entrypoint.** O `entrypoint.sh` executa primeiro `alembic upgrade head` (aplica migrações pendentes) e só depois inicia o `uvicorn`, garantindo que o esquema está sempre atualizado antes de a API aceitar pedidos.
+
+---
+
+### Automated Build
 
 Pipeline `.github/workflows/ci.yml`, cinco jobs paralelos em cada PR e push para `main`:
 
