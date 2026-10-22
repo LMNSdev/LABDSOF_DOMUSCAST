@@ -1,7 +1,7 @@
 # Análise do Sprint A — O que está feito, incompleto e por fazer
 
 > Referência principal: **LABDSOF-26-27-Assignment cap. 7.1** (Sprint 1 deliverables)
-> Data da análise: 2026-10-15
+> Data da análise: 2026-10-15; ponto 6 atualizado em 2026-10-22.
 
 ---
 
@@ -14,7 +14,7 @@
 | 3 | User Research | ⚠️ | [sprintA/sprintA.md §3](sprintA/sprintA.md#3-investigação-de-utilizadores) |
 | 4 | Product Vision | ✅ | [sprintA/sprintA.md §5](sprintA/sprintA.md#5-product-vision) |
 | 5 | Product Backlog | ⚠️ | [backlog.md](backlog.md) |
-| 6 | Responsible AI Opportunity Assessment | ⚠️ | [sprintA/sprintA.md §7](sprintA/sprintA.md#7-responsible-ai-opportunity-assessment) |
+| 6 | Responsible AI Opportunity Assessment | ✅ | [sprintA/sprintA.md §7](sprintA/sprintA.md#7-responsible-ai-opportunity-assessment) |
 | 7 | Technical Design | ✅ | [sprintA/sprintA.md §8](sprintA/sprintA.md#8-technical-design) |
 | 8 | Architecture Decision Records | ✅ | [sprintA/sprintA.md §9](sprintA/sprintA.md#9-architecture-decision-records) |
 | 9 | Security and Privacy Assessment | ✅ | [sprintA/sprintA.md §10](sprintA/sprintA.md#10-security-and-privacy-assessment) |
@@ -58,7 +58,7 @@
 
 ---
 
-### ⚠️ Incompleto (estrutura existe, falta conteúdo obrigatório)
+### ⚠️ Itens com conteúdo ou validação pendente
 
 #### 1 — Problem and Opportunity Report — [§1](sprintA/sprintA.md#1-relatório-de-problema-e-oportunidade)
 
@@ -109,20 +109,16 @@
 | Proposed AI-assisted workflow | ✅ | Transcrição + rascunho de ata (§7.1) |
 | Expected value | ✅ | §7.2 |
 | Risks | ✅ | §7.3 |
-| Evaluation approach | ⚠️ | Estrutura presente (§7.4) mas faltam: critérios de aceitação (`TODO`), latência máxima aceitável (`TODO`), custo por hora de áudio (`TODO`), modelo/serviço escolhido (`TODO`) |
+| Evaluation approach | ✅ | §7.4 define conjunto sintético, métricas, metas propostas, latência e estimativa de custo; §7.1 propõe os modelos locais. Os valores serão medidos no Sprint B/C. |
 | Baseline and fallback | ✅ | §7.5 |
 
-**O que falta em §7.4:**
-- Escolher o serviço/modelo de transcrição (ex.: Whisper, Google STT)
-- Definir critério de aceitação quantitativo (ex.: ≥ 80% das decisões captadas, ≤ 5% de informação inventada)
-- Definir latência máxima aceitável
-- Definir custo estimado por hora de áudio
+**O que falta executar:** implementar a proposta local no Sprint B e medir qualidade, latência, recursos e custo na máquina de demonstração no Sprint B/C. As metas de §7.4 ainda não são resultados.
 
 ---
 
 #### Operating costs estimation
 
-Não existe como secção própria nos docs. Mencionado parcialmente como `TODO` no §7.4 (custo por hora de áudio). O assignment não exige uma secção dedicada de custos operacionais no Sprint 1, mas o tema está incompleto para o AI assessment.
+O custo da IA está estimado em [§7.4](sprintA/sprintA.md#74-abordagem-de-avaliação), com pressupostos explícitos e medição futura. Continua a faltar uma estimativa dos custos operacionais globais do produto, se a equipa decidir incluí-la.
 
 ---
 
@@ -185,7 +181,7 @@ Não existe como secção própria nos docs. Mencionado parcialmente como `TODO`
 | Domain model | ✅ | [sprintA.md §8.3](sprintA/sprintA.md#83-modelo-de-dados) — 13 entidades com campos e relações |
 | Architecture & Technology | ✅ | [sprintA.md §8](sprintA/sprintA.md#8-technical-design) + [§9](sprintA/sprintA.md#9-architecture-decision-records) — stack definida (Flutter, FastAPI, PostgreSQL) + 9 ADRs |
 | Assumptions & Dependencies | ✅ | [sprintA.md §1](sprintA/sprintA.md#pressupostos-e-riscos) |
-| Operating costs estimation | ⚠️ | Só mencionado como TODO no §7.4 (custo por hora de áudio) |
+| Operating costs estimation | ⚠️ | Custo da IA estimado em [sprintA.md §7.4](sprintA/sprintA.md#74-abordagem-de-avaliação); custos globais do produto ainda sem estimativa |
 | Prioritized Product Backlog (epics) | ✅ | [backlog.md](backlog.md) |
 | NFRs | ✅ | [requisitos.md](requisitos.md#requisitos-não-funcionais) |
 | High-level scope of Sprint 1 | ✅ | [backlog.md §2](backlog.md#2-plano-de-release-inicial-visão-multi-sprint) |

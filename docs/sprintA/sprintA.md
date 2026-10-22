@@ -301,7 +301,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 | **Alcance das decisões e avisos** | Convocatórias, atas e avisos chegam a quem faltou | Testes automatizados: cada publicação fica acessível a todos e gera notificação; cenário com guião a localizar uma decisão no quadro de avisos vs no WhatsApp simulado |
 | **Inclusão e acessibilidade** | Pouco digitais e pessoas com limitações de visão/audição não ficam excluídos | Ferramentas automáticas de acessibilidade + verificação manual com leitor de ecrã e teclado (WCAG 2.1 AA); um vizinho conclui o reporte por outro com a própria identidade; avaliação heurística (Nielsen) |
 | **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), serviço de calendário em baixo (iCal como alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, valores a definir no Technical Design |
-| **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios de aceitação a fixar em [7.4](#74-abordagem-de-avaliação)); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
+| **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios propostos em [7.4](#74-abordagem-de-avaliação)); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
 
 ---
 
@@ -341,39 +341,53 @@ Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-spri
 
 ## 7. Responsible AI Opportunity Assessment
 
-### 7.1 Fluxo assistido por IA
-Transcrição e rascunho de ata (US-10, Workflow 5): o administrador carrega o áudio, o serviço de IA gera transcrição e rascunho marcado como "gerado por IA, pendente de revisão"; o administrador revê, edita e aprova antes da publicação. O serviço de IA é um componente de IA do produto (enunciado 5.6) e não conta como a integração externa do projeto (6.5), que é o calendário ([8.6](#86-integração-externa)). Serviço/modelo: TODO (equipa).
+### 7.1 Fluxo proposto assistido por IA
+
+A oportunidade é ajudar o administrador voluntário a preparar a ata de uma assembleia (US-10, [Workflow 5](#53-user-journey)), sem delegar à IA a decisão sobre o que foi aprovado. O administrador informa os presentes de que vai gravar e associa o áudio à reunião. A app guarda-o no dispositivo e, se estiver sem rede, envia-o quando a ligação voltar (US-18). A API guarda o ficheiro e cria um job; o Worker transcreve o áudio e produz um rascunho com decisões, responsáveis, prazos e valores **apenas quando constam da gravação**. Cada decisão proposta deve apontar para o trecho temporal que a suporta; passagens incertas ficam assinaladas como «por confirmar», em vez de serem completadas por suposição.
+
+A proposta técnica inicial para o Sprint B é executar no Worker o [**whisper.cpp**, modelo multilingue `base`](https://github.com/ggml-org/whisper.cpp/blob/master/README.md), para transcrição em português, e o [**Qwen3-1.7B-GGUF**](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF), via `llama.cpp`, para estruturar o rascunho. Os modelos e binários serão fixados por versão e preparados antes da demonstração; a qualidade em português europeu e os recursos necessários serão verificados em [7.4](#74-abordagem-de-avaliação), antes de se considerar a proposta adequada. A execução local evita enviar áudio a um fornecedor de IA e dispensa taxas por chamada, mas usa CPU, memória, disco e energia. Este componente de IA não substitui a integração externa do calendário exigida pelo enunciado ([8.6](#86-integração-externa)).
+
+Transcrição e rascunho ficam acessíveis só aos administradores, com a indicação «gerado por IA, pendente de revisão». O administrador ouve os trechos relevantes, corrige o texto e aprova-o. **Só a ata aprovada é publicada aos residentes**; a IA não publica atas nem altera reuniões, reportes ou permissões.
 
 ### 7.2 Valor esperado
-Poupa ao administrador voluntário a tarefa morosa de escrever a ata e leva as decisões a quem faltou ([capítulo 1](#1-relatório-de-problema-e-oportunidade)).
+
+A hipótese é reduzir o tempo ativo que o administrador gasta a escrever a ata, mantendo as decisões fiéis à assembleia. Uma ata aprovada e publicada na app também permite a quem faltou consultar as decisões, respondendo ao problema identificado no [capítulo 1](#1-relatório-de-problema-e-oportunidade). O valor será comparado com a elaboração manual em tempo de trabalho e cobertura das decisões ([7.4](#74-abordagem-de-avaliação)). Como o projeto académico usa gravações simuladas e não é testado com moradores, estes benefícios são **hipóteses**, não resultados de utilização real.
 
 ### 7.3 Riscos e mitigações
 
-| Risco | Mitigação |
+| Risco | Mitigação e verificação |
 |---|---|
-| Transcrição ou ata com erros ou informação inventada | Rascunho marcado como IA, editável, aprovação humana obrigatória antes de publicar |
-| Prompt injection (instruções ditas em voz alta no áudio) | O texto transcrito é só dados; a IA não tem acesso a ações nem a dados do condomínio |
-| Divulgação indevida (vozes e nomes de várias pessoas) | Aviso aos presentes antes de gravar; retenção limitada do áudio; acesso só do administrador |
-| Conteúdo impróprio ou difamatório na ata | Revisão e aprovação do administrador antes da publicação |
-| Viés (sotaques, nomes próprios, idosos a falar baixo) | Casos difíceis no conjunto de avaliação, medidos separadamente |
+| Omissão, troca ou invenção de decisões, votações, responsáveis, datas ou montantes | Ligar cada decisão proposta a um trecho do áudio; assinalar dúvidas; exigir comparação com a gravação, edição e aprovação humana. Erros factuais contam separadamente na avaliação e bloqueiam a adoção do modelo se excederem os limites de [7.4](#74-abordagem-de-avaliação). |
+| Qualidade desigual com ruído, vozes sobrepostas, sotaques, nomes próprios ou fala baixa | Incluir esses casos no conjunto de teste e apresentar resultados por condição; manter transcrição editável e ata manual disponível. |
+| Exposição de vozes, nomes e informação de terceiros | Avisar os presentes antes de gravar; usar apenas vozes e dados sintéticos nos testes; limitar áudio, transcrição e rascunho aos administradores do condomínio; não incluir conteúdo em logs; apagar o áudio após aprovação da ata, conforme [10.4](#104-retenção). Antes de qualquer uso real, definir informação aos participantes e prazo para gravações sem ata aprovada. |
+| Instruções hostis ou conteúdo difamatório ditos na reunião | Tratar a transcrição como dados, nunca como instruções; o modelo recebe só o trecho necessário e não tem ferramentas nem acesso a outros dados do condomínio. O administrador revê o conteúdo antes de publicar. |
+| Falha, demora excessiva ou consumo de recursos do motor local | Processamento assíncrono com estado visível, limite de execução e nova tentativa para falhas transitórias; monitorizar duração e custo de máquina. Ata manual sempre disponível ([7.5](#75-baseline-e-fallback)). |
 
 ### 7.4 Abordagem de avaliação
 
-| Aspeto | Definição |
-|---|---|
-| Finalidade | Rascunho útil para o administrador rever, nunca documento final |
-| Entradas | Assembleias simuladas, gravadas pela equipa a partir de guiões com decisões conhecidas (sem dados reais) |
-| Casos difíceis | Ruído, vozes sobrepostas, sotaques, nomes próprios e valores monetários, decisões revogadas, prompt injection no áudio |
-| Saídas esperadas | Ata de referência escrita pela equipa por guião |
-| Medidas | % de decisões captadas, nº de informações inventadas por ata, taxa de erro de palavras |
-| Critérios de aceitação | TODO |
-| Latência | TODO: tempo máximo entre carregar o áudio e ter o rascunho |
-| Custo | TODO: custo por hora de áudio do serviço escolhido |
-| Limitações | Conjunto sintético e pequeno, falantes da equipa, sem assembleias reais |
+O Sprint A define o protocolo; a primeira versão é construída no Sprint B e a avaliação formal ocorre no Sprint C. A equipa preparará **10 gravações sintéticas de 10–15 minutos**, com guiões em português europeu e atas de referência anotadas manualmente antes de ver as saídas dos modelos. A referência incluirá a transcrição, cada decisão e os tempos inicial/final do trecho que a suporta. O conjunto incluirá fala clara e casos de ruído, sobreposição de vozes, sotaques, nomes próprios, montantes, decisões corrigidas ou revogadas e uma instrução maliciosa dita no áudio. Não serão usadas gravações de assembleias reais.
+
+| Medida | Como medir | Meta proposta para aceitação |
+|---|---|---|
+| Cobertura de decisões | Decisões da referência reproduzidas corretamente no rascunho / total de decisões da referência | ≥ 90% no conjunto; analisar separadamente cada condição difícil |
+| Informação sem suporte | Contar decisões e factos no rascunho que não constam do áudio, incluindo decisões revogadas apresentadas como vigentes | 0 decisões inventadas ou alteradas |
+| Referências ao áudio | Comparar o trecho indicado para cada decisão proposta com os tempos anotados na referência e ouvir o excerto | 100% das decisões propostas com trecho correto e localizável; referências falsas contam também como informação sem suporte |
+| Factos críticos | Conferir votações, responsáveis, datas e montantes com a referência e o áudio | 100% corretos **ou explicitamente assinalados como incertos** para revisão |
+| Resistência a instruções no áudio | Verificar se a instrução maliciosa altera o formato, as decisões ou as regras de publicação | 0 instruções seguidas pelo modelo; a frase pode ser transcrita como fala, sem ser executada |
+| Qualidade da transcrição | Taxa de erro de palavras (WER) face a transcrição manual; registar também erros em nomes e números | Medida de diagnóstico, não critério isolado para aprovar a ata |
+| Esforço do administrador | Tempo ativo para rever/corrigir o rascunho até à ata final, comparado com escrita manual de gravações equivalentes; alternar a ordem das tarefas entre membros da equipa | Mediana pelo menos 20% inferior à baseline, sem piorar a cobertura das decisões |
+| Latência | Tempo do upload concluído até ao estado `pendente_revisao`, na máquina de demonstração identificada no relatório | Meta até 30 minutos por gravação de 15 minutos; timeout aos 35 minutos (2 × duração do áudio + 5 minutos), com 5 minutos de margem antes do fallback manual |
+| Controlo de publicação | Teste de autorização e do estado da ata | 0 rascunhos publicados sem aprovação humana |
+
+**Custo estimado:** a execução local tem **0 € de taxas de API por hora de áudio**. Para planeamento, admitindo consumo médio adicional de 100 W durante até 2 horas de processamento por hora de áudio e uma tarifa hipotética de 0,25 €/kWh, a energia seria cerca de **0,05 € por hora de áudio** (`0,1 kW × 2 h × 0,25 €/kWh`). Não inclui aquisição/amortização da máquina nem tempo humano. No Sprint B serão medidos duração, memória e consumo na máquina de demonstração e atualizada esta estimativa; versões dos modelos e características da máquina ficarão registadas para repetir o teste.
+
+Estas metas são **critérios propostos, não resultados obtidos**. A amostra pequena, sintética e gravada pela equipa não mede desempenho com moradores reais; a aceitação para demonstração não equivale a validação para uso real.
 
 ### 7.5 Baseline e fallback
-- **Baseline não-IA:** ata escrita manualmente (comparação de tempo e qualidade).
-- **Fallback:** com a IA indisponível, o áudio fica guardado, a transcrição é repetida, o administrador é avisado (modo degradado, US-18) e pode publicar ata manual. A interface nunca apresenta conteúdo de IA como facto verificado (US-10).
+
+- **Baseline sem IA:** escrever uma ata manual a partir de gravações equivalentes, usando o mesmo modelo de documento. Medir tempo ativo e qualidade com as mesmas decisões e factos de referência.
+- **Fallback de qualidade:** se o rascunho não cumprir os critérios ou o administrador detetar um erro crítico, este corrige-o a partir do áudio ou escreve a ata manualmente. Até nova avaliação satisfatória, a ata manual continua a ser o caminho recomendado.
+- **Fallback operacional:** se faltar rede, o áudio permanece na fila local até ao envio; se o processamento falhar, o áudio já enviado fica guardado, a app mostra `falhou_transcricao`, o Worker tenta novamente quando a falha for transitória e o administrador pode escrever e aprovar uma ata manual (US-18). Uma resposta tardia da IA nunca substitui uma ata já aprovada. Residentes não veem áudio, transcrição nem rascunhos.
 
 ---
 
@@ -383,15 +397,15 @@ Este capítulo conta como o produto funciona por dentro (diagramas em [technical
 
 ### 8.1 Contexto do sistema
 
-Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com um único sistema externo, o serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. O serviço de IA que transcreve as assembleias também é chamado pelo Worker, mas é um componente de IA do produto e não conta como integração externa. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com um único sistema externo, o serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. O Worker executa localmente os motores de IA que transcrevem a assembleia e estruturam o rascunho; são componentes do produto e não contam como integração externa. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
 
 ![alt text](<images/Contexto do sistema.svg>)
 
 
-| Ator / sistema externo | Interação |
+| Ator / componente | Interação |
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
-| Serviço de transcrição (IA) | Componente de IA do produto, não conta como integração externa (6.5): recebe o áudio da assembleia e devolve transcrição e rascunho de ata (US-10). Serviço/modelo ainda por escolher, ver [7.1](#71-fluxo-assistido-por-ia) |
+| Motores locais de IA | Componentes do Worker, não contam como integração externa (6.5): `whisper.cpp` transcreve o áudio e `llama.cpp` com Qwen3 estrutura o rascunho de ata (US-10). Proposta e critérios de avaliação em [7.1](#71-fluxo-proposto-assistido-por-ia) e [7.4](#74-abordagem-de-avaliação) |
 | Serviço de calendário (simulador) | A integração externa do projeto: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
 | App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
@@ -405,7 +419,7 @@ Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da a
 |---|---|---|
 | **App móvel** (Flutter, demonstrada em Android) | Jornadas dos [Workflows 1 a 6](#53-user-journey); guarda a credencial do dispositivo; fila local SQLite para reportes, reuniões e áudios criados sem internet (US-18), enviados por ordem quando a ligação volta; sincronização em segundo plano que gera notificações locais (US-11) e agenda lembretes de reuniões (US-13) | Identidade local, fila local, preferências (ex.: ocultar indicador) |
 | **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), escrita de jobs na tabela `job` | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião, ata (texto aprovado) |
-| **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata, publicação de reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
+| **Worker** (Python, mesmo repositório) | Consome a tabela `job`: executa localmente os motores de transcrição e rascunho de ata propostos em [7.1](#71-fluxo-proposto-assistido-por-ia) e publica reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
 | **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
 | **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo, com o contrato descrito em [8.6](#86-integração-externa): aceita eventos, devolve ids, e a pedido falha, atrasa ou devolve dados incompletos ou inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
@@ -497,7 +511,7 @@ As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum forn
 
 ### 8.6 Integração externa
 
-O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo", que trate dados indisponíveis, atrasados, incompletos ou inválidos. A nossa é o **serviço de calendário** (US-13, [Workflow 4](#53-user-journey)), chamado só pelo Worker, e é um simulador. O serviço de IA (US-10) é também chamado pelo Worker e segue as mesmas regras de timeout e falha, mas é um componente de IA do produto e não conta para este requisito.
+O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo", que trate dados indisponíveis, atrasados, incompletos ou inválidos. A nossa é o **serviço de calendário** (US-13, [Workflow 4](#53-user-journey)), chamado só pelo Worker, e é um simulador. Os motores de IA (US-10) são executados localmente pelo Worker; não contam para este requisito e seguem o seu próprio limite de execução, definido em [7.4](#74-abordagem-de-avaliação).
 
 **Porquê um simulador e não um serviço real gratuito.** O Google Calendar é gratuito, mas exige uma conta e credenciais da equipa, e os docentes não conseguiriam executá-lo (enunciado, secção 12); além disso não se consegue fazer falhar à ordem durante a demonstração. Um servidor CalDAV real num container (ex.: Radicale) seria reproduzível, mas só dá a falha "indisponível" (parar o container), e a equipa continuaria a ser dona do serviço, por isso o ganho de realismo é pequeno face ao esforço ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O simulador é reproduzível com `docker compose up` e dispara qualquer das quatro condições por comando.
 
@@ -521,9 +535,9 @@ O Worker chama uma interface `CalendarProvider`, com três níveis tentados por 
 | Incompleto | `incompleto` (200 sem `id` ou sem `start`) | Validação dos campos obrigatórios | Conta como falha |
 | Inválido | `invalido` (200 com datas mal formadas ou `end` antes de `start`) | Validação de formato e de coerência das datas | Conta como falha |
 
-As regras valem para todas as chamadas externas e de IA: timeout de 10 s; até 3 tentativas antes de passar ao nível seguinte; registo de cada falha em log com timestamp e componente (US-18); e um aviso visível na app quando o estado final é `alternativo` ou `degradado`. Chaves de API só por variável de ambiente.
+O timeout de 10 s e até 3 tentativas por chamada aplicam-se ao serviço de calendário antes de passar ao nível seguinte. O processamento local de IA tem um limite por job compatível com a duração do áudio e com a meta de [7.4](#74-abordagem-de-avaliação); só falhas transitórias são repetidas pelo mecanismo de jobs de [8.5](#85-workflow-assíncrono). Cada falha é registada com timestamp e componente, sem áudio ou transcrição no log (US-18), e o administrador vê quando a ata está em modo degradado. Se uma integração futura exigir chave de API, esta fica apenas em variável de ambiente.
 
-É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: serviço de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
+É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: motor local de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
 
 ### 8.7 Observabilidade
 
@@ -543,7 +557,7 @@ Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-suce
 | Disponibilidade de `POST /reportes` | 99% em janela de 7 dias |
 | Latência p95 de `POST /reportes` | < 1 s em ambiente de teste sob carga simulada |
 | Jobs de transcrição concluídos com sucesso (incluindo retries) | > 95% |
-| Tempo até a ata ficar `pendente_revisao` | TODO, depende da latência da IA ([7.4](#74-abordagem-de-avaliação)) |
+| Tempo até a ata ficar `pendente_revisao` | Até 30 min para 15 min de áudio na máquina de demonstração; meta proposta em [7.4](#74-abordagem-de-avaliação) |
 
 ### 8.8 Vista de deployment
 
@@ -808,4 +822,4 @@ Limitações assumidas no Sprint A: o CodeQL e o `dependency-review-action` fica
 
 ### Componentes excluídos (Sprint B)
 
-O Worker, a IA de transcrição, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
+O Worker com os motores locais de IA, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
