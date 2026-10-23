@@ -16,6 +16,7 @@
 | v0.2 | 2026-10-08 | QR code partilhável por fração (US-01); fila local sem internet, áudio preservado e calendário alternativo (US-10, US-13, US-18); nova US-14 (aviso ligado a um reporte). |
 | v0.3 | 2026-10-10 | Identificação pelo nome (US-15); reportes visíveis a todos com autor oculto por omissão (US-02, US-03, US-09, US-14); duplicados (US-04); seguir reportes (US-17); indicador de progresso (US-16); US-05 e US-11 alinhadas; plano de release do Sprint B com entregáveis técnicos. |
 | v0.4 | 2026-10-15 | US-18 (antes NFR-01) renomeada para não colidir com RNF-01 dos requisitos; US-11 passa a notificação local por sincronização em segundo plano, sem fornecedor de push; US-13 passa a simulador + iCal, sem Google Calendar (ADR-007, ADR-009). |
+| v0.5 | 2026-10-22 | Alinhado com o Technical Design: ocultar reporte (US-04), limites na criação de condomínios (US-01), token do feed iCal (US-13), notificações de avisos e atas (US-11), retenção de 24 meses (US-09), latência e retenção do áudio (US-10). |
 
 ## 1. Product Backlog
 

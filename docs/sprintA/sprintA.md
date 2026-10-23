@@ -278,7 +278,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Agendar assembleias e lembretes](images/workflow-4.drawio.png)
 
-- **Ata da assembleia assistida por IA (Workflow 5, US-10, US-18):** o administrador grava ou carrega o áudio, guardado no telemóvel e, sem internet, em fila local. Com o serviço de IA disponível, este gera a transcrição e um rascunho de ata marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova; só então a ata é publicada aos residentes, incluindo quem faltou. Com o serviço indisponível, o áudio mantém-se guardado, a transcrição é repetida mais tarde e o administrador é avisado e pode escrever a ata manualmente.
+- **Ata da assembleia assistida por IA (Workflow 5, US-10, US-18):** o administrador grava ou carrega o áudio, guardado no telemóvel e, sem internet, em fila local. Quando chega ao servidor, o Worker envia-o ao serviço de IA, que o transcreve e redige um rascunho de ata marcado como "gerado por IA, pendente de revisão". O administrador revê, edita e aprova; só então a ata é publicada aos residentes, incluindo quem faltou. Com o serviço de IA indisponível, o áudio mantém-se guardado, a transcrição e o rascunho são repetidos mais tarde e o administrador é avisado e pode escrever a ata manualmente.
 
 ![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
@@ -341,13 +341,21 @@ Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-spri
 
 ## 7. Responsible AI Opportunity Assessment
 
-### 7.1 Fluxo proposto assistido por IA
+### 7.1 Fluxo assistido por IA
 
-A oportunidade é ajudar o administrador voluntário a preparar a ata de uma assembleia (US-10, [Workflow 5](#53-user-journey)), sem delegar à IA a decisão sobre o que foi aprovado. O administrador informa os presentes de que vai gravar e associa o áudio à reunião. A app guarda-o no dispositivo e, se estiver sem rede, envia-o quando a ligação voltar (US-18). A API guarda o ficheiro e cria um job; o Worker transcreve o áudio e produz um rascunho com decisões, responsáveis, prazos e valores **apenas quando constam da gravação**. Cada decisão proposta deve apontar para o trecho temporal que a suporta; passagens incertas ficam assinaladas como «por confirmar», em vez de serem completadas por suposição.
+A oportunidade é ajudar o administrador voluntário a preparar a ata de uma assembleia (US-10, [Workflow 5](#53-user-journey)), sem delegar à IA a decisão sobre o que foi aprovado. O administrador informa os presentes de que vai gravar e associa o áudio à reunião. A app guarda-o no dispositivo e, se estiver sem rede, envia-o quando a ligação voltar (US-18). A API guarda o ficheiro e cria um job; o Worker envia o áudio ao serviço de IA da OpenAI, que o transcreve, e depois o texto da transcrição, a partir do qual o serviço redige um rascunho com decisões, responsáveis, prazos e valores **apenas quando constam da gravação**. Cada decisão proposta cita o excerto da transcrição que a suporta; passagens incertas ficam assinaladas como «por confirmar», em vez de serem completadas por suposição.
 
-A proposta técnica inicial para o Sprint B é executar no Worker o [**whisper.cpp**, modelo multilingue `base`](https://github.com/ggml-org/whisper.cpp/blob/master/README.md), para transcrição em português, e o [**Qwen3-1.7B-GGUF**](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF), via `llama.cpp`, para estruturar o rascunho. Os modelos e binários serão fixados por versão e preparados antes da demonstração; a qualidade em português europeu e os recursos necessários serão verificados em [7.4](#74-abordagem-de-avaliação), antes de se considerar a proposta adequada. A execução local evita enviar áudio a um fornecedor de IA e dispensa taxas por chamada, mas usa CPU, memória, disco e energia. Este componente de IA não substitui a integração externa do calendário exigida pelo enunciado ([8.6](#86-integração-externa)).
+| Passo | Quem faz | É IA? | O que faz |
+|---|---|---|---|
+| 1. Gravar ou carregar o áudio | Administrador | Não | Envia o ficheiro de áudio da assembleia |
+| 2. Transcrever o áudio | Serviço de IA da OpenAI (modelo `gpt-4o-mini-transcribe`), chamado pelo Worker | Sim | Converte a fala em texto |
+| 3. Redigir o rascunho | Serviço de IA da OpenAI (modelo `gpt-4o-mini`), chamado pelo Worker | Sim | Lê o texto da transcrição e escreve um rascunho de ata (presentes, decisões, tarefas), com o excerto que suporta cada decisão, marcado como "gerado por IA, pendente de revisão" |
+| 4. Rever, editar e aprovar | Administrador | Não | É a única pessoa que decide o que fica na ata |
+| 5. Publicar aos residentes | Sistema | Não | Só publica depois da aprovação do administrador |
 
-Transcrição e rascunho ficam acessíveis só aos administradores, com a indicação «gerado por IA, pendente de revisão». O administrador ouve os trechos relevantes, corrige o texto e aprova-o. **Só a ata aprovada é publicada aos residentes**; a IA não publica atas nem altera reuniões, reportes ou permissões.
+Os modelos e o prompt ficam fixados por versão e registados, para repetir a avaliação; a qualidade em português europeu é verificada em [7.4](#74-abordagem-de-avaliação) antes de se considerar a proposta adequada. A transcrição devolve só texto, sem tempos, por isso a rastreabilidade de cada decisão é feita por citação literal da transcrição, que se pode verificar automaticamente. O áudio e a transcrição saem para um terceiro, risco tratado em [7.3](#73-riscos-e-mitigações). Este componente de IA não substitui a integração externa do calendário exigida pelo enunciado ([8.6](#86-integração-externa)).
+
+Transcrição e rascunho ficam acessíveis só aos administradores, com a indicação «gerado por IA, pendente de revisão». O administrador compara os excertos citados com a transcrição e o áudio, corrige o texto e aprova-o. **Só a ata aprovada é publicada aos residentes**; a IA não publica atas nem altera reuniões, reportes ou permissões, e ao serviço só chegam o áudio e o texto da transcrição, sem outros dados do condomínio. Sem a IA, o administrador escreve a ata à mão (baseline e fallback, [7.5](#75-baseline-e-fallback)).
 
 ### 7.2 Valor esperado
 
@@ -357,37 +365,37 @@ A hipótese é reduzir o tempo ativo que o administrador gasta a escrever a ata,
 
 | Risco | Mitigação e verificação |
 |---|---|
-| Omissão, troca ou invenção de decisões, votações, responsáveis, datas ou montantes | Ligar cada decisão proposta a um trecho do áudio; assinalar dúvidas; exigir comparação com a gravação, edição e aprovação humana. Erros factuais contam separadamente na avaliação e bloqueiam a adoção do modelo se excederem os limites de [7.4](#74-abordagem-de-avaliação). |
+| Omissão, troca ou invenção de decisões, votações, responsáveis, datas ou montantes | Rascunho marcado como IA e editável; ligar cada decisão proposta a um excerto da transcrição; assinalar dúvidas; exigir comparação com a gravação e aprovação humana obrigatória antes de publicar. Erros factuais contam separadamente na avaliação e bloqueiam a adoção do modelo se excederem os limites de [7.4](#74-abordagem-de-avaliação). |
 | Qualidade desigual com ruído, vozes sobrepostas, sotaques, nomes próprios ou fala baixa | Incluir esses casos no conjunto de teste e apresentar resultados por condição; manter transcrição editável e ata manual disponível. |
-| Exposição de vozes, nomes e informação de terceiros | Avisar os presentes antes de gravar; usar apenas vozes e dados sintéticos nos testes; limitar áudio, transcrição e rascunho aos administradores do condomínio; não incluir conteúdo em logs; apagar o áudio após aprovação da ata, conforme [10.4](#104-retenção). Antes de qualquer uso real, definir informação aos participantes e prazo para gravações sem ata aprovada. |
-| Instruções hostis ou conteúdo difamatório ditos na reunião | Tratar a transcrição como dados, nunca como instruções; o modelo recebe só o trecho necessário e não tem ferramentas nem acesso a outros dados do condomínio. O administrador revê o conteúdo antes de publicar. |
-| Falha, demora excessiva ou consumo de recursos do motor local | Processamento assíncrono com estado visível, limite de execução e nova tentativa para falhas transitórias; monitorizar duração e custo de máquina. Ata manual sempre disponível ([7.5](#75-baseline-e-fallback)). |
+| Exposição de vozes, nomes e informação de terceiros, com áudio e transcrição enviados à OpenAI | Avisar os presentes antes de gravar; só se envia o áudio e o texto da transcrição, sem outros dados do condomínio; usar apenas vozes e dados sintéticos nos testes e na demonstração; rever os termos de tratamento de dados da OpenAI (retenção e uso para treino) antes de usar assembleias reais; acesso a áudio, transcrição e rascunho só para administradores; não incluir conteúdo em logs; apagar o áudio após aprovação da ata, conforme [10.4](#104-retenção). Antes de qualquer uso real, definir informação aos participantes e prazo para gravações sem ata aprovada. |
+| Instruções hostis (prompt injection) ou conteúdo difamatório ditos na reunião | Tratar a transcrição como dados, nunca como instruções; o modelo recebe só o texto necessário e não tem ferramentas nem acesso a ações ou a outros dados do condomínio. O administrador revê o conteúdo antes de publicar. |
+| Falha, demora excessiva ou custo acima do previsto do serviço de IA | Processamento assíncrono com estado visível, timeouts e novas tentativas ([8.5](#85-workflow-assíncrono), [8.6](#86-integração-externa)); monitorizar duração e custo por ata. Ata manual sempre disponível ([7.5](#75-baseline-e-fallback)). |
 
 ### 7.4 Abordagem de avaliação
 
-O Sprint A define o protocolo; a primeira versão é construída no Sprint B e a avaliação formal ocorre no Sprint C. A equipa preparará **10 gravações sintéticas de 10–15 minutos**, com guiões em português europeu e atas de referência anotadas manualmente antes de ver as saídas dos modelos. A referência incluirá a transcrição, cada decisão e os tempos inicial/final do trecho que a suporta. O conjunto incluirá fala clara e casos de ruído, sobreposição de vozes, sotaques, nomes próprios, montantes, decisões corrigidas ou revogadas e uma instrução maliciosa dita no áudio. Não serão usadas gravações de assembleias reais.
+O Sprint A define o protocolo; a primeira versão é construída no Sprint B e a avaliação formal ocorre no Sprint C. A equipa preparará **10 gravações sintéticas de 10–15 minutos**, com guiões em português europeu e atas de referência anotadas manualmente antes de ver as saídas dos modelos. A referência incluirá a transcrição e cada decisão com o excerto que a suporta. O conjunto incluirá fala clara e casos de ruído, sobreposição de vozes, sotaques, nomes próprios, montantes, decisões corrigidas ou revogadas e uma instrução maliciosa dita no áudio. Não serão usadas gravações de assembleias reais.
 
 | Medida | Como medir | Meta proposta para aceitação |
 |---|---|---|
-| Cobertura de decisões | Decisões da referência reproduzidas corretamente no rascunho / total de decisões da referência | ≥ 90% no conjunto; analisar separadamente cada condição difícil |
-| Informação sem suporte | Contar decisões e factos no rascunho que não constam do áudio, incluindo decisões revogadas apresentadas como vigentes | 0 decisões inventadas ou alteradas |
-| Referências ao áudio | Comparar o trecho indicado para cada decisão proposta com os tempos anotados na referência e ouvir o excerto | 100% das decisões propostas com trecho correto e localizável; referências falsas contam também como informação sem suporte |
+| Cobertura de decisões | Decisões da referência reproduzidas corretamente no rascunho / total de decisões da referência | Em média ≥ 80% no conjunto; analisar separadamente cada condição difícil |
+| Informação sem suporte | Contar decisões e factos no rascunho que não constam do áudio, incluindo decisões revogadas apresentadas como vigentes | ≤ 1 por ata, em média |
+| Referências à transcrição | Verificar automaticamente que cada excerto citado existe na transcrição e confirmar manualmente que suporta a decisão | 100% das decisões propostas com excerto existente e pertinente; citações falsas contam também como informação sem suporte |
 | Factos críticos | Conferir votações, responsáveis, datas e montantes com a referência e o áudio | 100% corretos **ou explicitamente assinalados como incertos** para revisão |
-| Resistência a instruções no áudio | Verificar se a instrução maliciosa altera o formato, as decisões ou as regras de publicação | 0 instruções seguidas pelo modelo; a frase pode ser transcrita como fala, sem ser executada |
-| Qualidade da transcrição | Taxa de erro de palavras (WER) face a transcrição manual; registar também erros em nomes e números | Medida de diagnóstico, não critério isolado para aprovar a ata |
+| Resistência a instruções no áudio | Verificar se a instrução maliciosa altera o formato, as decisões ou as regras de publicação | 100% das instruções ignoradas; a frase pode ser transcrita como fala, sem ser executada |
+| Qualidade da transcrição | Taxa de erro de palavras (WER) face a transcrição manual; registar também erros em nomes e números | WER ≤ 25% em áudio limpo; casos difíceis medidos à parte |
 | Esforço do administrador | Tempo ativo para rever/corrigir o rascunho até à ata final, comparado com escrita manual de gravações equivalentes; alternar a ordem das tarefas entre membros da equipa | Mediana pelo menos 20% inferior à baseline, sem piorar a cobertura das decisões |
-| Latência | Tempo do upload concluído até ao estado `pendente_revisao`, na máquina de demonstração identificada no relatório | Meta até 30 minutos por gravação de 15 minutos; timeout aos 35 minutos (2 × duração do áudio + 5 minutos), com 5 minutos de margem antes do fallback manual |
+| Latência | Tempo do upload concluído até ao estado `pendente_revisao`, no conjunto de teste e numa gravação sintética de 60 minutos | Até 15 minutos em 95% das atas de áudio até 60 minutos; a medir no Sprint B |
 | Controlo de publicação | Teste de autorização e do estado da ata | 0 rascunhos publicados sem aprovação humana |
 
-**Custo estimado:** a execução local tem **0 € de taxas de API por hora de áudio**. Para planeamento, admitindo consumo médio adicional de 100 W durante até 2 horas de processamento por hora de áudio e uma tarifa hipotética de 0,25 €/kWh, a energia seria cerca de **0,05 € por hora de áudio** (`0,1 kW × 2 h × 0,25 €/kWh`). Não inclui aquisição/amortização da máquina nem tempo humano. No Sprint B serão medidos duração, memória e consumo na máquina de demonstração e atualizada esta estimativa; versões dos modelos e características da máquina ficarão registadas para repetir o teste.
+**Custo estimado:** transcrição com `gpt-4o-mini-transcribe` a US$ 0,003 por minuto (US$ 0,18 por hora de áudio), mais o rascunho com `gpt-4o-mini` (US$ 0,15 por 1M de tokens de entrada e US$ 0,60 por 1M de saída), cerca de US$ 0,004 por ata de 1 h (estimativa: 20 000 tokens de entrada e 2 000 de saída). Total: cerca de **US$ 0,19 por ata de 1 h**, preços consultados a 2026-10-22. Limite aceitável: ≤ US$ 0,50 por ata. No Sprint B serão medidos os tokens e minutos reais e atualizada esta estimativa; versões dos modelos e do prompt ficam registadas para repetir o teste.
 
-Estas metas são **critérios propostos, não resultados obtidos**. A amostra pequena, sintética e gravada pela equipa não mede desempenho com moradores reais; a aceitação para demonstração não equivale a validação para uso real.
+Estas metas são **critérios propostos, não resultados obtidos**. A amostra pequena e sintética, falada pela equipa, não mede desempenho com moradores reais; a aceitação para demonstração não equivale a validação para uso real.
 
 ### 7.5 Baseline e fallback
 
 - **Baseline sem IA:** escrever uma ata manual a partir de gravações equivalentes, usando o mesmo modelo de documento. Medir tempo ativo e qualidade com as mesmas decisões e factos de referência.
 - **Fallback de qualidade:** se o rascunho não cumprir os critérios ou o administrador detetar um erro crítico, este corrige-o a partir do áudio ou escreve a ata manualmente. Até nova avaliação satisfatória, a ata manual continua a ser o caminho recomendado.
-- **Fallback operacional:** se faltar rede, o áudio permanece na fila local até ao envio; se o processamento falhar, o áudio já enviado fica guardado, a app mostra `falhou_transcricao`, o Worker tenta novamente quando a falha for transitória e o administrador pode escrever e aprovar uma ata manual (US-18). Uma resposta tardia da IA nunca substitui uma ata já aprovada. Residentes não veem áudio, transcrição nem rascunhos.
+- **Fallback operacional:** se faltar rede, o áudio permanece na fila local até ao envio; se o serviço de IA estiver indisponível ou o processamento falhar, o áudio já enviado fica guardado, o job é repetido com backoff ([8.5](#85-workflow-assíncrono)) e, esgotadas as tentativas, a app mostra `falhou_transcricao`; o administrador é avisado (modo degradado, US-18) e pode reenviar o áudio ou escrever e aprovar uma ata manual. Uma resposta tardia da IA nunca substitui uma ata já aprovada. A interface nunca apresenta conteúdo de IA como facto verificado (US-10); residentes não veem áudio, transcrição nem rascunhos.
 
 ---
 
@@ -397,72 +405,72 @@ Este capítulo conta como o produto funciona por dentro (diagramas em [technical
 
 ### 8.1 Contexto do sistema
 
-Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app fala com um backend nosso, e esse backend fala com um único sistema externo, o serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita), complementado por um feed iCal que qualquer app de calendário subscreve. O Worker executa localmente os motores de IA que transcrevem a assembleia e estruturam o rascunho; são componentes do produto e não contam como integração externa. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app comunica de forma síncrona com a **API**, que deixa as tarefas demoradas ao **Worker**, de forma assíncrona. Só o Worker fala com os sistemas externos: o serviço de IA (OpenAI), que transcreve o áudio das assembleias e redige o rascunho da ata, e um serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita). A API limita-se a publicar o feed iCal que qualquer app de calendário subscreve. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+![alt text](<images/Contexto do sistema.png>)
 
-![alt text](<images/Contexto do sistema.svg>)
 
-
-| Ator / componente | Interação |
+| Ator / sistema externo | Interação |
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
-| Motores locais de IA | Componentes do Worker, não contam como integração externa (6.5): `whisper.cpp` transcreve o áudio e `llama.cpp` com Qwen3 estrutura o rascunho de ata (US-10). Proposta e critérios de avaliação em [7.1](#71-fluxo-proposto-assistido-por-ia) e [7.4](#74-abordagem-de-avaliação) |
-| Serviço de calendário (simulador) | A integração externa do projeto: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
-| App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
+| Serviço de IA (OpenAI) | Recebe o áudio da assembleia e devolve a transcrição; recebe o texto da transcrição e devolve o rascunho de ata (US-10). Fornecedor: OpenAI, ver [7.1](#71-fluxo-assistido-por-ia) |
+| Serviço de calendário (simulador) | A integração externa descrita em detalhe: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) || App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
 ### 8.2 Vista de Containers
 
-Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como enviar um áudio para transcrição ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
+Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como transcrever o áudio de uma assembleia ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
-![alt text](<images/Vista de contentores.svg>)
+![alt text](<images/Vista de contentores.png>)
 
 | Container | Responsabilidade | Dono dos dados |
 |---|---|---|
 | **App móvel** (Flutter, demonstrada em Android) | Jornadas dos [Workflows 1 a 6](#53-user-journey); guarda a credencial do dispositivo; fila local SQLite para reportes, reuniões e áudios criados sem internet (US-18), enviados por ordem quando a ligação volta; sincronização em segundo plano que gera notificações locais (US-11) e agenda lembretes de reuniões (US-13) | Identidade local, fila local, preferências (ex.: ocultar indicador) |
-| **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), escrita de jobs na tabela `job` | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião, ata (texto aprovado) |
-| **Worker** (Python, mesmo repositório) | Consome a tabela `job`: executa localmente os motores de transcrição e rascunho de ata propostos em [7.1](#71-fluxo-proposto-assistido-por-ia) e publica reuniões no serviço de calendário. Nunca é chamado pela app | `job`, `ata.transcricao` e `ata.rascunho`, estado de sincronização da reunião |
+| **API** (FastAPI) | Pedidos síncronos da app: autenticação por credencial de dispositivo, autorização no servidor ([10.2](#102-controlo-de-acessos)), validação, regras de negócio (duplicados, histórico, visibilidade do autor), criação de jobs na tabela `job`, publicação do feed iCal | Condomínio, fração, QR code, identidade, reporte, histórico, aviso, reunião (dados de agendamento), ata (`estado`, `texto_aprovado`), criação de `job` |
+| **Worker** (Python, mesmo repositório) | Consome a tabela `job`: transcrição de áudio e rascunho de ata (serviço de IA da OpenAI, [7.1](#71-fluxo-assistido-por-ia)), publicação de reuniões no serviço de calendário e limpeza diária por retenção. Nunca é chamado pela app | Estado de processamento de `job`, `ata.transcricao` e `ata.rascunho`, `reuniao.calendario_externo_id` e `reuniao.estado_sync` |
 | **PostgreSQL** | Única base de dados; serve também de fila de jobs (outbox), o que evita um broker extra | - |
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
 | **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo, com o contrato descrito em [8.6](#86-integração-externa): aceita eventos, devolve ids, e a pedido falha, atrasa ou devolve dados incompletos ou inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
-
-Três consequências desta separação, que o enunciado pede para justificar:
+| **Prometheus e Grafana** (containers) | Recolhem `/metrics` de API e Worker e mostram o dashboard operacional ([8.7](#87-observabilidade)) | Séries temporais de métricas |
+Quatro consequências desta separação, que o enunciado pede para justificar:
 
 - **Comunicação.** App para API é síncrona (REST/JSON). API para Worker é assíncrona, pela tabela `job` ([8.5](#85-workflow-assíncrono)); o Worker não expõe endpoints além de `/health` e `/metrics`.
-- **Acoplamento.** Os dois componentes partilham o esquema da base de dados e o código de domínio, por isso não evoluem o esquema de forma independente. Aceitamos isso por sermos 5 pessoas com um produto pequeno.
+- **Acoplamento e propriedade dos dados.** Os dois componentes partilham o esquema da base de dados e o código de domínio, por isso não evoluem o esquema de forma independente. Aceitamos isso por sermos 5 pessoas com um produto pequeno. Três tabelas têm escritores dos dois lados (`job`, `reuniao`, `ata`); para evitar conflitos, a propriedade é por coluna: a API escreve os dados de negócio e cria o job, o Worker só escreve as colunas listadas acima.
+- **Implantação independente.** São dois containers com ciclos de vida separados: o Worker pode ser reiniciado, escalado ou ficar parado sem afetar a API. Como as migrações são aditivas e retrocompatíveis ([8.8](#88-vista-de-deployment)), cada um pode ser implantado por ordem (migração primeiro) sem parar o outro.
 - **Falhas.** Se o Worker cair, a API continua a aceitar reportes e a enfileirar jobs, que são processados quando ele voltar. Se a API cair, a app usa a fila local. Se a base de dados cair, a API responde 503 e a app mantém os dados na fila local.
 
 ### 8.3 Modelo de dados
 
-Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que nunca se apaga, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
+Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que só se apaga ao fim do prazo de retenção, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
 
-![alt text](<images/Modelo de dados.svg>)
+![alt text](<images/Modelo de dados.png>)
 
 | Entidade | Campos principais | Notas |
 |---|---|---|
-| `condominio` | id, nome, n_fracoes, criado_em | |
+| `condominio` | id, nome, n_fracoes, calendario_token_hash, criado_em | `calendario_token_hash`: token do feed iCal; só o hash fica guardado e o administrador pode regenerá-lo |
 | `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em | Um ou mais por condomínio, todos com as mesmas permissões (US-19); o último não pode ser removido. Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
 | `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
 | `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado; revogar cria um novo token e marca o antigo (US-01) |
-| `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12); remover apaga `nome` e preenche `removida_em` (US-09) |
-| `reporte` | id, condominio_id, autor_id, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-04) |
-| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
+| `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12); remover apaga `nome` e `nome_normalizado` e preenche `removida_em` (US-09) |
+| `reporte` | id, condominio_id, autor_id, idempotency_key, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, oculto_em, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-04); `idempotency_key` única por autor, para reenvios da fila local (US-18); `oculto_em` preenchido quando o administrador oculta o reporte (deixa de aparecer aos residentes, o histórico mantém-se) |
+| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-04, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
-| `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo`, `degradado` (US-13) |
+| `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-13); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)) |
 | `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, estado, aprovada_em | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10) |
 | `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
 
-Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é criado na mesma transação que a alteração de domínio, por isso não há job sem registo nem registo sem job. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e o prazo dos reportes ainda está por decidir. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
+Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é criado na mesma transação que a alteração de domínio, por isso não há job sem registo nem registo sem job. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e os reportes resolvidos e o seu histórico são eliminados 24 meses depois, por uma limpeza diária do Worker. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
 
 ### 8.4 API (esboço)
 
-A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a de um administrador na criação do condomínio ou ao usar um convite (US-19), ambas mock no MVP. Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
+A API é a porta por onde a app entra. É REST/JSON, documentada automaticamente em OpenAPI pelo FastAPI (`/docs`). Toda a chamada leva `Authorization: Bearer <credencial>`: a credencial do residente nasce no primeiro acesso (US-15) e a de um administrador na criação do condomínio ou ao usar um convite (US-19); só a do administrador é mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)). Toda a resposta leva um `X-Request-ID`, que vai aparecer nos logs e nos jobs.
 
 Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o condomínio, entrar com o QR code, reportar, acompanhar, triar, avisar, reunir e aprovar a ata.
 
 | Método e rota | Quem | User Story |
 |---|---|---|
-| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial do primeiro administrador |
+| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial do primeiro administrador; limite de pedidos por IP e de frações por condomínio ([10.6](#106-modelo-de-ameaças-inicial)) |
+| `POST /condominios/{id}/calendario/regenerar` | admin | US-13: gera novo token do feed iCal e invalida o anterior |
 | `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
 | `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
 | `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19: lista e remove; 409 ao tentar remover o último |
@@ -473,16 +481,17 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `PATCH /identidades/me` | residente | US-15: editar nome |
 | `PUT /identidades/{id}/papel` | admin | US-12: `{papel: residente\|comissao}` |
 | `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; aceita `Idempotency-Key` da fila local |
-| `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03, US-04: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`); `atualizado_desde` serve a sincronização em segundo plano (US-11) |
+| `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03, US-04: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
 | `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
 | `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`; cria entrada no histórico; se `resolvido`, arquiva o aviso ligado (US-14) |
 | `POST /reportes/{id}/duplicado` | admin | US-04: `{original_id}`; fecha e adiciona co-reporter |
+| `PUT /reportes/{id}/oculto` | admin | `{oculto: true\|false}`: oculta ou repõe um reporte com dados de terceiros ([10.6](#106-modelo-de-ameaças-inicial)); a ação fica no histórico |
 | `POST /reportes/{id}/seguir`, `DELETE .../seguir` | residente | US-17 |
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
-| `POST /avisos`, `GET /avisos?arquivados=` | admin / todos | US-06, US-07, US-14 |
-| `POST /reunioes`, `GET /reunioes` | admin / todos | US-13: criar enfileira o job `publicar_calendario` |
-| `GET /condominios/{id}/calendario.ics` | todos (token do condomínio no URL) | US-13: feed iCal com as reuniões, subscrito pela app de calendário do residente |
+| `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-07, US-14; `publicado_desde` serve a sincronização em segundo plano |
+| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano) |
+| `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-13: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10: ler, editar, aprovar e publicar |
 | `GET /health`, `GET /metrics` | operação | [8.7](#87-observabilidade) |
@@ -491,27 +500,29 @@ Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem
 
 ### 8.5 Workflow assíncrono
 
-Voltemos ao Rui. A assembleia acabou, ele carrega o áudio e segue com a sua vida; não faz sentido ficar com a app aberta à espera de uma transcrição que pode demorar minutos. É por isso que a transcrição é assíncrona (US-10, [Workflow 5](#53-user-journey)). O mesmo mecanismo serve a sincronização de calendário (US-13) e o envio de notificações (US-11).
+Voltemos ao Rui. A assembleia acabou, ele carrega o áudio e segue com a sua vida; não faz sentido ficar com a app aberta à espera de uma transcrição que pode demorar minutos. É por isso que a transcrição é assíncrona (US-10, [Workflow 5](#53-user-journey)). O mesmo mecanismo serve a publicação no calendário (US-13).
 
-![alt text](<images/Workflow assincrono - transcricao da ata.svg>)
+![alt text](<images/Workflow assincrono - transcricao da ata.png>)
 
 O enunciado pede que o workflow lide com retries, duplicados, falhas e consistência eventual. Eis como:
 
 | Preocupação | Tratamento |
 |---|---|
-| Retries | Backoff exponencial (1, 2, 4, 8, 16 min), máximo 5 tentativas; depois `estado = falhou` e a ata fica `falhou_transcricao`, com aviso ao administrador, que pode reenviar o áudio ou escrever a ata à mão (US-18) |
-| Eventos duplicados | `chave_idempotencia` única por tipo de job (ex.: `transcrever:ata_id`): um segundo upload para a mesma ata não cria segundo job; `SKIP LOCKED` evita que dois Workers peguem no mesmo job |
-| Falhas | Worker em crash a meio: o lock da transação é libertado e o job volta a ficar pendente; jobs há mais de N minutos em `a_processar` são recuperados |
+| Retries | Se uma tentativa falhar, o job é repetido com backoff exponencial (1, 2, 4, 8, 16 min), máximo 5 tentativas; depois `estado = falhou` e a ata fica `falhou_transcricao`, com aviso ao administrador, que pode reenviar o áudio ou escrever a ata à mão (US-18) |
+| Eventos duplicados | `chave_idempotencia` única por tipo de job (ex.: `transcrever:{ata_id}`): um segundo upload não cria segundo job, e se a transcrição falhou, reenviar o áudio repõe o job existente como `pendente`; `SKIP LOCKED` evita que dois Workers reservem o mesmo job |
+| Falhas | O Worker reserva o job (`estado = a_processar`). Se cair a meio, ao arrancar repõe os jobs `a_processar` como `pendente` (há um único Worker) |
 | Consistência eventual | A app mostra sempre o estado real da ata (`a_transcrever`, `pendente_revisao`, `falhou_transcricao`) e nunca mostra um rascunho como ata final |
 | Observabilidade | Cada job regista o `request_id` de origem, tentativas, duração e erro; métricas `jobs_pendentes`, `jobs_falhados_total`, `job_duracao_segundos` por tipo |
 
+A transcrição e o rascunho são dois pedidos ao serviço de IA, feitos em sequência pelo mesmo job: o Worker só pede o rascunho depois de gravar a transcrição. Se o áudio exceder o limite de tamanho por pedido da API de transcrição (cerca de 25 MB, a confirmar na documentação), o Worker divide-o em partes.
+
 O mesmo mecanismo e as mesmas regras servem o job `publicar_calendario` (US-13): criado na transação de `POST /reunioes`, com chave `publicar_calendario:{reuniao_id}`, consumido pelo Worker que chama o serviço de calendário ([8.6](#86-integração-externa)).
 
-As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum fornecedor externo. A app corre uma tarefa periódica em segundo plano (plugin `workmanager`, de 15 em 15 minutos no Android, o mínimo que o sistema permite) que chama `GET /reportes?filtro=a_seguir&atualizado_desde=<última sincronização>` e, para cada reporte cujo estado mudou, gera uma notificação local com o número do reporte e o novo estado (`flutter_local_notifications`). O lembrete de reunião (US-13) usa o mesmo plugin: quando uma reunião chega à app, agenda-se uma notificação local para 24 horas antes. O custo é o atraso de até 15 minutos; o ganho é não haver projeto Firebase, token de dispositivo, segredo no servidor nem dados pessoais a passar por terceiros ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
+As **notificações** (US-11, US-17) não passam pelo Worker nem por nenhum fornecedor externo. A app corre uma tarefa periódica em segundo plano (plugin `workmanager`, de 15 em 15 minutos no Android, o mínimo que o sistema permite) que chama `GET /reportes?filtro=a_seguir&atualizado_desde=<última sincronização>`, `GET /avisos?publicado_desde=` e `GET /reunioes?desde=`, e gera uma notificação local para cada mudança de estado de um reporte seguido (com o número do reporte e o novo estado), aviso novo e ata aprovada (`flutter_local_notifications`). O lembrete de reunião (US-13) usa o mesmo plugin: quando uma reunião chega à app, agenda-se uma notificação local para 24 horas antes. O custo é o atraso de até 15 minutos; o ganho é não haver projeto Firebase, token de dispositivo, segredo no servidor nem dados pessoais a passar por terceiros ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
 
 ### 8.6 Integração externa
 
-O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo", que trate dados indisponíveis, atrasados, incompletos ou inválidos. A nossa é o **serviço de calendário** (US-13, [Workflow 4](#53-user-journey)), chamado só pelo Worker, e é um simulador. Os motores de IA (US-10) são executados localmente pelo Worker; não contam para este requisito e seguem o seu próprio limite de execução, definido em [7.4](#74-abordagem-de-avaliação).
+O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **serviço de calendário** (US-13) e o **serviço de IA** (US-10, OpenAI, [7.1](#71-fluxo-assistido-por-ia)). O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou um simulador realista de um sistema externo", que trate dados indisponíveis, atrasados, incompletos ou inválidos. A que descrevemos em detalhe é a do calendário ([Workflow 4](#53-user-journey)), que é um simulador; o serviço de IA segue as mesmas regras de falha, mas é um serviço real e não se simula.
 
 **Porquê um simulador e não um serviço real gratuito.** O Google Calendar é gratuito, mas exige uma conta e credenciais da equipa, e os docentes não conseguiriam executá-lo (enunciado, secção 12); além disso não se consegue fazer falhar à ordem durante a demonstração. Um servidor CalDAV real num container (ex.: Radicale) seria reproduzível, mas só dá a falha "indisponível" (parar o container), e a equipa continuaria a ser dona do serviço, por isso o ganho de realismo é pequeno face ao esforço ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)). O simulador é reproduzível com `docker compose up` e dispara qualquer das quatro condições por comando.
 
@@ -520,24 +531,24 @@ O enunciado (6.5) exige pelo menos uma integração "com um sistema externo ou u
 - `POST /calendars/{calendarId}/events` com `{summary, location, start: {dateTime}, end: {dateTime}}` devolve `200 {id, status: "confirmed", start, end}`; respostas de erro `400`, `429` (com `Retry-After`) e `503`;
 - `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento: `ok`, `indisponivel`, `lento`, `incompleto`, `invalido`.
 
-O Worker chama uma interface `CalendarProvider`, com três níveis tentados por ordem:
+O Worker chama o serviço de IA e uma interface `CalendarProvider`. Para o calendário há três níveis:
 
-1. `ServicoCalendarioProvider`: cliente HTTP do simulador. É contra ele que se demonstra a condição de falha pedida no Sprint 2;
-2. `IcsProvider`: a reunião entra no feed iCal do condomínio (`GET /condominios/{id}/calendario.ics`), que os residentes subscrevem uma vez no Google Calendar, Apple Calendar ou Outlook. Não depende de rede do lado do servidor, por isso serve de alternativa quando o serviço externo falha;
-3. nenhum: a reunião mantém-se na app com os dados locais e `estado_sync = degradado`.
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário. É contra ele que se demonstra a condição de falha pedida no Sprint 2. Sucesso: `estado_sync = sincronizada`;
+2. feed iCal: a API gera-o a partir da tabela `reuniao` (`GET /condominios/{id}/calendario.ics?token=`), por isso a reunião aparece nele logo que é criada, mesmo sem o Worker; os residentes subscrevem-no uma vez no Google Calendar, Apple Calendar ou Outlook. Esgotadas as tentativas do nível 1, o job termina com `estado_sync = alternativo` e a app avisa que a reunião só está no feed iCal;
+3. dados locais: se a app não conseguir falar com a API, mostra a reunião guardada no telemóvel com um aviso de modo degradado. É um estado da app, não da base de dados.
 
 **As quatro condições do enunciado**, como o simulador as dispara e como o Worker reage:
 
 | Condição | Modo do simulador | Deteção | Tratamento |
 |---|---|---|---|
-| Indisponível | `indisponivel` (503) ou container parado | Erro de ligação ou 5xx | Retry com backoff, até 3 tentativas; depois passa ao `IcsProvider` |
+| Indisponível | `indisponivel` (503) ou container parado | Erro de ligação ou 5xx | Retry com backoff ao nível do job, até 5 tentativas; depois passa ao feed iCal (`alternativo`) |
 | Atrasado | `lento` (resposta depois de `atraso_ms`) ou `429` | Timeout de 10 s; `429` respeita `Retry-After` | Conta como falha; mesmo retry e mesma passagem ao nível seguinte |
 | Incompleto | `incompleto` (200 sem `id` ou sem `start`) | Validação dos campos obrigatórios | Conta como falha |
 | Inválido | `invalido` (200 com datas mal formadas ou `end` antes de `start`) | Validação de formato e de coerência das datas | Conta como falha |
 
-O timeout de 10 s e até 3 tentativas por chamada aplicam-se ao serviço de calendário antes de passar ao nível seguinte. O processamento local de IA tem um limite por job compatível com a duração do áudio e com a meta de [7.4](#74-abordagem-de-avaliação); só falhas transitórias são repetidas pelo mecanismo de jobs de [8.5](#85-workflow-assíncrono). Cada falha é registada com timestamp e componente, sem áudio ou transcrição no log (US-18), e o administrador vê quando a ata está em modo degradado. Se uma integração futura exigir chave de API, esta fica apenas em variável de ambiente.
+As regras valem para todas as chamadas externas (calendário e IA): timeout de 10 s por pedido (120 s no envio do áudio para transcrição e 60 s no rascunho); validação da resposta (campos obrigatórios e datas válidas; resposta inválida conta como falha); repetição só ao nível do job, com o backoff de [8.5](#85-workflow-assíncrono), sem repetir as chamadas dentro de cada tentativa. Cada falha é registada com timestamp e componente, sem áudio ou transcrição no log (US-18), e o administrador vê na app quando o estado é `alternativo` ou a ata está em modo degradado. Chaves de API (OpenAI) só por variável de ambiente.
 
-É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: motor local de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
+É aqui que se concretizam os **modos degradados** que o enunciado (6.8) pede para demonstrar: serviço de IA indisponível (ata manual), serviço de calendário indisponível (iCal e depois dados locais), sem rede no dispositivo (fila local SQLite com reenvio automático e `Idempotency-Key`), Worker em baixo (os jobs acumulam e são processados depois) e base de dados em baixo (API responde 503, a app mantém a fila).
 
 ### 8.7 Observabilidade
 
@@ -557,23 +568,23 @@ Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-suce
 | Disponibilidade de `POST /reportes` | 99% em janela de 7 dias |
 | Latência p95 de `POST /reportes` | < 1 s em ambiente de teste sob carga simulada |
 | Jobs de transcrição concluídos com sucesso (incluindo retries) | > 95% |
-| Tempo até a ata ficar `pendente_revisao` | Até 30 min para 15 min de áudio na máquina de demonstração; meta proposta em [7.4](#74-abordagem-de-avaliação) |
+| Tempo até a ata ficar `pendente_revisao` | >= 95% das atas em <= 15 min, para áudio até 60 min ([7.4](#74-abordagem-de-avaliação)) |
 
 ### 8.8 Vista de deployment
 
 Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline, vira imagem Docker e é implantado com Docker Compose no ambiente de avaliação; a app chega aos docentes como APK.
 
-![alt text](<images/Vista de deployment.svg>)
+![alt text](<images/Vista de deployment.png>)
 
 - **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
-- **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da IA, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
-- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. Esse ambiente (VM ou máquina da equipa) ainda está por decidir: TODO (equipa).
+- **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da API da OpenAI, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
+- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`; hoje a CI usa SQLite, ver [§11](#11-walking-skeleton)) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. O ambiente de avaliação é uma VM Linux única de dimensão modesta (ex.: 2 vCPU e 4 GB de RAM, a confirmar) com Docker Compose, a que a pipeline se liga por SSH; se não houver VM disponível, a mesma stack corre na máquina de um membro da equipa para a demonstração.
 - **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
 - **App móvel:** APK Android gerado na pipeline e distribuído aos docentes. Android é a plataforma de demonstração; o Flutter mantém o iOS possível, mas não é testado no projeto ([ADR-002](#adr-002-app-móvel-em-flutter-demonstrada-em-android)).
 
 ### 8.9 Do desenho à entrega
 
-Este desenho é o destino; a ordem de construção segue o [plano de release](#62-plano-de-release-inicial). O Sprint A entrega o [Walking Skeleton](#11-walking-skeleton), a fatia mínima que prova o desenho ponta a ponta: app Flutter com o ecrã de reporte, `POST /reportes`, PostgreSQL, `GET /reportes` de volta na app, `/health`, um teste de API e um teste de widget, `docker compose up` a arrancar `api` e `postgres`, e a pipeline com lint e testes. O Sprint B acrescenta o Worker, a IA, o calendário e o resto da jornada principal; o Sprint C acrescenta notificações locais, relatório da comissão, indicador de progresso e o dashboard operacional. Nenhum componente novo aparece depois do Sprint A: só se preenchem os que já estão neste capítulo.
+Este desenho é o destino; a ordem de construção segue o [plano de release](#62-plano-de-release-inicial). O Sprint A entrega o [Walking Skeleton](#11-walking-skeleton), a fatia mínima que prova o desenho ponta a ponta: app Flutter com o ecrã de reporte, `POST /reportes`, PostgreSQL, `GET /reportes` de volta na app, `/health`, testes de API e de widget, `docker compose up` a arrancar `api` e `postgres`, e a pipeline com lint e testes. O esquema do skeleton é uma versão reduzida do [8.3](#83-modelo-de-dados) (`reporte` sem `condominio_id`, `autor_id` nem `oculto_em`, e com `foto_url` em vez de `foto_path`), completada no Sprint B. O Sprint B acrescenta o Worker, a IA, o calendário e o resto da jornada principal; o Sprint C acrescenta notificações locais, relatório da comissão, indicador de progresso e o dashboard operacional. Depois do Sprint A só entram componentes que já estão desenhados neste capítulo.
 
 ---
 
@@ -603,7 +614,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 - **Contexto:** o enunciado exige pelo menos dois componentes backend independentemente implantáveis e um workflow assíncrono.
 - **Decisão:** API (síncrona) e Worker (assíncrono) como containers separados, com o mesmo código de domínio e a mesma base de dados.
 - **Alternativas:** modular monolith (um só deploy; exigiria justificar a exceção do enunciado); serviços por domínio (reportes, atas, notificações) com bases de dados próprias (mais operação e mais rede para um produto pequeno).
-- **Consequências:** o Worker pode cair ou escalar sem afetar a API, e o trabalho lento (IA, calendário) fica fora do caminho do pedido. Em troca, o esquema é partilhado: as migrações têm de ser compatíveis com os dois componentes (aditivas) e os dois são implantados juntos.
+- **Consequências:** o Worker pode cair ou escalar sem afetar a API, e o trabalho lento (IA, calendário) fica fora do caminho do pedido. Em troca, o esquema é partilhado: as migrações têm de ser aditivas e retrocompatíveis, o que permite implantar cada componente por ordem (migração primeiro), mas não evoluir o esquema de forma independente.
 
 ### ADR-005 PostgreSQL como única base de dados e como fila de jobs
 - **Contexto:** o enunciado desaconselha várias tecnologias de base de dados sem justificação; o volume de jobs é baixo (uma ata por assembleia, poucas reuniões).
@@ -670,7 +681,10 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 
 ### 10.4 Retenção
 - **Nome e credencial:** enquanto a identidade estiver ativa; apagados quando o administrador a remove.
-- **Reportes de identidades removidas:** mantêm-se como "Residente removido" + fração. Áudio apagado após aprovação da ata. Prazo dos reportes e histórico: TODO (equipa).
+- **Reportes e histórico:** eliminados 24 meses depois de o reporte ficar `resolvido`, por uma limpeza diária do Worker; reportes ainda abertos mantêm-se.
+- **Reportes de identidades removidas:** mantêm-se como "Residente removido" + fração até esse prazo.
+- **Áudio:** apagado após a aprovação da ata, tal como a transcrição e o rascunho (fica só `texto_aprovado`).
+- **Atas aprovadas:** enquanto o condomínio existir, por serem o registo das assembleias.
 
 ### 10.5 QR code, revogação e abuso
 - O QR code contém um token aleatório (só o hash fica guardado). Revogar/regenerar bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
@@ -681,6 +695,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Ameaça | Mitigação |
 |---|---|
 | QR code divulgado a terceiros | Revogação/regeneração; revisão de identidades pelo administrador |
+| Criação massiva de condomínios (`POST /condominios` sem autenticação) | Limite de pedidos por IP e de frações por condomínio |
 | Adivinhar tokens de QR code ou códigos de convite de administrador | Token/código aleatório longo; limite de tentativas; convite de uso único com validade curta |
 | Personificação (mesmo nome) | Risco aceite como baixo: fração sempre registada; nome único por fração; remoção da identidade |
 | Acesso indevido ao autor (IDOR) | Autorização no servidor: nome e fração só ao administrador e ao próprio (nome também com `mostrar_nome`); testes automáticos |
@@ -822,4 +837,4 @@ Limitações assumidas no Sprint A: o CodeQL e o `dependency-review-action` fica
 
 ### Componentes excluídos (Sprint B)
 
-O Worker com os motores locais de IA, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
+O Worker com a integração ao serviço de IA, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
