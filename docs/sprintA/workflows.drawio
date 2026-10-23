@@ -213,7 +213,7 @@
         <mxCell id="aok" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Aceita como reporte novo e trata-o (estado Aberto &gt; Em curso; ver Workflow 3)" vertex="1">
           <mxGeometry height="70" width="150" x="1120" y="450" as="geometry" />
         </mxCell>
-        <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista no historico e notifica reporter e co-reporters (push + alternativa visual)" vertex="1">
+        <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista no historico e notifica reporter e co-reporters (notificacao local + alternativa visual)" vertex="1">
           <mxGeometry height="70" width="170" x="1760" y="175" as="geometry" />
         </mxCell>
         <mxCell id="r6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" value="Consulta a lista de reportes do predio e filtra &quot;Os meus reportes&quot; (estado, data de criacao e de ultima atualizacao)" vertex="1">
@@ -622,7 +622,7 @@
         <mxCell id="l2" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;swimlaneFillColor=#ffffff;" value="Sistema (app no telemovel / backend)" vertex="1">
           <mxGeometry height="200" width="1300" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="l3" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;swimlaneFillColor=#ffffff;" value="Servicos externos (transcricao IA)" vertex="1">
+        <mxCell id="l3" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;swimlaneFillColor=#ffffff;" value="Servico externo (IA - OpenAI)" vertex="1">
           <mxGeometry height="140" width="1300" y="340" as="geometry" />
         </mxCell>
         <mxCell id="l4" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;swimlaneFillColor=#ffffff;" value="Residente" vertex="1">
@@ -655,7 +655,7 @@
         <mxCell id="a5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="Modo degradado: e avisado de que o audio foi guardado; pode escrever a ata manualmente (fallback nao-IA)" vertex="1">
           <mxGeometry height="80" width="170" x="525" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="e2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="IA gera transcricao / rascunho de ata" vertex="1">
+        <mxCell id="e2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="IA transcreve o audio e gera o rascunho de ata" vertex="1">
           <mxGeometry height="60" width="150" x="535" y="380" as="geometry" />
         </mxCell>
         <mxCell id="s5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Marca o rascunho como &quot;gerado por IA, pendente de revisao&quot;" vertex="1">
