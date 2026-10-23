@@ -23,7 +23,7 @@
 
 | ID | Funcionalidade | O que faz | Prioridade | Versão | Estado |
 |---|---|---|---|---|---|
-| RF-01 | Reportar problema | Descrição + foto opcional, em menos de 1 minuto; ligado ao nome e fração do autor (RF-10). TODO (equipa): categoria e localização no MVP? | Essencial | v0.3 | Draft |
+| RF-01 | Reportar problema | Descrição + foto opcional, em menos de 1 minuto; ligado ao nome e fração do autor (RF-10). Sem categoria nem localização no MVP: a descrição chega e evita recolher mais dados (RNF-03) | Essencial | v0.6 | Draft |
 | RF-02 | Estado do reporte | Aberto, em curso ou resolvido | Essencial | v0.4 | Draft |
 | RF-03 | Histórico do prédio | Lista de reportes abertos e fechados, visível a todos os residentes e ao administrador; autor segue RF-08 | Essencial | v0.3 | Draft |
 | RF-04 | Notificações | Avisa quem reportou e quem segue (RF-14) quando o estado muda, e todos os residentes quando há um aviso novo ou uma ata aprovada (estado na lista; notificação local em US-11) | Importante | v0.5 | Draft |

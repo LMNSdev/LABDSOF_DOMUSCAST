@@ -21,6 +21,23 @@
 ### Metodologia
 Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no fim de cada sprint e retrospetiva da equipa.
 
+### Envolvimento dos investidores (docentes)
+
+Enunciado 5.7: a equipa trabalha com os docentes como investidores e partes interessadas do produto.
+
+| Docente | Envolvimento no Sprint A | Feedback recebido |
+|---|---|---|
+| Regente (aulas teóricas) | Revisão do problema e da solução proposta | Não apontou problemas ao problema nem à solução proposta |
+| Docente das aulas práticas | Acompanhamento contínuo ao longo do sprint, com feedback sobre a arquitetura | Foi dando feedback e aprovação da arquitetura à medida que esta evoluía |
+
+**Decisões revistas após feedback** (o enunciado exige pelo menos uma, com a mudança e a justificação documentadas):
+
+| Data | Feedback | Decisão revista | Justificação | Onde ficou registado |
+|---|---|---|---|---|
+| 08/10/2026 | O serviço de IA era a integração externa exigida pelo enunciado (6.5) | A integração externa passou a ser o serviço de calendário, em simulador com falhas configuráveis; o serviço de IA deixa de contar como integração externa | Só o simulador permite disparar por comando as quatro condições do enunciado (indisponível, atrasado, incompleto, inválido) e ser executado pelos docentes sem contas externas | [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical), [8.6](#86-integração-externa) |
+| 22/10/2026 | A equipa ponderou executar a IA num agente local em vez de um serviço externo; o docente desaconselhou | Mantém-se o serviço de IA da OpenAI, chamado pelo Worker; não se adota um agente local | Seguir a recomendação do docente. | [7.1](#71-fluxo-assistido-por-ia), [7.3](#73-riscos-e-mitigações) |
+
+
 ### Controlo de versões (Git) - GitHub Flow
 - `main` é a branch de produção, sempre estável; nunca se commita diretamente.
 - Uma branch curta por funcionalidade/tarefa, integrada em `main` por PR após code review.
@@ -30,6 +47,16 @@ Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, spr
 
 ### Gestão de issues
 GitHub Issues/Projects; cada issue é referenciada nos commits e PRs.
+
+![GitHub Commits](./images/github-commits.png)
+
+### Quadro do Project (GitHub Projects)
+
+![GitHub Project](./images/github-project.png)
+
+### Lista de issues (GitHub Issues)
+
+![GitHub Issues](./images/github-issues.png)
 
 ### Papéis da equipa
 5 membros, 6 papéis (um membro acumula dois). Todos programam frontend e backend; a tabela indica só a responsabilidade **adicional** de cada papel.
@@ -263,10 +290,9 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 - **Onboarding do condomínio (Workflow 1, US-01, US-15):** o administrador cria o condomínio (nome, nº de frações) e a app gera um QR code único por fração, partilhado pelos residentes dessa fração. Cada residente faz scan: se o QR code é válido e o dispositivo não tem identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existe identidade, não volta a pedir. QR code inválido ou revogado mostra erro.
 
-<!-- TODO (equipa): reexportar o SVG a partir de workflows.drawio (páginas 1 e 2 foram alteradas para incluir o nome do residente) -->
 ![Onboarding do condominio](images/workflow-1.drawio.png)
 
-- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (push com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
+- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (notificação local com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
 
 ![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
@@ -318,6 +344,25 @@ O enunciado (5.5) pede pelo menos um mecanismo que incentive a participação co
 | Como se controla ou desliga? | O residente oculta o indicador nas definições; os valores são acessíveis a leitores de ecrã. |
 
 Pontos, badges e leaderboards ficam de fora de propósito: num prédio de 8 a 60 frações, comparações entre vizinhos geram mais conflito do que participação.
+
+---
+
+### 5.6. Visão do produto, benefício esperado e fronteira do MVP
+
+**Visão.** Que qualquer prédio autogerido em Portugal consiga tratar os problemas do dia a dia, e levar avisos e decisões de assembleia a todos, sem depender de conversas perdidas no WhatsApp nem de posters, e sem que o administrador voluntário fique exposto por falta de registo.
+
+**Benefício esperado para a comunidade** (hipóteses, ver nota em [5.4](#54-critérios-de-sucesso)):
+- Avarias reportadas mais cedo e acompanhadas até ao fim, com menos danos e custos evitáveis ([capítulo 1](#1-relatório-de-problema-e-oportunidade)).
+- Menos incerteza e menos reportes repetidos: todos veem o estado de cada reporte.
+- Decisões e atas ao alcance de quem falta às assembleias.
+- Menos esforço e menos risco para o administrador, graças a um histórico auditável.
+- Menos exposição de dados pessoais do que num grupo de WhatsApp.
+
+**Fronteira do MVP.** O MVP é a experiência mais pequena que testa a hipótese central: *reportes com estado, dono e histórico, com privacidade por desenho, são melhores do que um grupo de WhatsApp*. Inclui o onboarding por QR code, o ciclo completo de um reporte (criar, consultar, triar, resolver, com histórico auditável), a privacidade do autor, a ata assistida por IA com fallback manual, o calendário externo simulado e o modo degradado. Fica de fora a contabilidade, as votações formais, os fornecedores de manutenção e a gestão de vários prédios. A lista de histórias e o plano por sprint são mantidos só no [Product Backlog (MVP e fora do âmbito)](../backlog.md#3-mvp).
+
+**Riscos do produto:** ver [Pressupostos e riscos](#pressupostos-e-riscos) no capítulo 1 e [7.3](#73-riscos-e-mitigações) para a IA.
+
+**Critérios de sucesso:** ver [5.4](#54-critérios-de-sucesso).
 
 ---
 
@@ -406,20 +451,21 @@ Este capítulo conta como o produto funciona por dentro (diagramas em [technical
 ### 8.1 Contexto do sistema
 
 Comecemos pelo exterior. Marta (a [persona da residente ocupada](#51-personas)) e Rui (o administrador) usam a mesma app móvel; o que cada um pode fazer depende da identidade com que entrou. A app comunica de forma síncrona com a **API**, que deixa as tarefas demoradas ao **Worker**, de forma assíncrona. Só o Worker fala com os sistemas externos: o serviço de IA (OpenAI), que transcreve o áudio das assembleias e redige o rascunho da ata, e um serviço de calendário, que no projeto é um simulador realista (o que o enunciado aceita). A API limita-se a publicar o feed iCal que qualquer app de calendário subscreve. Não há fornecedor de push: as notificações são geradas no próprio telemóvel ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)).
-![alt text](<images/Contexto do sistema.png>)
+![Diagrama de contexto do sistema: residente e administrador usam a app móvel, que fala com a API; o Worker fala com o serviço de IA e o simulador de calendário](<images/Contexto do sistema.png>)
 
 
 | Ator / sistema externo | Interação |
 |---|---|
 | Residente e administrador | Usam a mesma app; o papel vem da identidade do residente (US-15) ou da conta de administrador (US-01) |
 | Serviço de IA (OpenAI) | Recebe o áudio da assembleia e devolve a transcrição; recebe o texto da transcrição e devolve o rascunho de ata (US-10). Fornecedor: OpenAI, ver [7.1](#71-fluxo-assistido-por-ia) |
-| Serviço de calendário (simulador) | A integração externa descrita em detalhe: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) || App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
+| Serviço de calendário (simulador) | A integração externa descrita em detalhe: container nosso que imita a API de eventos de um calendário real, com falhas, atrasos e respostas inválidas configuráveis (US-13, [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| App de calendário do residente | Google Calendar, Apple Calendar, Outlook ou outra: subscreve o feed iCal do condomínio publicado pela API (US-13) |
 
 ### 8.2 Vista de Containers
 
 Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da app no momento: criar um reporte, listar, mudar o estado. O **Worker** trata do que é lento ou depende de terceiros, como transcrever o áudio de uma assembleia ou marcar uma reunião no calendário, e fá-lo em segundo plano, lendo tarefas de uma tabela que a API lhe deixa. Os dois partilham o mesmo código Python e a mesma base de dados PostgreSQL, mas arrancam como containers separados ([ADR-004](#adr-004-dois-componentes-backend-api-e-worker-com-base-de-dados-partilhada), [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
-![alt text](<images/Vista de contentores.png>)
+![Vista de containers: app móvel, API, Worker, PostgreSQL, volume de ficheiros, simulador de calendário, Prometheus e Grafana](<images/Vista de contentores.png>)
 
 | Container | Responsabilidade | Dono dos dados |
 |---|---|---|
@@ -441,7 +487,7 @@ Quatro consequências desta separação, que o enunciado pede para justificar:
 
 Agora o que fica guardado. A história começa num **condomínio**, criado por um **administrador** (que pode convidar outros), com as suas **frações**. Cada fração tem um **QR token** partilhável; quem o lê cria uma **identidade** (um nome e uma credencial no dispositivo). Com essa identidade, um residente cria **reportes**, cuja vida fica registada num **histórico** que só se apaga ao fim do prazo de retenção, e que outros residentes podem **seguir**. O administrador publica **avisos**, alguns ligados a reportes, e agenda **reuniões**; de cada reunião pode sair uma **ata**, que nasce de um áudio. Tudo o que é lento passa pela tabela **job**.
 
-![alt text](<images/Modelo de dados.png>)
+![Modelo de dados: condomínio, fração, identidade, reporte, histórico, aviso, reunião, ata e job](<images/Modelo de dados.png>)
 
 | Entidade | Campos principais | Notas |
 |---|---|---|
@@ -502,7 +548,7 @@ Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem
 
 Voltemos ao Rui. A assembleia acabou, ele carrega o áudio e segue com a sua vida; não faz sentido ficar com a app aberta à espera de uma transcrição que pode demorar minutos. É por isso que a transcrição é assíncrona (US-10, [Workflow 5](#53-user-journey)). O mesmo mecanismo serve a publicação no calendário (US-13).
 
-![alt text](<images/Workflow assincrono - transcricao da ata.png>)
+![Workflow assíncrono da transcrição da ata: a API cria o job, o Worker chama o serviço de IA com retries e a ata passa a pendente de revisão](<images/Workflow assincrono - transcricao da ata.png>)
 
 O enunciado pede que o workflow lide com retries, duplicados, falhas e consistência eventual. Eis como:
 
@@ -563,7 +609,7 @@ Para a equipa perceber o que se passa em produção sem adivinhar, cada componen
 
 Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-sucesso), que remetiam os valores concretos para aqui:
 
-| SLI | Alvo proposto (a confirmar com os docentes) |
+| SLI | Alvo (definido pela equipa; medido no Sprint C) |
 |---|---|
 | Disponibilidade de `POST /reportes` | 99% em janela de 7 dias |
 | Latência p95 de `POST /reportes` | < 1 s em ambiente de teste sob carga simulada |
@@ -574,11 +620,11 @@ Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-suce
 
 Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline, vira imagem Docker e é implantado com Docker Compose no ambiente de avaliação; a app chega aos docentes como APK.
 
-![alt text](<images/Vista de deployment.png>)
+![Vista de deployment: commit em main, pipeline, imagens no GHCR e deploy com Docker Compose no ambiente de avaliação](<images/Vista de deployment.png>)
 
 - **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
 - **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da API da OpenAI, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
-- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`; hoje a CI usa SQLite, ver [§11](#11-walking-skeleton)) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. O ambiente de avaliação é uma VM Linux única de dimensão modesta (ex.: 2 vCPU e 4 GB de RAM, a confirmar) com Docker Compose, a que a pipeline se liga por SSH; se não houver VM disponível, a mesma stack corre na máquina de um membro da equipa para a demonstração.
+- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`; hoje a CI usa SQLite, ver [§11](#11-walking-skeleton)) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. O ambiente de avaliação é uma VM Linux única de dimensão modesta (2 vCPU e 4 GB de RAM, suficiente para os containers; ajustada se os testes de carga do Sprint C o exigirem) com Docker Compose, a que a pipeline se liga por SSH; se não houver VM disponível, a mesma stack corre na máquina de um membro da equipa para a demonstração.
 - **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
 - **App móvel:** APK Android gerado na pipeline e distribuído aos docentes. Android é a plataforma de demonstração; o Flutter mantém o iOS possível, mas não é testado no projeto ([ADR-002](#adr-002-app-móvel-em-flutter-demonstrada-em-android)).
 

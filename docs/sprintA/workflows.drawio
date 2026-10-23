@@ -213,7 +213,7 @@
         <mxCell id="aok" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Aceita como reporte novo e trata-o (estado Aberto &gt; Em curso; ver Workflow 3)" vertex="1">
           <mxGeometry height="70" width="150" x="1120" y="450" as="geometry" />
         </mxCell>
-        <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista no historico e notifica reporter e co-reporters (push + alternativa visual)" vertex="1">
+        <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Regista no historico e notifica reporter e co-reporters (notificacao local + alternativa visual)" vertex="1">
           <mxGeometry height="70" width="170" x="1760" y="175" as="geometry" />
         </mxCell>
         <mxCell id="r6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" value="Consulta a lista de reportes do predio e filtra &quot;Os meus reportes&quot; (estado, data de criacao e de ultima atualizacao)" vertex="1">
