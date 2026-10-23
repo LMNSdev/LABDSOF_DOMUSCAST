@@ -25,7 +25,7 @@
                 <mxCell id="td1-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker" vertex="1">
                     <mxGeometry height="70" width="140" x="690" y="360" as="geometry"/>
                 </mxCell>
-                <mxCell id="td1-9" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de transcrição / IA" vertex="1">
+                <mxCell id="td1-9" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de IA&lt;br&gt;(OpenAI)" vertex="1">
                     <mxGeometry height="90" width="200" x="960" y="350" as="geometry"/>
                 </mxCell>
                 <mxCell id="td1-10" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de calendário&lt;br&gt;(simulador)" vertex="1">
@@ -69,7 +69,7 @@
                 <mxCell id="td1-17" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-7" value="">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="td1-18" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-9" value="áudio">
+                <mxCell id="td1-18" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-9" value="áudio e texto">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="td1-19" edge="1" parent="1" source="td1-8" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td1-10" value="reuniões">
@@ -83,11 +83,11 @@
         </mxGraphModel>
     </diagram>
     <diagram id="td2" name="2. Vista de contentores">
-        <mxGraphModel dx="1302" dy="1077" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="720" math="0" shadow="0">
+        <mxGraphModel dx="1302" dy="1077" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="800" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="td2-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.2 - Vista de contentores: App, API, Worker, PostgreSQL e volume de ficheiros" vertex="1">
+                <mxCell id="td2-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.2 - Vista de contentores: App, API, Worker, PostgreSQL, volume de ficheiros, Prometheus e Grafana" vertex="1">
                     <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Dispositivo" vertex="1">
@@ -97,28 +97,49 @@
                     <mxGeometry height="130" width="220" x="60" y="115" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Backend (Docker Compose)" vertex="1">
-                    <mxGeometry height="540" width="640" x="380" y="80" as="geometry"/>
+                    <mxGeometry height="640" width="640" x="380" y="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="td2-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="API (FastAPI)&lt;br&gt;&lt;br&gt;REST, autenticação, autorização,&lt;br&gt;validação, regras de negócio,&lt;br&gt;escreve jobs no outbox" vertex="1">
+                <mxCell id="td2-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="API (FastAPI)&lt;br&gt;&lt;br&gt;REST, autenticação, autorização,&lt;br&gt;validação, regras de negócio,&lt;br&gt;cria jobs no outbox, publica o feed iCal" vertex="1">
                     <mxGeometry height="120" width="240" x="410" y="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-7" parent="1" style="shape=folder;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;tabWidth=60;tabHeight=14;" value="Volume media&lt;br&gt;fotos e áudios" vertex="1">
                     <mxGeometry height="90" width="240" x="410" y="300" as="geometry"/>
                 </mxCell>
-                <mxCell id="td2-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker (Python)&lt;br&gt;&lt;br&gt;consome a tabela job:&lt;br&gt;transcrição, publicação&lt;br&gt;no serviço de calendário" vertex="1">
+                <mxCell id="td2-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker (Python)&lt;br&gt;&lt;br&gt;consome a tabela job: transcrição&lt;br&gt;e rascunho via IA, calendário,&lt;br&gt;limpeza por retenção" vertex="1">
                     <mxGeometry height="120" width="240" x="410" y="450" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-9" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="PostgreSQL&lt;br&gt;dados + tabela job" vertex="1">
                     <mxGeometry height="110" width="160" x="780" y="125" as="geometry"/>
                 </mxCell>
-                <mxCell id="td2-10" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de IA" vertex="1">
+                <mxCell id="td2-10" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de IA&lt;br&gt;(OpenAI)" vertex="1">
                     <mxGeometry height="80" width="200" x="1090" y="500" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-11" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Simulador de calendário&lt;br&gt;(contentor)" vertex="1">
                     <mxGeometry height="80" width="200" x="1090" y="600" as="geometry"/>
                 </mxCell>
-                <mxCell id="td2-19" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="API e Worker partilham o mesmo código Python e a mesma imagem Docker; arrancam como contentores separados (ADR-004). PostgreSQL é a única base de dados e serve de fila de jobs (ADR-005)." vertex="1">
-                    <mxGeometry height="110" width="300" x="40" y="310" as="geometry"/>
+                <mxCell id="td2-19" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="API e Worker partilham o mesmo código Python e a mesma imagem Docker; arrancam como contentores separados (ADR-004). PostgreSQL é a única base de dados e serve de fila de jobs (ADR-005). Só o Worker chama a IA (áudio para transcrição, texto para o rascunho) e o serviço de calendário. Prometheus recolhe /metrics de API e Worker; Grafana mostra o dashboard operacional." vertex="1">
+                    <mxGeometry height="140" width="300" x="40" y="310" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Prometheus" vertex="1">
+                    <mxGeometry height="50" width="130" x="465" y="640" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Grafana" vertex="1">
+                    <mxGeometry height="50" width="130" x="680" y="640" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-22" edge="1" parent="1" source="td2-20" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="td2-8" value="scrape /metrics">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td2-23" edge="1" parent="1" source="td2-20" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.15;entryY=1;entryDx=0;entryDy=0;" target="td2-6" value="scrape /metrics">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="395" y="665"/>
+                            <mxPoint x="395" y="270"/>
+                            <mxPoint x="446" y="270"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="td2-24" edge="1" parent="1" source="td2-21" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="td2-20" value="consulta">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="td2-12" edge="1" parent="1" source="td2-4" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td2-6" value="REST/JSON (síncrono)">
                     <mxGeometry relative="1" as="geometry"/>
@@ -167,8 +188,8 @@
                 <mxCell id="td3-2" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="Technical Design 8.3 - Modelo de dados (entidades e relações principais)" vertex="1">
                     <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="td3-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;condominio&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, nome, n_fracoes, criado_em&lt;/span&gt;" vertex="1">
-                    <mxGeometry height="58" width="300" x="500" y="40" as="geometry"/>
+                <mxCell id="td3-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;condominio&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, nome, n_fracoes&lt;br&gt;calendario_token_hash, criado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="78" width="300" x="500" y="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="td3-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;administrador&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, nome, credencial_hash&lt;br&gt;criado_em, removido_em&lt;/span&gt;" vertex="1">
                     <mxGeometry height="78" width="300" x="900" y="30" as="geometry"/>
@@ -191,8 +212,8 @@
                 <mxCell id="td3-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;identidade&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, fracao_id, nome, nome_normalizado, papel&lt;br&gt;credencial_hash, criado_em, removida_em&lt;/span&gt;" vertex="1">
                     <mxGeometry height="78" width="300" x="300" y="350" as="geometry"/>
                 </mxCell>
-                <mxCell id="td3-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, autor_id, descricao&lt;br&gt;foto_path, foto_alt, mostrar_nome&lt;br&gt;estado, duplicado_de_id&lt;br&gt;criado_em, atualizado_em&lt;/span&gt;" vertex="1">
-                    <mxGeometry height="118" width="260" x="660" y="330" as="geometry"/>
+                <mxCell id="td3-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, condominio_id, autor_id&lt;br&gt;idempotency_key, descricao&lt;br&gt;foto_path, foto_alt, mostrar_nome&lt;br&gt;estado, duplicado_de_id, oculto_em&lt;br&gt;criado_em, atualizado_em&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="138" width="260" x="660" y="330" as="geometry"/>
                 </mxCell>
                 <mxCell id="td3-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;reporte_historico&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, reporte_id, estado_anterior&lt;br&gt;estado_novo, nota, autor_tipo&lt;br&gt;autor_id, criado_em&lt;/span&gt;" vertex="1">
                     <mxGeometry height="98" width="260" x="960" y="330" as="geometry"/>
@@ -206,7 +227,7 @@
                 <mxCell id="td3-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=6;spacingTop=2;" value="&lt;b&gt;job&lt;/b&gt;&lt;br&gt;&lt;span style=&#39;font-size:11px&#39;&gt;id, tipo, chave_idempotencia&lt;br&gt;payload, estado, tentativas&lt;br&gt;proxima_tentativa_em, erro, criado_em&lt;/span&gt;" vertex="1">
                     <mxGeometry height="98" width="260" x="1280" y="470" as="geometry"/>
                 </mxCell>
-                <mxCell id="td3-31" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Notação pé-de-galinha (um, zero ou um, muitos). reporte.duplicado_de_id aponta para outro reporte (US-04). Um condominio tem um ou mais administradores (US-19). reporte_historico é só inserção (US-05). job é o outbox consumido pelo Worker (8.5). identidade.papel: residente ou comissao (US-12). nome_normalizado é único por fração (US-15)." vertex="1">
+                <mxCell id="td3-31" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Notação pé-de-galinha (um, zero ou um, muitos). reporte.duplicado_de_id aponta para outro reporte (US-04). Um condominio tem um ou mais administradores (US-19). reporte_historico é só inserção, exceto ao fim da retenção (US-05). job é o outbox consumido pelo Worker (8.5). identidade.papel: residente ou comissao (US-12). nome_normalizado é único por fração (US-15). condominio.calendario_token_hash protege o feed iCal (US-13). reporte.oculto_em marca um reporte ocultado pelo administrador; idempotency_key é única por autor (US-18)." vertex="1">
                     <mxGeometry height="60" width="1000" x="20" y="640" as="geometry"/>
                 </mxCell>
                 <mxCell id="td3-16" edge="1" parent="1" source="td3-3" style="html=1;rounded=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td3-4" value="">
@@ -296,10 +317,10 @@
                 <mxCell id="td4-6" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Worker" vertex="1">
                     <mxGeometry height="790" width="140" x="900" y="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="td4-7" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Serviço de IA" vertex="1">
+                <mxCell id="td4-7" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#666666;" value="Serviço de IA (OpenAI)" vertex="1">
                     <mxGeometry height="790" width="140" x="1180" y="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="td4-8" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" value="loop  [a cada poll]" vertex="1">
+                <mxCell id="td4-8" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" value="loop  [por job pendente]" vertex="1">
                     <mxGeometry height="380" width="700" x="620" y="330" as="geometry"/>
                 </mxCell>
                 <mxCell id="td4-9" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;width=70;height=24;" value="alt  [sucesso]" vertex="1">
@@ -308,7 +329,7 @@
                 <mxCell id="td4-20" parent="1" style="text;html=1;fontSize=11;align=left;" value="[falha ou timeout]" vertex="1">
                     <mxGeometry height="20" width="200" x="645" y="580" as="geometry"/>
                 </mxCell>
-                <mxCell id="td4-21" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Retries: backoff 1, 2, 4, 8, 16 min, máximo 5 tentativas; depois a ata fica falhou_transcricao e o administrador pode escrever a ata à mão (NFR-01). Duplicados: chave_idempotencia única por tipo de job; SKIP LOCKED evita dois Workers no mesmo job." vertex="1">
+                <mxCell id="td4-21" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="Retries: backoff 1, 2, 4, 8, 16 min, máximo 5 tentativas; depois a ata fica falhou_transcricao e o administrador pode escrever a ata à mão (US-18). Duplicados: chave_idempotencia única por tipo de job; SKIP LOCKED evita dois Workers no mesmo job. Se o Worker cair, ao arrancar repoe os jobs a_processar como pendente. O job faz dois pedidos à IA em sequência: transcrição do áudio e rascunho de ata." vertex="1">
                     <mxGeometry height="40" width="1300" x="60" y="885" as="geometry"/>
                 </mxCell>
                 <mxCell id="td4-10" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="POST /reunioes/{id}/ata/audio">
@@ -329,25 +350,25 @@
                         <mxPoint x="130" y="290" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="td4-13" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="SELECT ... FOR UPDATE SKIP LOCKED">
+                <mxCell id="td4-13" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="reserva o job (SKIP LOCKED)">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="970" y="390" as="sourcePoint"/>
                         <mxPoint x="690" y="390" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="td4-14" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="envia áudio">
+                <mxCell id="td4-14" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="envia o áudio (transcrição) e o texto (rascunho)">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="970" y="430" as="sourcePoint"/>
                         <mxPoint x="1250" y="430" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="td4-15" edge="1" parent="1" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="transcrição + rascunho">
+                <mxCell id="td4-15" edge="1" parent="1" style="html=1;rounded=0;endArrow=open;endFill=0;dashed=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="rascunho de ata">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="1250" y="505" as="sourcePoint"/>
                         <mxPoint x="970" y="505" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="td4-16" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="ata = pendente_revisao; job = concluido">
+                <mxCell id="td4-16" edge="1" parent="1" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;verticalAlign=bottom;" value="grava transcrição e rascunho; ata = pendente_revisao">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="970" y="550" as="sourcePoint"/>
                         <mxPoint x="690" y="550" as="targetPoint"/>
@@ -400,13 +421,13 @@
                 <mxCell id="td5-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="push GHCR&lt;br&gt;(tag do commit)" vertex="1">
                     <mxGeometry height="80" width="190" x="550" y="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="td5-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="deploy" vertex="1">
+                <mxCell id="td5-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="deploy (SSH)" vertex="1">
                     <mxGeometry height="80" width="190" x="790" y="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="td5-8" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;" value="APK Android&lt;br&gt;(distribuído aos docentes)" vertex="1">
                     <mxGeometry height="80" width="200" x="1160" y="115" as="geometry"/>
                 </mxCell>
-                <mxCell id="td5-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Docker Compose - ambiente de avaliação (TODO: VM ou máquina da equipa)" vertex="1">
+                <mxCell id="td5-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;" value="Docker Compose - ambiente de avaliação (VM Linux única, deploy por SSH)" vertex="1">
                     <mxGeometry height="430" width="1060" x="40" y="290" as="geometry"/>
                 </mxCell>
                 <mxCell id="td5-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="simulador-&lt;br&gt;calendario" vertex="1">
@@ -430,7 +451,7 @@
                 <mxCell id="td5-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="grafana" vertex="1">
                     <mxGeometry height="70" width="120" x="900" y="450" as="geometry"/>
                 </mxCell>
-                <mxCell id="td5-29" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="api e worker partilham a mesma imagem (comando diferente). Prometheus recolhe /metrics de api e worker. Configuração por variáveis de ambiente; segredos (chave de IA) só em .env não versionado ou GitHub secrets. Rollback: docker compose up com a tag anterior; migrações Alembic só aditivas no MVP." vertex="1">
+                <mxCell id="td5-29" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="api e worker partilham a mesma imagem (comando diferente). Prometheus recolhe /metrics de api e worker. Configuração por variáveis de ambiente; segredos (chave de IA, chave SSH de deploy) só em .env não versionado ou GitHub secrets. Rollback: docker compose up com a tag anterior; migrações Alembic só aditivas e retrocompatíveis no MVP." vertex="1">
                     <mxGeometry height="40" width="1300" x="40" y="735" as="geometry"/>
                 </mxCell>
                 <mxCell id="td5-17" edge="1" parent="1" source="td5-4" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-5" value="">
@@ -479,6 +500,14 @@
                 </mxCell>
                 <mxCell id="td5-27" edge="1" parent="1" source="td5-16" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.5000;exitY=0.0000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-15" value="">
                     <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="td5-30" edge="1" parent="1" source="td5-15" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;dashed=1;exitX=0.0000;exitY=0.9000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000;entryY=0.7500;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-13" value="scrape">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="880" y="403"/>
+                            <mxPoint x="880" y="612"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="td5-28" edge="1" parent="1" source="td5-13" style="html=1;rounded=0;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;fontSize=11;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;entryPerimeter=0;" target="td5-10" value="">
                     <mxGeometry relative="1" as="geometry"/>

@@ -177,11 +177,27 @@ docs/                              ← Documentação do projeto (Sprint A, back
 
 ---
 
+## Onde a IA entra (Sprint B, ainda não implementado)
+
+A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunho de ata** que o administrador revê e aprova. São dois passos de IA diferentes, porque resolvem problemas diferentes, ambos feitos pelo Worker com a **API da OpenAI** (uma só chave):
+
+| Passo | Modelo | O que faz |
+|---|---|---|
+| 1. Transcrever o áudio | `gpt-4o-mini-transcribe` | Converte a fala em texto corrido, palavra a palavra: longo, com hesitações e conversas laterais. Ainda não é uma ata |
+| 2. Redigir o rascunho | `gpt-4o-mini` | Lê esse texto e escreve uma ata curta e formal: presentes, decisões e tarefas |
+
+- Custo estimado: cerca de US$ 0,19 por ata de 1 hora de áudio (preços consultados a 2026-10-22).
+- O áudio da assembleia é enviado à OpenAI; por isso usamos gravações sintéticas nos testes e avisamos os presentes antes de gravar.
+- A IA não publica nem decide nada: o rascunho fica "gerado por IA, pendente de revisão" até o administrador o aprovar. Sem IA, o administrador escreve a ata à mão.
+- Detalhe e justificação: [docs/sprintA/sprintA.md, secção 7](../docs/sprintA/sprintA.md#7-responsible-ai-opportunity-assessment).
+
+---
+
 ## O que vem a seguir (Sprint B)
 
 - Autenticação real por QR code por fração (US-01, US-15)
 - Gestão de estado dos reportes pelo administrador (US-04, US-05)
-- Transcrição de atas por IA com fallback manual (US-10)
+- Transcrição de atas por IA com fallback manual (US-10), ver [Onde a IA entra](#onde-a-ia-entra-sprint-b-ainda-não-implementado)
 - Integração com calendário de assembleias (US-13)
 - Workflow assíncrono com Worker + PostgreSQL queue (SKIP LOCKED)
 - Testes de integração com PostgreSQL real na CI
