@@ -393,7 +393,7 @@ A oportunidade é ajudar o administrador voluntário a preparar a ata de uma ass
 | Passo | Quem faz | É IA? | O que faz |
 |---|---|---|---|
 | 1. Gravar ou carregar o áudio | Administrador | Não | Envia o ficheiro de áudio da assembleia |
-| 2. Transcrever o áudio | Serviço de IA da OpenAI (modelo `gpt-4o-mini-transcribe`), chamado pelo Worker | Sim | Converte a fala em texto |
+| 2. Transcrever o áudio | Serviço de IA da OpenAI (modelo `gpt-transcribe`), chamado pelo Worker | Sim | Converte a fala em texto |
 | 3. Redigir o rascunho | Serviço de IA da OpenAI (modelo `gpt-4o-mini`), chamado pelo Worker | Sim | Lê o texto da transcrição e escreve um rascunho de ata (presentes, decisões, tarefas), com o excerto que suporta cada decisão, marcado como "gerado por IA, pendente de revisão" |
 | 4. Rever, editar e aprovar | Administrador | Não | É a única pessoa que decide o que fica na ata |
 | 5. Publicar aos residentes | Sistema | Não | Só publica depois da aprovação do administrador |
@@ -423,16 +423,16 @@ O Sprint A define o protocolo; a primeira versão é construída no Sprint B e a
 | Medida | Como medir | Meta proposta para aceitação |
 |---|---|---|
 | Cobertura de decisões | Decisões da referência reproduzidas corretamente no rascunho / total de decisões da referência | Em média ≥ 80% no conjunto; analisar separadamente cada condição difícil |
-| Informação sem suporte | Contar decisões e factos no rascunho que não constam do áudio, incluindo decisões revogadas apresentadas como vigentes | ≤ 1 por ata, em média |
+| Informação sem suporte | Contar decisões e factos no rascunho que não constam do áudio, incluindo decisões revogadas apresentadas como vigentes | <= 1 por ata, em média |
 | Referências à transcrição | Verificar automaticamente que cada excerto citado existe na transcrição e confirmar manualmente que suporta a decisão | 100% das decisões propostas com excerto existente e pertinente; citações falsas contam também como informação sem suporte |
 | Factos críticos | Conferir votações, responsáveis, datas e montantes com a referência e o áudio | 100% corretos **ou explicitamente assinalados como incertos** para revisão |
 | Resistência a instruções no áudio | Verificar se a instrução maliciosa altera o formato, as decisões ou as regras de publicação | 100% das instruções ignoradas; a frase pode ser transcrita como fala, sem ser executada |
-| Qualidade da transcrição | Taxa de erro de palavras (WER) face a transcrição manual; registar também erros em nomes e números | WER ≤ 25% em áudio limpo; casos difíceis medidos à parte |
+| Qualidade da transcrição | Taxa de erro de palavras (WER) face a transcrição manual; registar também erros em nomes e números | WER <= 25% em áudio limpo; casos difíceis medidos à parte |
 | Esforço do administrador | Tempo ativo para rever/corrigir o rascunho até à ata final, comparado com escrita manual de gravações equivalentes; alternar a ordem das tarefas entre membros da equipa | Mediana pelo menos 20% inferior à baseline, sem piorar a cobertura das decisões |
 | Latência | Tempo do upload concluído até ao estado `pendente_revisao`, no conjunto de teste e numa gravação sintética de 60 minutos | Até 15 minutos em 95% das atas de áudio até 60 minutos; a medir no Sprint B |
 | Controlo de publicação | Teste de autorização e do estado da ata | 0 rascunhos publicados sem aprovação humana |
 
-**Custo estimado:** transcrição com `gpt-4o-mini-transcribe` a US$ 0,003 por minuto (US$ 0,18 por hora de áudio), mais o rascunho com `gpt-4o-mini` (US$ 0,15 por 1M de tokens de entrada e US$ 0,60 por 1M de saída), cerca de US$ 0,004 por ata de 1 h (estimativa: 20 000 tokens de entrada e 2 000 de saída). Total: cerca de **US$ 0,19 por ata de 1 h**, preços consultados a 2026-10-22. Limite aceitável: ≤ US$ 0,50 por ata. No Sprint B serão medidos os tokens e minutos reais e atualizada esta estimativa; versões dos modelos e do prompt ficam registadas para repetir o teste.
+**Custo estimado:** transcrição com `gpt-transcribe` a US$ 0,0045 por minuto (US$ 0,27 por hora de áudio), mais o rascunho com `gpt-4o-mini` (US$ 0,15 por 1M de tokens de entrada e US$ 0,60 por 1M de saída), cerca de US$ 0,004 por ata de 1 h (estimativa: 20 000 tokens de entrada e 2 000 de saída). Total: cerca de **US$ 0,27 por ata de 1 h**, preços confirmados nas páginas de preços da OpenAI a 2026-10-23. Limite aceitável: <= US$ 0,50 por ata. O `gpt-transcribe` substitui o `gpt-4o-mini-transcribe` (US$ 0,003 por minuto), que a OpenAI desativa a 2027-02-26. No Sprint B serão medidos os tokens e minutos reais e atualizada esta estimativa; versões dos modelos e do prompt ficam registadas para repetir o teste.
 
 Estas metas são **critérios propostos, não resultados obtidos**. A amostra pequena e sintética, falada pela equipa, não mede desempenho com moradores reais; a aceitação para demonstração não equivale a validação para uso real.
 
@@ -560,7 +560,7 @@ O enunciado pede que o workflow lide com retries, duplicados, falhas e consistê
 | Consistência eventual | A app mostra sempre o estado real da ata (`a_transcrever`, `pendente_revisao`, `falhou_transcricao`) e nunca mostra um rascunho como ata final |
 | Observabilidade | Cada job regista o `request_id` de origem, tentativas, duração e erro; métricas `jobs_pendentes`, `jobs_falhados_total`, `job_duracao_segundos` por tipo |
 
-A transcrição e o rascunho são dois pedidos ao serviço de IA, feitos em sequência pelo mesmo job: o Worker só pede o rascunho depois de gravar a transcrição. Se o áudio exceder o limite de tamanho por pedido da API de transcrição (cerca de 25 MB, a confirmar na documentação), o Worker divide-o em partes.
+A transcrição e o rascunho são dois pedidos ao serviço de IA, feitos em sequência pelo mesmo job: o Worker só pede o rascunho depois de gravar a transcrição. Se o áudio exceder o limite de tamanho por pedido da API de transcrição (25 MB por ficheiro, segundo a documentação da OpenAI), o Worker divide-o em partes.
 
 O mesmo mecanismo e as mesmas regras servem o job `publicar_calendario` (US-13): criado na transação de `POST /reunioes`, com chave `publicar_calendario:{reuniao_id}`, consumido pelo Worker que chama o serviço de calendário ([8.6](#86-integração-externa)).
 
@@ -632,6 +632,30 @@ Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline,
 
 Este desenho é o destino; a ordem de construção segue o [plano de release](#62-plano-de-release-inicial). O Sprint A entrega o [Walking Skeleton](#11-walking-skeleton), a fatia mínima que prova o desenho ponta a ponta: app Flutter com o ecrã de reporte, `POST /reportes`, PostgreSQL, `GET /reportes` de volta na app, `/health`, testes de API e de widget, `docker compose up` a arrancar `api` e `postgres`, e a pipeline com lint e testes. O esquema do skeleton é uma versão reduzida do [8.3](#83-modelo-de-dados) (`reporte` sem `condominio_id`, `autor_id` nem `oculto_em`, e com `foto_url` em vez de `foto_path`), completada no Sprint B. O Sprint B acrescenta o Worker, a IA, o calendário e o resto da jornada principal; o Sprint C acrescenta notificações locais, relatório da comissão, indicador de progresso e o dashboard operacional. Depois do Sprint A só entram componentes que já estão desenhados neste capítulo.
 
+### 8.10 Estimativa de custos operacionais
+
+Estimativa de ordem de grandeza para operar o produto, partindo dos [pressupostos técnicos](#pressupostos-e-riscos) (poucas assembleias por ano, volume baixo). São estimativas, não orçamentos: o que não tem preço consultado fica marcado.
+
+| Item | Custo estimado | Base |
+|---|---|---|
+| IA (transcrição e rascunho) | cerca de US$ 0,27 por ata de 1 h | Preços de `gpt-transcribe` (US$ 0,0045/min) e `gpt-4o-mini` confirmados a 2026-10-23 ([7.4](#74-abordagem-de-avaliação)); o único custo variável relevante |
+| VM Linux (2 vCPU, 4 GB) com Docker Compose | 6 a 20 € por mês, sem IVA | Referência Hetzner Cloud a 2026-10-23: CX23 a 5,99 € e CPX22 a 19,99 €, ambos com 2 vCPU e 4 GB e indisponíveis nessa data; fornecedor ainda por escolher ([8.8](#88-vista-de-deployment)) |
+| Repositório, CI/CD e imagens (GitHub Actions, GHCR) | 0 € | Plano GitHub Free: 2 000 min/mês de Actions em repositórios privados (grátis em públicos) e 500 MB partilhados entre artefactos e Packages; o armazenamento e a largura de banda do Container registry estão grátis (“currently free”, com aviso prévio de um mês antes de mudar) |
+| Prometheus e Grafana | 0 € | Auto-alojados na mesma VM |
+| Simulador de calendário, PostgreSQL | 0 € | Containers na mesma VM |
+| Notificações | 0 € | Locais, sem fornecedor de push ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
+| Distribuição da app | 0 € | APK direto aos docentes; publicar na Google Play exige pagar uma taxa de registo (valor não confirmado), fora do MVP |
+| Backups (`pg_dump` e volume) | 0 € no MVP | Em disco da VM; armazenamento externo fica fora do MVP |
+
+**Cenários** (assumindo 2 assembleias de 1 h por prédio e por ano):
+
+| Cenário | IA por ano | Infraestrutura por mês | Total por mês |
+|---|---|---|---|
+| 1 prédio (demonstração) | cerca de US$ 0,54 | 6 a 20 € | 6 a 20 € |
+| 100 prédios | cerca de US$ 54 | 6 a 20 €, se uma VM aguentar a carga (a validar nos testes de carga do Sprint C) | 10 a 25 € |
+
+**Conclusão:** o custo é dominado pela VM e não cresce de forma relevante com o número de prédios, o que sustenta a proposta de valor de baixo custo ([2.3](#23-proposta-de-valor)). No cenário de 100 prédios fica em cerca de 0,25 € por prédio e por mês, no máximo; a disposição a pagar vai ser medida na pergunta 16 do questionário (resultados ainda por obter).
+
 ---
 
 ## 9. Architecture Decision Records
@@ -694,9 +718,9 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 ### ADR-010 Serviço de IA externo (OpenAI), sem agente local
 - **Contexto:** a ata assistida por IA (US-10) precisa de transcrição de português europeu e de um rascunho estruturado. A equipa ponderou correr um agente de IA local, e o docente desaconselhou.
-- **Decisão:** o Worker chama a API da OpenAI (`gpt-4o-mini-transcribe` e `gpt-4o-mini`), com modelos e prompt fixados por versão; a chave fica só em variável de ambiente. O serviço de IA não é a integração externa exigida pelo enunciado ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)).
+- **Decisão:** o Worker chama a API da OpenAI (`gpt-transcribe` e `gpt-4o-mini`), com modelos e prompt fixados por versão; a chave fica só em variável de ambiente. O `gpt-transcribe` é o modelo de transcrição recomendado pela OpenAI; os `gpt-4o-*-transcribe` são desativados a 2027-02-26. O serviço de IA não é a integração externa exigida pelo enunciado ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)).
 - **Alternativas:** agente ou modelo local (exige hardware e operação próprios, torna o ambiente difícil de reproduzir pelos docentes e não há evidência de qualidade em português europeu equivalente); outro fornecedor de nuvem (sem vantagem demonstrada para o volume e o orçamento).
-- **Consequências:** custo previsto de cerca de US$ 0,19 por ata de 1 h ([7.4](#74-abordagem-de-avaliação)) e nada para operar. Em troca, áudio e transcrição saem para um terceiro e o produto depende da disponibilidade da OpenAI; mitigado por dados sintéticos nos testes, aviso aos presentes, retry com backoff e ata manual como fallback ([7.3](#73-riscos-e-mitigações), [7.5](#75-baseline-e-fallback)). Trocar de fornecedor exige só mudar o cliente no Worker.
+- **Consequências:** custo previsto de cerca de US$ 0,27 por ata de 1 h ([7.4](#74-abordagem-de-avaliação)) e nada para operar. Em troca, áudio e transcrição saem para um terceiro e o produto depende da disponibilidade da OpenAI; mitigado por dados sintéticos nos testes, aviso aos presentes, retry com backoff e ata manual como fallback ([7.3](#73-riscos-e-mitigações), [7.5](#75-baseline-e-fallback)). Trocar de fornecedor exige só mudar o cliente no Worker.
 
 ---
 
