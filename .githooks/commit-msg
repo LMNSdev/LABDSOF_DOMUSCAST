@@ -1,6 +1,6 @@
 #!/bin/sh
 # Valida a mensagem de commit: "<issue_id> - <descrição>"
-# Formatos aceites: "[#12] - texto", "#12 - texto" ou "12 - texto".
+# Formatos aceites: "[#12] - texto", "#12 - texto", "12 - texto" ou várias issues, ex.: "[#12, #13] - texto".
 
 msg_file="$1"
 
@@ -12,7 +12,10 @@ case "$subject" in
   "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
 esac
 
-if printf '%s\n' "$subject" | grep -Eq '^(\[#?[0-9]+\]|#?[0-9]+) - [^[:space:]].*'; then
+id='#?[0-9]+'
+ids="$id(, ?$id)*"
+
+if printf '%s\n' "$subject" | grep -Eq "^(\[$ids\]|$ids) - [^[:space:]].*"; then
   exit 0
 fi
 
@@ -20,6 +23,7 @@ cat >&2 <<EOF
 Commit rejeitado: a mensagem tem de seguir "<issue_id> - <descrição>".
 
   Exemplo: [#12] - Adiciona formulário de reporte de fuga de água
+  Várias issues: [#12, #13] - Adiciona formulário e validação
 
 Mensagem recebida: "$subject"
 EOF

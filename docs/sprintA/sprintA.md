@@ -35,13 +35,13 @@ Enunciado 5.7: a equipa trabalha com os docentes como investidores e partes inte
 | Data | Feedback | Decisão revista | Justificação | Onde ficou registado |
 |---|---|---|---|---|
 | 08/10/2026 | O serviço de IA era a integração externa exigida pelo enunciado (6.5) | A integração externa passou a ser o serviço de calendário, em simulador com falhas configuráveis; o serviço de IA deixa de contar como integração externa | Só o simulador permite disparar por comando as quatro condições do enunciado (indisponível, atrasado, incompleto, inválido) e ser executado pelos docentes sem contas externas | [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical), [8.6](#86-integração-externa) |
-| 22/10/2026 | A equipa ponderou executar a IA num agente local em vez de um serviço externo; o docente desaconselhou | Mantém-se o serviço de IA da OpenAI, chamado pelo Worker; não se adota um agente local | Seguir a recomendação do docente. | [7.1](#71-fluxo-assistido-por-ia), [7.3](#73-riscos-e-mitigações) |
+| 22/10/2026 | A equipa ponderou executar a IA num agente local em vez de um serviço externo; o docente desaconselhou | Mantém-se o serviço de IA da OpenAI, chamado pelo Worker; não se adota um agente local | Seguir a recomendação do docente. | [ADR-010](#adr-010-serviço-de-ia-externo-openai-sem-agente-local), [7.1](#71-fluxo-assistido-por-ia) |
 
 
 ### Controlo de versões (Git) - GitHub Flow
 - `main` é a branch de produção, sempre estável; nunca se commita diretamente.
 - Uma branch curta por funcionalidade/tarefa, integrada em `main` por PR após code review.
-- Mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é a issue associada. Um hook `commit-msg` ([.githooks/commit-msg](../../.githooks/commit-msg)) rejeita commits fora deste formato. Ativar uma vez por clone com `git config core.hooksPath .githooks` (em Linux/macOS, também `chmod +x .githooks/commit-msg`).
+- Mensagem de commit: `[#<id>] - <descrição>` (ex.: `[#12] - Adiciona formulário de reporte de fuga de água`), onde `#<id>` é a issue associada (várias issues: `[#12, #13] - <descrição>`). Um hook `commit-msg` ([.githooks/commit-msg](../../.githooks/commit-msg)) rejeita commits fora deste formato. Ativar uma vez por clone com `git config core.hooksPath .githooks` (em Linux/macOS, também `chmod +x .githooks/commit-msg`).
 
 ![GitHub Flow: branch principal `main` sempre estável, branches de funcionalidade curtas, integradas de volta via PR após code review e deployment/CI](./images/github_flow.png)
 
@@ -647,14 +647,14 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 ### ADR-002 App móvel em Flutter, demonstrada em Android
 - **Contexto:** o enunciado aceita app móvel, web ou ambas; as jornadas principais acontecem no telemóvel (scan de QR code, foto da avaria, gravação de áudio, uso sem rede).
 - **Decisão:** uma app Flutter com fila local em SQLite. Android é a única plataforma testada e demonstrada; o iOS fica possível pelo Flutter mas fora do âmbito do projeto.
-- **Alternativas:** PWA (acesso a câmara, gravação, tarefas em segundo plano e armazenamento offline mais limitados); React Native (equivalente, mas a equipa não ganha com partilhar linguagem com um backend Python); Android nativo em Kotlin (fecha a porta ao iOS sem ganho para a equipa).
+- **Alternativas:** PWA (acesso a câmara, gravação, tarefas em segundo plano e armazenamento offline mais limitados); React Native (serviria, mas a equipa teria de adotar JavaScript sem benefício para o produto); Android nativo em Kotlin (fecharia a porta ao iOS sem vantagem para a equipa).
 - **Consequências:** bom suporte de acessibilidade (semântica para leitor de ecrã) e plugins oficiais para câmara, gravação, SQLite, tarefas em segundo plano e notificações locais; sem conta Apple Developer, nada do projeto depende de iOS.
 
 ### ADR-003 Backend em Python com FastAPI
-- **Contexto:** a equipa já usa Python; o enunciado exige API documentada e testes automatizados.
-- **Decisão:** FastAPI para a API e Python para o Worker, no mesmo repositório e na mesma imagem.
-- **Alternativas:** Node/NestJS; Spring Boot (mais pesado para o tamanho do produto).
-- **Consequências:** OpenAPI gerado automaticamente, validação de entrada com Pydantic, testes com pytest; um só stack backend para 5 pessoas.
+- **Contexto:** a equipa já usa Python; o enunciado exige API documentada e testes automatizados; o Worker faz sobretudo chamadas de rede (IA, calendário).
+- **Decisão:** FastAPI para a API e Python para o Worker, no mesmo repositório e na mesma imagem, para partilhar modelos e validação.
+- **Alternativas:** Node/NestJS (serviria, mas a equipa teria de adotar outra linguagem sem benefício para o produto); Spring Boot (exige mais configuração e código de base do que o produto justifica).
+- **Consequências:** OpenAPI gerado automaticamente, validação de entrada com Pydantic, testes com pytest; um só stack backend para 5 pessoas. Em troca, o desempenho bruto é inferior ao da JVM, o que não pesa no volume previsto (SLI de latência em [8.7](#87-observabilidade)).
 
 ### ADR-004 Dois componentes backend (API e Worker) com base de dados partilhada
 - **Contexto:** o enunciado exige pelo menos dois componentes backend independentemente implantáveis e um workflow assíncrono.
@@ -683,14 +683,20 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 ### ADR-008 Autenticação do administrador mock no MVP, autorização real
 - **Contexto:** o enunciado aceita autenticação mock no MVP; a autorização (quem vê nome e fração) é central à privacidade do produto.
 - **Decisão:** no MVP a credencial de administrador é gerada na criação do condomínio, ou ao usar um código de convite de outro administrador (US-19), e enviada como Bearer token, sem registo/login; um condomínio pode ter vários administradores com as mesmas permissões; os residentes autenticam-se pela credencial do dispositivo ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)). Toda a autorização é verificada no servidor, com testes automáticos ([10.2](#102-controlo-de-acessos)).
-- **Alternativas:** OAuth/OIDC desde o início (tempo gasto fora das jornadas principais).
-- **Consequências:** mais tempo para as jornadas principais; o registo e a recuperação de conta do administrador ficam no roadmap pós-MVP; os controlos de segurança nunca são desativados para a demonstração.
+- **Alternativas:** OAuth/OIDC ou login com e-mail e palavra-passe (tempo gasto fora das jornadas principais, e o e-mail contradiz a minimização de dados, RNF-03); sem autenticação de administrador (qualquer pessoa veria nomes e frações, e viola o enunciado 6.6).
+- **Consequências:** mais tempo para as jornadas principais; quem perder a credencial de administrador não a recupera no MVP (outro administrador pode convidar, US-19); o registo e a recuperação de conta ficam no roadmap pós-MVP; os controlos de segurança nunca são desativados para a demonstração.
 
 ### ADR-009 Notificações locais por sincronização em segundo plano, sem fornecedor de push
 - **Contexto:** US-11 e US-17 pedem uma notificação quando um reporte seguido muda de estado, "para não ter de verificar manualmente"; US-13 pede um lembrete antes da reunião. Nenhuma exige tempo real.
 - **Decisão:** a app corre uma tarefa periódica em segundo plano (`workmanager`, 15 min) que consulta `GET /reportes?atualizado_desde=` e gera notificações locais (`flutter_local_notifications`); o lembrete de reunião é uma notificação local agendada quando a reunião chega à app. Não há fornecedor de push.
 - **Alternativas:** Firebase Cloud Messaging: entrega imediata, mas exige projeto Firebase, token por dispositivo guardado no servidor, segredo da service account, chave APNs para iOS, e faz passar dados por um terceiro; OneSignal: o mesmo, com mais uma dependência.
 - **Consequências:** nenhuma infraestrutura nem tabela nova; nenhum dado pessoal sai para terceiros; os lembretes funcionam offline. Em troca, a notificação chega com até 15 minutos de atraso, e o sistema pode adiá-la mais em poupança de bateria. O estado fica sempre visível na lista (US-03), por isso a notificação é um extra e não o único caminho.
+
+### ADR-010 Serviço de IA externo (OpenAI), sem agente local
+- **Contexto:** a ata assistida por IA (US-10) precisa de transcrição de português europeu e de um rascunho estruturado. A equipa ponderou correr um agente de IA local, e o docente desaconselhou.
+- **Decisão:** o Worker chama a API da OpenAI (`gpt-4o-mini-transcribe` e `gpt-4o-mini`), com modelos e prompt fixados por versão; a chave fica só em variável de ambiente. O serviço de IA não é a integração externa exigida pelo enunciado ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)).
+- **Alternativas:** agente ou modelo local (exige hardware e operação próprios, torna o ambiente difícil de reproduzir pelos docentes e não há evidência de qualidade em português europeu equivalente); outro fornecedor de nuvem (sem vantagem demonstrada para o volume e o orçamento).
+- **Consequências:** custo previsto de cerca de US$ 0,19 por ata de 1 h ([7.4](#74-abordagem-de-avaliação)) e nada para operar. Em troca, áudio e transcrição saem para um terceiro e o produto depende da disponibilidade da OpenAI; mitigado por dados sintéticos nos testes, aviso aos presentes, retry com backoff e ata manual como fallback ([7.3](#73-riscos-e-mitigações), [7.5](#75-baseline-e-fallback)). Trocar de fornecedor exige só mudar o cliente no Worker.
 
 ---
 
