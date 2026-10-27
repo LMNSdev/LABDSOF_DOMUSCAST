@@ -730,7 +730,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 
 | Dado | Sensibilidade | Quem vê | Observações |
 |---|---|---|---|
-| Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado pessoal; não aparece em avisos, logs nem notificações a outros |
+| Nome do residente (autodeclarado) | Pessoal | Administrador e o próprio; outros só por escolha do autor, num reporte | Único dado de identificação pedido diretamente no registo; não aparece em avisos, logs nem notificações a outros |
 | Fração | Pessoal (indireto) | Administrador e o próprio | Nunca mostrada aos outros residentes |
 | Reportes (texto e fotos) | Podem conter dados de terceiros | Todos | Aviso no formulário; remover metadados das fotos (ex.: localização). Admin deve revisar reportes para que não contenham dados sensíveis acidentais |
 | Áudio e transcrição | Pessoal (voz, nomes) | Administrador; ata aprovada: residentes | Ver [7.3](#73-riscos-e-mitigações)  |
@@ -751,7 +751,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 Autorização verificada no servidor, com testes automáticos que confirmam que as respostas aos residentes nunca incluem fração nem nome do autor (salvo `mostrar_nome`). A autenticação do administrador pode ser mock no MVP, sem desativar controlos.
 
 ### 10.3 Minimização e finalidade (RGPD)
-- Só se recolhe o **nome** (e a fração, vinda do QR code) para identificar o autor perante o administrador; finalidade indicada no ecrã (US-15). O nome só é mostrado aos outros por escolha do autor, reporte a reporte.
+- No registo pede-se apenas o **nome**; a fração vem do QR code. A finalidade é identificar o autor perante o administrador e é indicada no ecrã (US-15). O nome só é mostrado aos outros por escolha do autor, reporte a reporte. Texto, fotos e áudio enviados depois podem conter outros dados pessoais, tratados como indicado em [10.1](#101-dados-sensíveis).
 - Sem telefone, e-mail nem localização. Testes e demonstração com dados sintéticos.
 - O residente pode corrigir o nome e pedir apagamento ao administrador (remoção da identidade).
 
@@ -768,6 +768,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 
 ### 10.6 Modelo de ameaças inicial
 
+<<<<<<< HEAD
 | Ameaça | Mitigação |
 |---|---|
 | QR code divulgado a terceiros | Revogação/regeneração; revisão de identidades pelo administrador |
@@ -781,6 +782,30 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 | Nome em logs, avisos ou notificações | Logs com id da identidade; avisos sem reporter; notificações locais só com nº do reporte e estado; testes automáticos |
 | Feed iCal do condomínio acessível por URL | O URL leva um token aleatório do condomínio, regenerável pelo administrador; o feed só tem data, hora e local das reuniões, sem nomes |
 | Prompt injection e dados pessoais no áudio | Ver [7.3](#73-riscos-e-mitigações) |
+=======
+Este modelo cobre o desenho do Sprint A, não é resultado de um teste de intrusão. O objetivo é preservar a **confidencialidade** dos dados de cada condomínio e das gravações, a **integridade** de reportes, estados e atas, e a **disponibilidade** do reporte de avarias. Considera um terceiro que obtém um QR code ou URL, um residente que altera pedidos à API, alguém com acesso a um dispositivo perdido, e uma credencial de administrador comprometida. A priorização é qualitativa: **alta** quando a falha pode expor dados de todo o prédio, dar poderes de administrador ou bloquear a função principal; **média** quando o efeito é mais limitado ou recuperável. O método segue a análise de fluxos e fronteiras de confiança descrita pela [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html).
+
+**Fronteiras de confiança:**
+
+1. **Dispositivo → API:** a app e a fila offline estão fora do controlo do servidor. QR codes, credenciais, IDs e campos como `papel` ou `mostrar_nome` recebidos do cliente não provam permissões; a API valida a identidade, o condomínio e a operação em cada pedido.
+2. **API/Worker → PostgreSQL e volume de ficheiros:** os uploads e o texto das reuniões são entrada não confiável. Só a API e o Worker acedem a estes armazenamentos; ficheiros e jobs não ficam servidos por URL pública.
+3. **Backend → calendário/iCal:** o simulador de calendário recebe só dados necessários ao evento. O feed iCal sai do backend para aplicações fora do nosso controlo; o seu URL com token funciona como segredo de acesso.
+4. **Produção → logs e backups:** operadores e cópias de segurança podem contornar a vista limitada da app. Logs, backups e volumes precisam de acesso restrito e de regras de eliminação coerentes com [10.4](#104-retenção).
+
+| ID / prioridade | Cenário e impacto | Controlo previsto | Verificação no Sprint B/C |
+|---|---|---|---|
+| T1 · alta | Terceiro obtém o QR code partilhado, cria uma identidade e passa a ler reportes do prédio ou a publicar falsos reportes. Nome autodeclarado permite personificação; regenerar o QR code não remove identidades já criadas. | Token aleatório guardado só como hash; limite de tentativas e de identidades por fração; administrador revê identidades, revoga o QR e remove acessos indevidos ([10.5](#105-qr-code-revogação-e-abuso)). | Testar QR revogado, tentativa repetida de registo e remoção de identidade; confirmar que a credencial removida deixa de aceder. |
+| T2 · alta | Código de convite de administrador divulgado ou adivinhado concede acesso a nomes, frações, áudios e ações administrativas. | Convite aleatório de uso único, com validade curta e hash na base de dados; limite de tentativas; registo de quem criou e usou o convite; todos os endpoints administrativos verificam o papel no servidor. | Reutilizar, expirar e tentar adivinhar convites; chamar endpoints administrativos com credencial de residente e exigir 403. |
+| T3 · alta | Residente troca o ID de reporte, ata, reunião ou condomínio num pedido e acede a dados de outro prédio; ou recebe campos privados como fração e nome de outro autor (IDOR/exposição de propriedades). | Filtrar sempre pelo condomínio da credencial e pelo papel; construir respostas próprias para residente/admin; não confiar em IDs nem em `papel` enviados pelo cliente ([10.2](#102-controlo-de-acessos)). | Testes com dois condomínios e papéis distintos em cada rota; exigir 404 para objeto de outro prédio e ausência de campos privados nas respostas a residentes. |
+| T4 · alta | Dispositivo perdido ou cópia da fila offline expõe credencial, reportes por enviar e áudio; quem obtém a credencial age como o residente até ser revogada. | Credencial no armazenamento seguro do sistema operativo; fila e áudio no espaço privado da app, sem cópia para backup automático quando contêm segredos; comunicação cifrada; revogação ao remover a identidade. | Inspecionar armazenamento e backups do dispositivo de teste; remover identidade e confirmar recusa de pedidos e de itens pendentes dessa credencial. |
+| T5 · alta | Foto ou áudio adulterado, muito grande ou com caminho malicioso esgota disco/CPU do Worker ou permite ler ficheiros fora do condomínio. Metadados da foto ou texto do reporte podem expor terceiros a todos os residentes. | Limites de tamanho, duração e formato; validar conteúdo e não apenas extensão/MIME; gerar nomes internos sem aceitar caminhos do cliente; remover EXIF; guardar fora da pasta pública; timeout do job de IA ([7.4](#74-abordagem-de-avaliação)). Aviso antes de publicar e mecanismo de ocultação de conteúdo indevido a especificar. | Enviar ficheiros inválidos, grandes e com metadados; verificar rejeição, ausência de leitura por URL direta e que reportes de outro condomínio não expõem anexos. |
+| T6 · média | URL do iCal divulgado permite conhecer datas e locais das reuniões; a inclusão do token em logs ou mensagens amplia a exposição. | Token aleatório regenerável; feed com data, hora e local, sem nomes ou áudio; não registar o token completo; invalidar URL antigo quando regenerado. | Usar URL antigo e novo após rotação; procurar tokens nos logs; confirmar os campos mínimos do feed. |
+| T7 · alta | Logs, backups ou permissões do volume revelam nomes, áudios e rascunhos, mesmo após eliminação na app. | Logs com IDs em vez de nomes e sem conteúdo; permissões restritas, cifragem e ciclo de vida para backups; apagar áudio após aprovação e definir prazo para áudios abandonados e cópias ([10.4](#104-retenção)). | Inspecionar logs e ficheiros de backup sintéticos; testar acesso de contas sem privilégio e eliminação após o prazo que a equipa fixar. |
+| T8 · média | Instrução dita no áudio contamina o rascunho, inventa uma decisão ou tenta contornar a aprovação; um resultado tardio da IA substitui uma ata manual aprovada. | Transcrição tratada como dados; motor sem ferramentas nem acesso a outros condomínios; revisão humana e publicação só após aprovação; resultado tardio não altera ata aprovada ([7.3](#73-riscos-e-mitigações), [7.5](#75-baseline-e-fallback)). | Caso de prompt injection do conjunto de avaliação; testes de estado da ata e de resposta tardia do Worker. |
+| T9 · média | Administrador comprometido altera estados ou tenta apagar o histórico, prejudicando a prova de diligência. | Histórico de reportes só de inserção pela aplicação, com data e ID do administrador; permissões de base de dados limitadas; backups e registo de ações administrativas. | Tentar editar/apagar entradas por rotas públicas; confirmar autoria e ordem das alterações; testar restauro com dados sintéticos. |
+
+**Riscos residuais e decisões pendentes:** o QR partilhado e o nome autodeclarado não provam que a pessoa vive na fração; a revisão pelo administrador reduz o risco, mas não elimina acesso indevido antes da deteção. A autenticação mock do administrador ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)) é adequada apenas à demonstração académica; uso real exigiria autenticação e recuperação de conta robustas. Faltam fixar o prazo de retenção de reportes, áudios sem ata aprovada e backups, e especificar a ocultação de reportes com dados de terceiros. Estes pontos devem ser resolvidos antes de testar com moradores ou lançar o produto.
+>>>>>>> c9f39da (Trust Boundaries)
 
 ---
 
