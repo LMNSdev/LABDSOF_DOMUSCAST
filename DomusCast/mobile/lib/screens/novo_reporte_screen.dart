@@ -93,6 +93,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
+                margin: EdgeInsets.zero,
                 elevation: 1,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(

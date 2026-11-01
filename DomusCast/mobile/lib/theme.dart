@@ -34,10 +34,5 @@ final appTheme = ThemeData(
       textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     ),
   ),
-  cardTheme: CardThemeData(
-    elevation: 1,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-    margin: EdgeInsets.zero,
-  ),
   scaffoldBackgroundColor: const Color(0xFFF0F4FB),
 );

@@ -72,10 +72,10 @@ class _LandingScreenState extends State<LandingScreen>
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: const Color.fromRGBO(255, 255, 255, 0.12),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
+                          color: const Color.fromRGBO(255, 255, 255, 0.2),
                           width: 1.5,
                         ),
                       ),
@@ -96,11 +96,11 @@ class _LandingScreenState extends State<LandingScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'A gestão do seu condomínio,\nsimplificada.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.72),
+                        color: Color.fromRGBO(255, 255, 255, 0.72),
                         fontSize: 17,
                         height: 1.5,
                         fontWeight: FontWeight.w400,
@@ -136,10 +136,10 @@ class _LandingScreenState extends State<LandingScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    const Text(
                       'Acesso por QR code da fração',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.4),
+                        color: Color.fromRGBO(255, 255, 255, 0.4),
                         fontSize: 13,
                       ),
                     ),
@@ -175,7 +175,7 @@ class _FeatureTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: const Color.fromRGBO(255, 255, 255, 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: Colors.white, size: 20),
@@ -184,8 +184,8 @@ class _FeatureTile extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
+              style: const TextStyle(
+                color: Color.fromRGBO(255, 255, 255, 0.85),
                 fontSize: 15,
                 height: 1.4,
               ),
