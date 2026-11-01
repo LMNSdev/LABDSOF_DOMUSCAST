@@ -98,7 +98,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 **Limitações desta evidência:**
 - Amostra de conveniência: três publicações anónimas em fóruns públicos do Reddit, sem representatividade estatística;
 - Os posts descrevem maioritariamente condomínios com empresa profissional, enquanto o produto foca condomínios autogeridos, os problemas de comunicação e rastreabilidade são comuns a ambos os contextos, mas a sua intensidade no contexto autogerido não está diretamente demonstrada;
-- Os resultados do questionário distribuído pela equipa (Google Forms) ainda não estão disponíveis; quando estiverem, esta secção será atualizada com dados primários.
+- Os dados primários do questionário da equipa (Google Forms, 10 respostas) estão no [capítulo 3](#3-investigação-de-utilizadores): 7 das 10 respostas vêm de prédios autogeridos e confirmam aí a frustração com duplicados e com a exposição do telefone, o que atenua a limitação anterior; mas a pergunta aberta não teve respostas, pelo que não há relatos primários que substituam as fontes acima.
 
 ### Pressupostos e riscos
 
@@ -172,13 +172,13 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 **A - Perfil**
 1. Papel no condomínio *(Proprietário residente / Inquilino / Administrador / Outro)*
-2. Nº aproximado de frações *(<8 / 8-30 / 31-60 / >60)*
+2. Nº aproximado de frações *(Menos de 10 / 10-30 / 31-60 / Mais de 60)*
 3. Administração *(Profissional / Condómino voluntário / Não sei)*
 
 **B - Comunicação atual**
 4. Como comunica avarias *(WhatsApp/Messenger / Poster / Contacto direto / E-mail / App dedicada / Outro)*
-5. Frequência de reportes *(Nunca / 1-2x/ano / 3-6x/ano / >6x/ano)*
-6. Fica a saber se foi resolvido? *(Sempre / Às vezes / Raramente / Nunca)*
+5. Frequência de reportes *(Nunca ou raramente, 1-2x/ano / Às vezes, 3-6x/ano / Frequentemente, >6x/ano)*
+6. Fica a saber se foi resolvido? *(Sim, sempre / Às vezes / Raramente / Nunca)*
 
 **C - Frustrações (1 = nada, 5 = muito)**
 7. "As minhas mensagens perdem-se no grupo."
@@ -190,7 +190,7 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 **D - Adoção**
 13. Usaria uma app dedicada ao condomínio? *(Sim, definitivamente / Provavelmente sim / Provavelmente não / Definitivamente não)*
-14. Fator mais importante *(Rapidez / Privacidade / Preço / Vizinhos também usarem / Outro)*
+14. Fator mais importante *(Ser rápida / Privacidade / Gratuita ou barata / Que os vizinhos também usassem / Outro)*
 15. Maior inibidor *(Mais uma app / Vizinhos mais velhos não usam / Privacidade / O WhatsApp chega / Outro)*
 16. Disposição a pagar por fração/mês, sem publicidade *(Nada / Até 0,50 € / Até 1 € / Até 2 € / Mais de 2 €)*
 
@@ -198,13 +198,81 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 17. Descreva uma situação em que a comunicação no seu condomínio falhou.
 
 ### Resultados
-> *A aguardar resultados do inquérito.*
+
+Os resultados abaixo referem-se ao inquérito (método 1). Foram recolhidas **10 respostas** entre 1 de outubro e 1 de novembro de 2026; os dados em bruto estão em [Investigação de Utilizadores — Gestão de Condomínios (Respostas).xlsx](Investigação%20de%20Utilizadores%20—%20Gestão%20de%20Condomínios%20(Respostas).xlsx). Com uma amostra deste tamanho, as contagens são apresentadas em valores absolutos (x/10) e devem ser lidas como indicativas.
+
+**A - Perfil**
+
+| Pergunta | Respostas |
+|---|---|
+| Papel | Inquilino 5 · Proprietário residente 3 · Administrador 2 |
+| Nº de frações | Menos de 10: 3 · 10-30: 3 · 31-60: 2 · Mais de 60: 2 |
+| Administração | Condómino voluntário 7 · Profissional 1 · Não sei 2 (ver [Limitações](#limitações)) |
+
+**B - Comunicação atual**
+
+| Pergunta | Respostas |
+|---|---|
+| Canal para reportar avarias | WhatsApp/Messenger 4 · Contacto direto com o administrador 3 · Poster físico 2 · E-mail 1 · App dedicada 0 |
+| Frequência de reportes | Nunca ou raramente 4 · Às vezes 5 · Frequentemente 1 |
+| Fica a saber se foi resolvido? | Sim, sempre 3 · Às vezes 4 · Raramente 3 |
+
+Ninguém usa hoje uma app dedicada, e **7 em 10 nem sempre sabem se o problema que reportaram foi resolvido**.
+
+**C - Frustrações** (escala 1 a 5), ordenadas pela média:
+
+| Afirmação | Média | Mediana | Respostas 4 ou 5 | Média em prédios autogeridos (n=7) | Média de quem usa WhatsApp (n=4) |
+|---|---|---|---|---|---|
+| O mesmo problema é reportado várias vezes | 3,6 | 4 | 7/10 | 4,4 | 4,5 |
+| O meu telefone fica exposto a todo o grupo | 3,2 | 4 | 6/10 | 4,0 | **4,8** |
+| Os avisos em papel estão desatualizados | 3,2 | 4 | 6/10 | 3,7 | 3,8 |
+| As minhas mensagens perdem-se no grupo | 3,1 | 3,5 | 5/10 | 3,7 | 4,0 |
+| Não fui avisado/a sobre decisões ou assembleias | 3,1 | 3,5 | 5/10 | 3,6 | 3,8 |
+| Não sei se o problema que reportei vai ser tratado | 2,9 | 3,5 | 5/10 | 3,6 | 3,8 |
+
+Nos prédios autogeridos, a comunidade-alvo do produto, todas as frustrações ficam entre 3,6 e 4,4, acima da média geral. Quem coordena pelo WhatsApp (todos em prédios autogeridos) está ainda mais frustrado, sobretudo com a exposição do telefone (4,8) e com reportes repetidos (4,5). Quem fala diretamente com o administrador ou por e-mail dá valores baixos.
+
+**D - Adoção**
+
+| Pergunta | Respostas |
+|---|---|
+| Usaria uma app dedicada? | Sim, definitivamente 6 · Provavelmente sim 4 · Provavelmente não 0 · Definitivamente não 0 |
+| Fator mais importante | Ser rápida 5 · Gratuita ou barata 3 · Privacidade 1 · Que os vizinhos também usassem 1 |
+| Maior inibidor | **Vizinhos mais velhos não vão usar 8** · O WhatsApp já chega 1 · Mais uma app para instalar 1 |
+| Disposição a pagar por fração/mês | Nada 3 · Até 0,50 € 4 · Até 1 € 1 · Até 2 € 2 |
+
+**Administradores (n=2):** ambos são condóminos voluntários em prédios de 10 a 60 frações, um coordena por poster e outro por contacto direto, e um reporta problemas mais de 6 vezes por ano. Os dois dão 3 ou mais a todas as frustrações, responderam "Sim, definitivamente", apontam os vizinhos mais velhos como maior inibidor e pagariam até 0,50 € e até 1 € por fração/mês.
+
+**E - Aberta:** a pergunta 17 não teve respostas.
+
+**Principais conclusões:**
+1. **Reportes repetidos são a maior frustração** (7/10 com 4 ou 5), à frente das mensagens perdidas.
+2. **O problema concentra-se em quem usa o WhatsApp**, o contexto que o produto quer substituir; aí a exposição do telefone é quase unânime (4,8).
+3. **Falta de retorno:** 7/10 nem sempre sabem se o problema foi resolvido.
+4. **A inclusão dos vizinhos mais velhos é a principal barreira à adoção** (8/10), muito acima do custo de mudança do WhatsApp (1/10).
+5. **Rapidez e preço decidem a adoção:** ser rápida é o fator mais escolhido (5/10) e 7/10 pagariam nada ou até 0,50 € por fração/mês.
 
 ### Limitações
-> *A aguardar resultados do inquérito.*
+- **Amostra pequena e de conveniência:** 10 respostas da rede da equipa, sem representatividade estatística. A proximidade à equipa pode explicar que ninguém tenha respondido "não usaria".
+- **Administradores sub-representados:** só 2 administradores; a maioria dos inquiridos é inquilino, pelo que a perspetiva de quem faz a triagem assenta em muito poucas respostas.
+- **Erros na construção do formulário:**
+  - Na pergunta 3, uma opção ficou com o texto "Escolha múltipla: Profissional / Condómino voluntário" (o título do tipo de pergunta ficou na opção) e foi escolhida por 5 pessoas. Estas respostas foram contadas como "Condómino voluntário", o que é um pressuposto da equipa e não uma resposta inequívoca.
+  - A pergunta 4 devia aceitar várias respostas, mas cada inquirido indicou só um canal, pelo que o uso combinado de canais (ex.: WhatsApp e poster) não é medido.
+- **Respostas possivelmente sem leitura:** dois inquiridos deram 1 a todas as frustrações, e um deles diz que raramente sabe se o problema foi resolvido, o que é incoerente. Sem estas duas respostas, as médias sobem para 3,4 a 4,3.
+- **Sem evidência qualitativa primária:** a pergunta aberta não teve respostas; os relatos concretos continuam a vir das fontes do [capítulo 1](#evidência-do-problema).
+- **Viés das perguntas:** as afirmações de frustração enunciam o problema que queremos resolver, o que pode inflacionar a concordância, e a intenção declarada de usar uma app não prevê a adoção real.
 
 ### Decisões de produto resultantes
-> *A aguardar resultados do inquérito.*
+
+| Evidência | Decisão |
+|---|---|
+| Reportes repetidos são a maior frustração (3,6; 4,5 no WhatsApp) | Mantém-se a deteção de duplicados com co-reporters (US-04) e o seguir reportes (US-17) no âmbito do produto: são a resposta direta à frustração mais forte |
+| 7/10 nem sempre sabem se o problema foi resolvido | O estado visível na lista (US-03) e o histórico (US-05) continuam a ser o núcleo do MVP; a notificação (US-11) é um reforço, não o único caminho ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
+| Exposição do telefone a 4,8 entre quem usa WhatsApp | Privacidade por desenho confirmada como diferenciação principal face ao WhatsApp: sem telefone nem contactos, autor oculto por omissão (US-09, US-15) |
+| "Vizinhos mais velhos não vão usar" é o maior inibidor (8/10) | A persona Condómina Sénior Pouco Digital é confirmada; o reporte por um vizinho ou pelo porteiro com a própria identidade e a acessibilidade (WCAG 2.1 AA) ficam como critérios de aceitação transversais. Fica como hipótese para o backlog um aviso imprimível, para o administrador afixar no hall a partir da app |
+| Ser rápida é o fator mais importante (5/10) | Mantém-se a meta de reportar em menos de 1 minuto e no máximo 5 interações ([5.4](#54-critérios-de-sucesso)) |
+| 7/10 pagariam nada ou até 0,50 € por fração/mês | O MVP é gratuito; a arquitetura evita custos recorrentes por utilizador (sem fornecedor de push, uma só base de dados: [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs), [ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
+| Decisões e assembleias com frustração moderada (3,1) | Quadro de avisos e ata assistida por IA (US-06, US-07, US-10) mantêm a prioridade atual, sem subir |
 
 ---
 
