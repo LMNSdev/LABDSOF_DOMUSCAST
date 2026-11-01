@@ -722,6 +722,8 @@ Os valores da OpenAI estão em US$ e os da VM em €. À taxa de referência do 
 | 1 prédio (demonstração) | cerca de US$ 0,54 | 6 a 20 € | 6 a 20 € |
 | 100 prédios | cerca de US$ 54 | 6 a 20 €, se uma VM aguentar a carga (a validar nos testes de carga do Sprint C) | 10 a 24 € |
 
+**Principais custos:** o alojamento da VM é o principal custo fixo, estimado entre 6 e 20 € por mês; a transcrição e a geração do rascunho são custos variáveis, estimados em cerca de US$ 0,27 por cada hora de áudio. O valor da IA cresce com o número e a duração das assembleias, enquanto o custo da infraestrutura poderá aumentar se forem necessárias mais capacidade, armazenamento ou tráfego. Backups externos, domínio e distribuição nas lojas de aplicações também poderão ter custos, mas não estão incluídos nos cenários acima. PostgreSQL, calendário, monitorização e notificações locais não acrescentam custos de fornecedor no MVP, pois são executados na VM ou no dispositivo; continuam, contudo, a exigir manutenção.
+
 **Conclusão:** o custo é dominado pela VM e não cresce de forma relevante com o número de prédios, o que sustenta a proposta de valor de baixo custo ([2.3](#23-proposta-de-valor)). No cenário de 100 prédios fica em cerca de 0,25 € por prédio e por mês, no máximo; a disposição a pagar vai ser medida na pergunta 16 do questionário (resultados ainda por obter).
 
 ---
