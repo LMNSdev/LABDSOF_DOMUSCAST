@@ -1,4 +1,4 @@
-# Domus Cast
+# DomusCast
 
 ## Sprints
 

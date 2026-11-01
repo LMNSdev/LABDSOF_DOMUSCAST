@@ -1,6 +1,6 @@
 # DomusCast
 
-Aplicação de gestão de condomínio para prédios auto-geridos.  
+Aplicação de gestão de condomínio para prédios autogeridos.  
 Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
 
 ---
@@ -153,7 +153,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 
 ## Funcionalidades implementadas
 
-### App mobile
+### App móvel
 
 | Funcionalidade | Detalhe |
 |---|---|
@@ -171,7 +171,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 |---|---|
 | `POST /reportes` | Cria reporte; idempotente via `idempotency_key` |
 | `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
-| `GET /health` | Verifica ligação à BD; retorna `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
+| `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
 | Swagger UI | Documentação interativa automática em `/docs` |
 
@@ -183,10 +183,10 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 
 | Passo | Modelo | O que faz |
 |---|---|---|
-| 1. Transcrever o áudio | `gpt-4o-mini-transcribe` | Converte a fala em texto corrido, palavra a palavra: longo, com hesitações e conversas laterais. Ainda não é uma ata |
+| 1. Transcrever o áudio | `gpt-transcribe` | Converte a fala em texto corrido, palavra a palavra: longo, com hesitações e conversas laterais. Ainda não é uma ata |
 | 2. Redigir o rascunho | `gpt-4o-mini` | Lê esse texto e escreve uma ata curta e formal: presentes, decisões e tarefas |
 
-- Custo estimado: cerca de US$ 0,19 por ata de 1 hora de áudio (preços consultados a 2026-10-22).
+- Custo estimado: cerca de US$ 0,27 por ata de 1 hora de áudio (preços consultados a 2026-10-23; detalhe em [docs/sprintA/sprintA.md, secção 7.4](../docs/sprintA/sprintA.md#74-abordagem-de-avaliação)).
 - O áudio da assembleia é enviado à OpenAI; por isso usamos gravações sintéticas nos testes e avisamos os presentes antes de gravar.
 - A IA não publica nem decide nada: o rascunho fica "gerado por IA, pendente de revisão" até o administrador o aprovar. Sem IA, o administrador escreve a ata à mão.
 - Detalhe e justificação: [docs/sprintA/sprintA.md, secção 7](../docs/sprintA/sprintA.md#7-responsible-ai-opportunity-assessment).

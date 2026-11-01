@@ -30,16 +30,16 @@
 | RF-05 | Deteção de duplicados | Avisa se um novo reporte é parecido com um existente | Desejável | v0.1 | Draft |
 | RF-13 | Tratamento de duplicados | O administrador marca um reporte como "Reporte duplicado do #<id>"; o autor passa a co-reporter do original | Essencial | v0.3 | Draft |
 | RF-14 | Seguir um reporte | Qualquer residente segue um reporte para receber notificações (autores e co-reporters seguem automaticamente); só o administrador vê o nº de seguidores | Desejável | v0.3 | Draft |
-| RF-16 | Ocultar reporte | O administrador oculta (e repoe) um reporte, por exemplo com dados de terceiros; deixa de aparecer aos residentes e a ação fica no histórico | Importante | v0.5 | Draft |
+| RF-16 | Ocultar reporte | O administrador oculta (e repõe) um reporte, por exemplo com dados de terceiros; deixa de aparecer aos residentes e a ação fica no histórico | Importante | v0.5 | Draft |
 
 ### Epic: Comunicação e governação do condomínio
 
 | ID | Funcionalidade | O que faz | Prioridade | Versão | Estado |
 |---|---|---|---|---|---|
-| RF-06 | Mural digital de avisos | Substitui os posters e o "boca em boca" pós-assembleia; um aviso novo gera notificação local a todos os residentes | Importante | v0.5 | Draft |
+| RF-06 | Quadro digital de avisos | Substitui os posters e o "boca em boca" pós-assembleia; um aviso novo gera notificação local a todos os residentes | Importante | v0.5 | Draft |
 | RF-07 | Calendário de atividades | O administrador agenda assembleias/atividades; residentes recebem lembretes (convocatórias, atas) e subscrevem o feed iCal do condomínio, protegido por um token que o administrador pode regenerar | Importante | v0.5 | Draft |
 | RF-09 | Aviso ligado a um problema | Aviso associado a um reporte (ex.: buraco no chão no local X) para alertar todos do risco | Importante | v0.1 | Draft |
-| RF-12 | Indicador de progresso do prédio | Número agregado de resolvidos vs abertos (sem nomes, rankings nem comparações), ocultável (engagement ético) | Desejável | v0.3 | Draft |
+| RF-12 | Indicador de progresso do prédio | Número agregado de resolvidos vs abertos (sem nomes, rankings nem comparações), ocultável (participação ética) | Desejável | v0.3 | Draft |
 | RF-17 | Ata assistida por IA | O administrador carrega o áudio da assembleia e recebe transcrição e rascunho de ata, marcado como gerado por IA; só se publica após revisão e aprovação; com a IA indisponível, o áudio fica guardado e a ata pode ser escrita à mão | Importante | v0.5 | Draft |
 
 ### Epic: Privacidade e confiança

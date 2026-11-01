@@ -20,7 +20,7 @@
 ## 0. Processo e Metodologia de Equipa
 
 ### Metodologia
-Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no fim de cada sprint e retrospetiva da equipa.
+Scrum, com um sprint por fase do enunciado (Sprint A, B e C, correspondentes aos Sprints 1, 2 e 3), dailies curtas, sprint review com os docentes (investidores) no fim de cada sprint e retrospetiva da equipa.
 
 **Porquê Scrum e GitHub Flow.** O produto tem requisitos que mudam com o feedback dos docentes a cada sprint (ver as duas decisões revistas abaixo), e uma equipa de 5 pessoas precisa de ciclos curtos com revisão externa. O Scrum dá esses ciclos e um backlog priorizado. O GitHub Flow, com uma `main` sempre estável e PRs revistos, dá integração contínua sem a cerimónia de um modelo com muitas branches.
 
@@ -34,7 +34,7 @@ Enunciado 5.7: a equipa trabalha com os docentes como investidores e partes inte
 
 | Docente | Envolvimento no Sprint A | Feedback recebido |
 |---|---|---|
-| Regente (aulas teóricas) | Revisão do problema e da solução proposta | Não apontou problemas ao problema nem à solução proposta |
+| Regente (aulas teóricas) | Revisão do problema e da solução proposta | Não fez reparos ao problema nem à solução proposta |
 | Docente das aulas práticas | Acompanhamento contínuo ao longo do sprint, com feedback sobre a arquitetura | Foi dando feedback e aprovação da arquitetura à medida que esta evoluía |
 
 **Decisões revistas após feedback** (o enunciado exige pelo menos uma, com a mudança e a justificação documentadas):
@@ -88,12 +88,12 @@ Uma User Story só entra num sprint quando todos os pontos aplicáveis estão co
 - **Dependências tratadas:** dependências externas estão disponíveis ou têm alternativa definida; dependências internas estão concluídas ou sequenciadas no sprint sem bloquear a conclusão da história.
 - **Validação planeada:** estão identificados os testes necessários para o percurso completo, incluindo frontend, backend e integração quando aplicáveis, com exemplos de sucesso e falha que permitam verificar os critérios de aceitação.
 
-**Revisão.** A DoR e a DoD estão neste documento e a [lista de itens do Sprint B](../sprintB/backlog.md) usa os mesmos 7 nomes da DoR como colunas. Revêem-se na retrospetiva de cada sprint: se histórias aceites falharam por um critério em falta, o critério é acrescentado ou refinado.
+**Revisão.** A DoR e a DoD estão neste documento e a [lista de itens do Sprint B](../sprintB/backlog.md) usa os mesmos 7 nomes da DoR como colunas. Reveem-se na retrospetiva de cada sprint: se histórias aceites falharam por um critério em falta, o critério é acrescentado ou refinado.
 
 ### Definition of Done (DoD)
 Uma User Story só é considerada concluída quando todos os pontos aplicáveis estão satisfeitos:
 
-- **Sequência cumprida:** a funcionalidade está implementada de ponta a ponta, incluindo frontend, backend, persistência e integração entre componentes, quando aplicáveis. Uma camada não fica como trabalho pendente separado para a mesma funcionalidade.
+- **Percurso completo cumprido:** a funcionalidade está implementada de ponta a ponta, incluindo frontend, backend, persistência e integração entre componentes, quando aplicáveis. Uma camada não fica como trabalho pendente separado para a mesma funcionalidade.
 - **Interface validada:** quando existe impacto visual, a interface implementada corresponde ao wireframe, mockup ou protótipo acordado; diferenças necessárias foram revistas e aprovadas pela equipa. Tarefas sem impacto visual ficam assinaladas como não aplicável.
 - **Critérios cumpridos:** todos os critérios de aceitação da história foram verificados, incluindo permissões, validações e requisitos de acessibilidade, quando aplicáveis.
 - **Testes concluídos:** os testes automatizados relevantes para as camadas alteradas foram adicionados ou atualizados e passam; o percurso integrado foi validado quando a história envolve mais de uma camada. A CI passa (lint e análise estática, testes automatizados, SAST, verificação de dependências e de segredos).
@@ -130,7 +130,7 @@ Os problemas do edifício (fuga de água, luz fundida, elevador avariado) coorde
 | Administrador do condomínio | Utilizador principal: triagem, atribuição, fecho |
 | Comissão de condóminos | Supervisiona o administrador; consulta histórico/relatórios |
 | Prestadores de manutenção | Utilizador indireto (fora do MVP) |
-| Funcionário/porteiro | Reportador secundário, em nome de residentes |
+| Funcionário/porteiro | Autor secundário de reportes, em nome de residentes |
 | Seguradora | Beneficiário indireto do histórico (prova de diligência) |
 | Município/fornecedores de utilities | Fora do MVP; escalonamento futuro |
 
@@ -142,7 +142,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 |---|---|---|---|
 | [r/TudoCasa - "Problema com empresa de gestão do condomínio"](https://www.reddit.com/r/TudoCasa/comments/1pnxai2/problema_com_empresa_de_gest%C3%A3o_do_condom%C3%ADnio/) | Condómino afetado por infiltração num prédio com empresa profissional | Avaria sem resolução durante meses; empresa não devolve datas; buraco na parede deixado aberto; morador questiona negligência legal da empresa | Valida: avaria que se agrava por falta de acompanhamento; ausência de estado do reporte; risco legal/de seguro para o responsável |
 | [r/tudoCondominio - "App / software recomendado para gestão do condomínio"](https://www.reddit.com/r/tudoCondominio/comments/1w9wv5z/app_software_recomendado_para_gest%C3%A3o_do_condominio/) | Administrador voluntário sem empresa, a gerir o próprio prédio "em part-time" | Vizinhos que "nunca recebem" avisos nem convocatórias; procura apps acessíveis a não-profissionais; preço é critério crítico; a maioria das apps é pensada para empresas | Valida: persona do administrador voluntário; problema de decisões que não chegam a todos; gap de mercado para gestão interna sem empresa |
-| [r/tudoCondominio - "Condomínio não presta e moradores não se importam"](https://www.reddit.com/r/tudoCondominio/comments/1smgg9c/condom%C3%ADnio_n%C3%A3o_presta_e_moradores_n%C3%A3o_se_importam/) | Moradora com empresa profissional de gestão | E-mails sem resposta durante 2 meses; obras de 20.000€ mal executadas sem prestação de contas; reuniões inexistentes ou sem quórum; administrador sem provas do trabalho feito | Valida: ausência de histórico auditável; comunicação que falha; baixo envolvimento dos moradores; risco de responsabilidade do gestor |
+| [r/tudoCondominio - "Condomínio não presta e moradores não se importam"](https://www.reddit.com/r/tudoCondominio/comments/1smgg9c/condom%C3%ADnio_n%C3%A3o_presta_e_moradores_n%C3%A3o_se_importam/) | Moradora com empresa profissional de gestão | E-mails sem resposta durante 2 meses; obras de 20 000 € mal executadas sem prestação de contas; reuniões inexistentes ou sem quórum; administrador sem provas do trabalho feito | Valida: ausência de histórico auditável; comunicação que falha; baixo envolvimento dos moradores; risco de responsabilidade do gestor |
 
 **Padrão identificado nas três fontes:**
 - A comunicação sobre avarias e decisões depende de canais informais (e-mail, telefone, presença física) sem estado nem histórico, em contextos tanto de administração profissional como voluntária;
@@ -170,7 +170,7 @@ A evidência qualitativa foi recolhida através da observação de três publica
 | Custo de mudança do WhatsApp (grátis, já instalado) | Onboarding em segundos: QR code por fração, scan e nome |
 | Residentes sem smartphone, pouco digitais ou idosos | Interface acessível; um vizinho ou o porteiro reporta por eles com a própria identidade |
 | Residentes com deficiência visual ou auditiva | WCAG: leitor de ecrã, texto alternativo nas fotos, alternativas não sonoras às notificações |
-| Administrador sente perda de controlo | Posicionar como redução de esforço, não canal extra a vigiar |
+| Administrador sente perda de controlo | Posicionar como redução de esforço, e não como um canal extra a vigiar |
 | Dados pessoais mal geridos ou guardados sem necessidade | Guardar só fração e nome; retenção limitada (RGPD) |
 | QR code divulgado a terceiros | Token aleatório; o administrador revoga/regenera o QR code e remove identidades (US-01, US-09) |
 | Nome duplicado ou a fazer-se passar por outro | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) |
@@ -207,15 +207,15 @@ A evidência qualitativa foi recolhida através da observação de três publica
 
 ## 2. Análise de Mercado e Concorrência
 
-**Achado principal:** as soluções existentes (TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) giram à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos) e da **governança** (votações, atas), não da **gestão de problemas/informação do dia a dia**. É esse o espaço da nossa app.
+**Achado principal:** as soluções existentes (TownSq, Condo Control, Buildium a nível internacional; Gecond, SolidSoft GC, GOcondomínios em Portugal) giram à volta da **gestão de dinheiro** (quotas, contabilidade, pagamentos) e da **governação** (votações, atas), não da **gestão de problemas/informação do dia a dia**. É esse o espaço da nossa app.
 
 ### 2.1 Quadro comparativo de alternativas e concorrentes
 
 | Alternativa | Utilizadores-alvo e modelo | Pontos fortes | Pontos fracos | Diferenciação da nossa proposta |
 |---|---|---|---|---|
 | **WhatsApp/Messenger, posters, papel** | Qualquer grupo; gratuito | Adoção imediata, custo zero; papel acessível a não-digitais | Mensagens perdem-se, sem estado nem histórico; posters desatualizam; telefones expostos ao grupo | Reportes com estado, dono e histórico, sem perder a simplicidade do chat |
-| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais; SaaS B2B por nº de frações | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio; foco em dinheiro/governança; curva de aprendizagem íngreme | Coordenação do dia a dia, com onboarding e preço para 1 prédio |
-| **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral; grátis, publicidade geolocalizada | Sentido de comunidade, recomendação de prestadores | Sem administrador nem tickets/estado; orientada a engajamento; privacidade moderada/baixa | Estrutura à volta do edifício, com administrador e reportes com estado |
+| **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais; SaaS B2B por nº de frações | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio; foco em dinheiro/governação; curva de aprendizagem íngreme | Coordenação do dia a dia, com onboarding e preço para 1 prédio |
+| **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral; grátis, publicidade geolocalizada | Sentido de comunidade, recomendação de prestadores | Sem administrador nem tickets/estado; orientada ao envolvimento; privacidade moderada/baixa | Estrutura à volta do edifício, com administrador e reportes com estado |
 | **Tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios; SaaS B2B por ativo | SLA, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; formulários técnicos; sem privacidade entre vizinhos | Reporte em segundos, sem formação técnica nem contrato |
 | **Gecond** ("o meu condomínio") | Condóminos cujo administrador já é cliente; B2B2C | Votação antecipada + registo de avarias | Só por convite; avaliação 1,7/5 nas lojas; experiência inconsistente | Adotável diretamente por qualquer administrador voluntário |
 | **My LDC** (Loja do Condomínio) | Condóminos e administrador; gratuito | Transparência; referência MB para pagamentos | Sem atualizações desde 2017 (possível abandono, a validar); sem política de privacidade pública | Mesma transparência, com manutenção ativa e reportes com estado |
@@ -226,14 +226,14 @@ A evidência qualitativa foi recolhida através da observação de três publica
 Não existe em Portugal um produto pensado para o administrador voluntário de um prédio pequeno/médio autogerido: os concorrentes assumem administração profissional (Gecond), pacote financeiro pesado (software profissional) ou hardware (Unitify). O WhatsApp ganha por defeito, por ser a única opção com fricção zero.
 
 **Oportunidades de diferenciação:**
-1. Gestão de problemas/informação do dia a dia, não de dinheiro ou governança.
+1. Gestão de problemas/informação do dia a dia, não de dinheiro ou governação.
 2. Foco no residente (reportar em segundos), não no gestor/contabilidade.
 3. Zero-configuração para um prédio, sem terceiros nem hardware.
 4. Privacidade por desenho: reportes visíveis a todos para acompanhamento coletivo, sem expor contactos nem o autor (salvo se este escolher mostrar o nome).
 
 ### 2.3 Proposta de Valor
 
-> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (propriedade horizontal), que hoje coordenam avarias e avisos por grupos de WhatsApp caóticos ou posters desatualizados, o DomusCast é uma app de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software profissional (contabilidade e governança) e das soluções smart building (hardware), é gratuito/low-cost, de configuração imediata para um prédio, desenhado para o residente e com privacidade por desenho (sem telefones nem perfis além do essencial).
+> Para administradores voluntários e condóminos de prédios autogeridos em Portugal (propriedade horizontal), que hoje coordenam avarias e avisos por grupos de WhatsApp caóticos ou posters desatualizados, o DomusCast é uma app de gestão de problemas e comunicação de condomínio que transforma conversas dispersas em reportes estruturados com estado, dono e histórico. Ao contrário do software profissional (contabilidade e governação) e das soluções smart building (hardware), é gratuito/low-cost, de configuração imediata para um prédio, desenhado para o residente e com privacidade por desenho (sem telefones nem perfis além do essencial).
 
 ---
 
@@ -286,13 +286,13 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 ## 4. Rascunho de Requisitos
 
-Primeira lista de funcionalidades (por epic) e requisitos não funcionais, resultante dos capítulos [2](#2-análise-de-mercado-e-concorrência) e [3](#3-investigação-de-utilizadores). Faz a ponte para a visão de produto ([capítulo 5](#5-product-vision)) e será refinada em user stories no Product Backlog ([capítulo 6](#6-product-backlog)) após validação com os docentes.
+Esta é a primeira lista de funcionalidades (por epic) e de requisitos não funcionais, e resulta dos capítulos [2](#2-análise-de-mercado-e-concorrência) e [3](#3-investigação-de-utilizadores). Faz a ponte para a visão de produto ([capítulo 5](#5-product-vision)) e será refinada em user stories no Product Backlog ([capítulo 6](#6-product-backlog)) após validação com os docentes.
 
 A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão** e **estado** (Draft, In Review, Approved) por requisito.
 
 **Epics propostos:**
 - **Gestão de avarias:** reportar, estado, histórico do prédio, notificações, duplicados, seguir reportes.
-- **Comunicação e governança:** mural de avisos, calendário, aviso ligado a reporte, indicador de progresso.
+- **Comunicação e governação:** quadro de avisos, calendário, aviso ligado a reporte, indicador de progresso.
 - **Privacidade e confiança:** reportes visíveis a todos com autor oculto por omissão; identificação pelo nome via QR code da fração; gestão de identidades e QR codes pelo administrador.
 - **Não funcionais:** rapidez, acessibilidade, minimização de dados, controlo de acesso, observabilidade, resiliência (offline e serviços externos).
 
@@ -300,14 +300,14 @@ A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão**
 
 ## 5. Product Vision
 
-### 5.1. Personas
+### 5.1 Personas
 
 - **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações. *Evidência:* administrador voluntário sem ferramentas adequadas e vizinhos que "nunca recebem" avisos ([§1, 2.ª fonte](#evidência-do-problema)). *Histórias:* US-01, US-04, US-05, US-06, US-10, US-19.
 - **Condómina Residente Ocupada** ("Marta", 34, proprietária): trabalha fora, acompanha o grupo de forma intermitente e falta a assembleias. Quer reportar em segundos e saber o estado sem perguntar a ninguém. *Evidência:* avarias sem resolução e sem estado visível ([§1, 1.ª fonte](#evidência-do-problema)). *Histórias:* US-02, US-03, US-11, US-17.
 - **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem. *Evidência:* sem evidência direta nas fontes consultadas; é uma hipótese a validar com o inquérito (perguntas 1, 10 e 11). *Histórias:* US-07, US-09, US-15.
 - **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca". *Evidência:* sem evidência direta nas fontes consultadas; hipótese a validar com o inquérito (perguntas 13 e 15). *Histórias:* US-08, US-06 e US-07 (consulta de avisos); reporta através de um vizinho ou do porteiro com a identidade deles.
 
-### 5.2. Proposta de Valor
+### 5.2 Proposta de Valor
 
 - Para administradores voluntários e condóminos de prédios autogeridos, a plataforma transforma a gestão do dia a dia de fonte de stress em processo simples e colaborativo.
 - Em vez de ferramentas genéricas onde as mensagens se perdem, estrutura a comunicação em reportes com estado, responsável e histórico auditável, e leva avisos e decisões de assembleia a todos, incluindo quem falta ou raramente passa pelo hall.
@@ -319,18 +319,18 @@ A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão**
 |---|---|
 | Administrador Voluntário | Menos esforço de triagem e um histórico que prova diligência |
 | Condómina Residente Ocupada | Reportar em segundos e saber o estado sem perguntar |
-| Inquilino / Residente Recente | Receber os avisos relevantes e reportar sem expor o telemóvel |
+| Inquilino/Residente Recente | Receber os avisos relevantes e reportar sem expor o telemóvel |
 | Condómina Sénior Pouco Digital | Não ficar excluída, com um vizinho ou o porteiro a reportar e consultar por si |
 
-### 5.3. User Journey
+### 5.3 User Journey
 
 Cada jornada é um workflow em diagrama de atividade com raias por ator ([workflows.drawio](workflows.drawio)), ligado às user stories do backlog.
 
 - **Onboarding do condomínio (Workflow 1, US-01, US-15):** o administrador cria o condomínio (nome, nº de frações) e a app gera um QR code único por fração, partilhado pelos residentes dessa fração. Cada residente faz scan: se o QR code é válido e o dispositivo não tem identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existe identidade, não volta a pedir. QR code inválido ou revogado mostra erro.
 
-![Onboarding do condominio](images/workflow-1.drawio.png)
+![Onboarding do condomínio](images/workflow-1.drawio.png)
 
-- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); já resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica reporter e co-reporters (notificação local com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
+- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-08, US-09, US-11):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: se for duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); se já estiver resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica o autor e os co-reporters (notificação local com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
 
 ![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
@@ -338,7 +338,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Acompanhar e resolver reportes](images/workflow-3.drawio.png)
 
-- **Agendar assembleias e lembretes (Workflow 4, US-13, US-18):** o administrador agenda a assembleia (data, hora, local), guardada localmente no telemóvel. Sem internet, fica em fila e sincroniza quando a ligação voltar. Com internet, o backend publica a reunião no serviço de calendário externo (simulador) e no feed iCal do condomínio, que os residentes subscrevem na app de calendário que já usam. Se o serviço externo falhar, a reunião continua disponível pelo iCal; sem nenhum, a app entra em modo degradado: usa os dados locais, mostra um aviso, regista o erro e tenta mais tarde. A app agenda no telemóvel um lembrete antes da reunião (ex.: 24 horas).
+- **Agendar assembleias e lembretes (Workflow 4, US-13, US-18):** o administrador agenda a assembleia (data, hora, local), guardada localmente no telemóvel. Sem internet, fica em fila e sincroniza quando a ligação voltar. Com internet, o backend publica a reunião no serviço de calendário externo (simulador) e no feed iCal do condomínio, que os residentes subscrevem na app de calendário que já usam. se o serviço externo falhar, a reunião continua disponível pelo iCal; se nenhum dos dois estiver disponível, a app entra em modo degradado: usa os dados locais, mostra um aviso, regista o erro e tenta mais tarde. A app agenda no telemóvel um lembrete antes da reunião (ex.: 24 horas).
 
 ![Agendar assembleias e lembretes](images/workflow-4.drawio.png)
 
@@ -346,11 +346,11 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
-- **Quadro de avisos (Workflow 6, US-06, US-07, US-14):** o administrador publica um aviso, geral ou ligado a um reporte, sem expor o reporter. Os residentes consultam o quadro a partir do ecrã principal, com os mais recentes primeiro, e os antigos no histórico.
+- **Quadro de avisos (Workflow 6, US-06, US-07, US-14):** o administrador publica um aviso, geral ou ligado a um reporte, sem expor o autor. Os residentes consultam o quadro a partir do ecrã principal, com os mais recentes primeiro, e os antigos no histórico.
 
 ![Quadro de avisos](images/workflow-6.drawio.png)
 
-### 5.4. Critérios de Sucesso
+### 5.4 Critérios de Sucesso
 
 > Projeto académico: o produto não será lançado nem testado com utilizadores externos. Os critérios são verificados pela equipa com testes automatizados (unitários, integração, end-to-end), cenários de demonstração com dados sintéticos, testes de carga e acessibilidade, e avaliação de usabilidade. Mostram que o produto cumpre o que foi desenhado, não que utilizadores reais beneficiam dele. Tempos medidos pela equipa refletem utilizadores experientes e são apenas indicativos.
 
@@ -369,7 +369,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ---
 
-### 5.5. Mecanismo de participação ética
+### 5.5 Mecanismo de participação ética
 
 O enunciado (5.5) pede pelo menos um mecanismo que incentive a participação construtiva, e que se responda a cinco perguntas sobre ele. O nosso é o **indicador de progresso do prédio** (US-16, RF-12): a app mostra quantos reportes foram resolvidos e quantos estão abertos no período atual.
 
@@ -385,7 +385,7 @@ Pontos, badges e leaderboards ficam de fora de propósito: num prédio de 8 a 60
 
 ---
 
-### 5.6. Visão do produto, benefício esperado e fronteira do MVP
+### 5.6 Visão do produto, benefício esperado e fronteira do MVP
 
 **Visão.** Que qualquer prédio autogerido em Portugal consiga tratar os problemas do dia a dia, e levar avisos e decisões de assembleia a todos, sem depender de conversas perdidas no WhatsApp nem de posters, e sem que o administrador voluntário fique exposto por falta de registo.
 
@@ -415,7 +415,7 @@ O Product Backlog completo (MoSCoW, pontos, critérios de aceitação, estado Dr
 > As user stories de cada sprint estão no [plano de release](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint).
 
 - **Sprint A (Descoberta, Validação e Design):** validar que o problema é relevante e que o MVP é o experimento mais pequeno credível; entregar o Walking Skeleton (versão mínima ponta a ponta).
-- **Sprint B (Construir e operar a fatia vertical):** jornada principal (reportar e acompanhar uma avaria) operacional, com autenticação (mock aceitável), persistência, pelo menos um workflow assíncrono, primeira versão da IA com fallback não-IA, primeira integração externa e demonstração de pelo menos uma condição de falha, como exige o enunciado. Detalhe no [Sprint B Backlog](../sprintB/backlog.md), confirmado contra a Definition of Ready.
+- **Sprint B (Construir e operar a fatia vertical):** jornada principal (reportar e acompanhar uma avaria) operacional, com autenticação (mock aceitável), persistência, pelo menos um workflow assíncrono, primeira versão da IA com fallback não-IA, primeira integração externa e demonstração de pelo menos uma condição de falha, como exige o enunciado. Detalhe no [Sprint B Backlog](../sprintB/backlog.md), a confirmar contra a Definition of Ready.
 - **Sprint C (Avaliar, consolidar e apresentar):** robustecer e avaliar o que existe, consolidar a avaliação formal da IA e do cenário de degradação, preparar a apresentação final.
 
 ### 6.2 Plano de release inicial
@@ -428,7 +428,7 @@ Ver [docs/backlog.md](../backlog.md#2-plano-de-release-inicial-visão-multi-spri
 
 ### 7.1 Fluxo assistido por IA
 
-A oportunidade é ajudar o administrador voluntário a preparar a ata de uma assembleia (US-10, [Workflow 5](#53-user-journey)), sem delegar à IA a decisão sobre o que foi aprovado. O administrador informa os presentes de que vai gravar e associa o áudio à reunião. A app guarda-o no dispositivo e, se estiver sem rede, envia-o quando a ligação voltar (US-18). A API guarda o ficheiro e cria um job; o Worker envia o áudio ao serviço de IA da OpenAI, que o transcreve, e depois o texto da transcrição, a partir do qual o serviço redige um rascunho com decisões, responsáveis, prazos e valores **apenas quando constam da gravação**. Cada decisão proposta cita o excerto da transcrição que a suporta; passagens incertas ficam assinaladas como «por confirmar», em vez de serem completadas por suposição.
+A oportunidade é ajudar o administrador voluntário a preparar a ata de uma assembleia (US-10, [Workflow 5](#53-user-journey)), sem delegar à IA a decisão sobre o que foi aprovado. O administrador informa os presentes de que vai gravar e associa o áudio à reunião. A app guarda-o no dispositivo e, se estiver sem rede, envia-o quando a ligação voltar (US-18). A API guarda o ficheiro e cria um job; o Worker envia o áudio ao serviço de IA da OpenAI, que o transcreve, e depois o texto da transcrição, a partir do qual o serviço redige um rascunho com decisões, responsáveis, prazos e valores **apenas quando constam da gravação**. Cada decisão proposta cita o excerto da transcrição que a suporta; passagens incertas ficam assinaladas como "por confirmar", em vez de serem completadas por suposição.
 
 | Passo | Quem faz | É IA? | O que faz |
 |---|---|---|---|
@@ -440,7 +440,7 @@ A oportunidade é ajudar o administrador voluntário a preparar a ata de uma ass
 
 Os modelos e o prompt ficam fixados por versão e registados, para repetir a avaliação; a qualidade em português europeu é verificada em [7.4](#74-abordagem-de-avaliação) antes de se considerar a proposta adequada. A transcrição devolve só texto, sem tempos, por isso a rastreabilidade de cada decisão é feita por citação literal da transcrição, que se pode verificar automaticamente. O áudio e a transcrição saem para um terceiro, risco tratado em [7.3](#73-riscos-e-mitigações). Este componente de IA não substitui a integração externa do calendário exigida pelo enunciado ([8.6](#86-integração-externa)).
 
-Transcrição e rascunho ficam acessíveis só aos administradores, com a indicação «gerado por IA, pendente de revisão». O administrador compara os excertos citados com a transcrição e o áudio, corrige o texto e aprova-o. **Só a ata aprovada é publicada aos residentes**; a IA não publica atas nem altera reuniões, reportes ou permissões, e ao serviço só chegam o áudio e o texto da transcrição, sem outros dados do condomínio. Sem a IA, o administrador escreve a ata à mão (baseline e fallback, [7.5](#75-baseline-e-fallback)).
+Transcrição e rascunho ficam acessíveis só aos administradores, com a indicação "gerado por IA, pendente de revisão". O administrador compara os excertos citados com a transcrição e o áudio, corrige o texto e aprova-o. **Só a ata aprovada é publicada aos residentes**; a IA não publica atas nem altera reuniões, reportes ou permissões, e ao serviço só chegam o áudio e o texto da transcrição, sem outros dados do condomínio. Sem a IA, o administrador escreve a ata à mão (baseline e fallback, [7.5](#75-baseline-e-fallback)).
 
 ### 7.2 Valor esperado
 
@@ -480,7 +480,7 @@ Estas metas são **critérios propostos, não resultados obtidos**. A amostra pe
 
 - **Baseline sem IA:** escrever uma ata manual a partir de gravações equivalentes, usando o mesmo modelo de documento. Medir tempo ativo e qualidade com as mesmas decisões e factos de referência.
 - **Fallback de qualidade:** se o rascunho não cumprir os critérios ou o administrador detetar um erro crítico, este corrige-o a partir do áudio ou escreve a ata manualmente. Até nova avaliação satisfatória, a ata manual continua a ser o caminho recomendado.
-- **Fallback operacional:** se faltar rede, o áudio permanece na fila local até ao envio; se o serviço de IA estiver indisponível ou o processamento falhar, o áudio já enviado fica guardado, o job é repetido com backoff ([8.5](#85-workflow-assíncrono)) e, esgotadas as tentativas, a app mostra `falhou_transcricao`; o administrador é avisado (modo degradado, US-18) e pode reenviar o áudio ou escrever e aprovar uma ata manual. Uma resposta tardia da IA nunca substitui uma ata já aprovada. A interface nunca apresenta conteúdo de IA como facto verificado (US-10); residentes não veem áudio, transcrição nem rascunhos.
+- **Fallback operacional:** se faltar rede, o áudio permanece na fila local até ao envio. Se o serviço de IA estiver indisponível ou o processamento falhar, o áudio já enviado fica guardado e o job é repetido com backoff ([8.5](#85-workflow-assíncrono)); esgotadas as tentativas, a app mostra `falhou_transcricao`, o administrador é avisado (modo degradado, US-18) e pode reenviar o áudio ou escrever e aprovar uma ata manual. Uma resposta tardia da IA nunca substitui uma ata já aprovada. A interface nunca apresenta conteúdo de IA como facto verificado (US-10); residentes não veem áudio, transcrição nem rascunhos.
 
 ---
 
@@ -516,6 +516,7 @@ Dentro do backend há duas peças, não uma. A **API** responde aos pedidos da a
 | **Volume de ficheiros** | Fotos de reportes (sem metadados EXIF, removidos pela API no upload) e áudios de assembleias, referenciados por caminho na base de dados; partilhado entre API e Worker | - |
 | **Simulador de calendário** (container, FastAPI mínimo) | Faz de serviço de calendário externo, com o contrato descrito em [8.6](#86-integração-externa): aceita eventos, devolve ids, e a pedido falha, atrasa ou devolve dados incompletos ou inválidos, para testes e para a demonstração de degradação | Eventos simulados (descartáveis) |
 | **Prometheus e Grafana** (containers) | Recolhem `/metrics` de API e Worker e mostram o dashboard operacional ([8.7](#87-observabilidade)) | Séries temporais de métricas |
+
 Quatro consequências desta separação, que o enunciado pede para justificar:
 
 - **Comunicação.** App para API é síncrona (REST/JSON). API para Worker é assíncrona, pela tabela `job` ([8.5](#85-workflow-assíncrono)); o Worker não expõe endpoints além de `/health` e `/metrics`.
@@ -557,10 +558,10 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `reporte` - `reporte_historico` | 1 para N | Só inserção (US-05) |
 | `reporte` - `reporte_seguidor` - `identidade` | N para N | Autor, co-reporter ou seguidor (US-04, US-17) |
 | `reporte` - `aviso` | 0 ou 1 para N (`reporte_id` opcional) | Um aviso pode ligar-se a um reporte de risco (US-14) |
-| `reuniao` - `ata` | 1 para 0 ou 1 na prática | De cada reunião pode sair uma ata, que nasce de um áudio (US-10) |
+| `reuniao` - `ata` | 1 para 0..1 | De cada reunião pode sair uma ata, que nasce de um áudio (US-10) |
 | `job` - `ata`, `reuniao` | Referência no `payload` | Trabalho assíncrono sobre uma ata ou uma reunião ([8.5](#85-workflow-assíncrono)) |
 
-**Termos do negócio e entidades.** Residente e condómino são uma `identidade` (papel `residente` ou `comissao`); administrador é `administrador`; reporte, aviso, assembleia e ata são `reporte`, `aviso`, `reuniao` e `ata`. Todos os substantivos usados nas histórias e nos [Workflows](#53-user-journey) correspondem a uma entidade ou a um campo.
+**Termos do negócio e entidades.** Residente e condómino correspondem a uma `identidade` (papel `residente` ou `comissao`); administrador é `administrador`; reporte, aviso, assembleia e ata são `reporte`, `aviso`, `reuniao` e `ata`. Todos os substantivos usados nas histórias e nos [Workflows](#53-user-journey) correspondem a uma entidade ou a um campo.
 
 **Porquê esta modelação.**
 - `qr_token` está separado de `fracao` para o administrador revogar e regenerar o QR code sem perder a fração nem as identidades (US-01).
@@ -571,7 +572,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 - `ata` guarda `transcricao`, `rascunho` e `texto_aprovado` em colunas separadas para só o texto aprovado ser publicado: um rascunho de IA nunca é apresentado como facto (US-10).
 - `job` é o outbox: é criado na mesma transação que a alteração de domínio, por isso não há trabalho perdido nem duplicado ([ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
 
-Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é criado na mesma transação que a alteração de domínio, por isso não há job sem registo nem registo sem job. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e os reportes resolvidos e o seu histórico são eliminados 24 meses depois, por uma limpeza diária do Worker. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
+Sobre a vida destes dados: cada pedido à API corre numa transação. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e os reportes resolvidos e o seu histórico são eliminados 24 meses depois, por uma limpeza diária do Worker. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
 
 ### 8.4 API (esboço)
 
@@ -645,7 +646,7 @@ O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **s
 
 O Worker chama o serviço de IA e uma interface `CalendarProvider`. Para o calendário há três níveis:
 
-1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário. É contra ele que se demonstra a condição de falha pedida no Sprint 2. Sucesso: `estado_sync = sincronizada`;
+1. `ServicoCalendarioProvider`: cliente HTTP do simulador de calendário. É contra ele que se demonstra a condição de falha pedida no Sprint B. Sucesso: `estado_sync = sincronizada`;
 2. feed iCal: a API gera-o a partir da tabela `reuniao` (`GET /condominios/{id}/calendario.ics?token=`), por isso a reunião aparece nele logo que é criada, mesmo sem o Worker; os residentes subscrevem-no uma vez no Google Calendar, Apple Calendar ou Outlook. Esgotadas as tentativas do nível 1, o job termina com `estado_sync = alternativo` e a app avisa que a reunião só está no feed iCal;
 3. dados locais: se a app não conseguir falar com a API, mostra a reunião guardada no telemóvel com um aviso de modo degradado. É um estado da app, não da base de dados.
 
@@ -680,7 +681,7 @@ Os SLIs ligam estas métricas aos [critérios de sucesso](#54-critérios-de-suce
 | Disponibilidade de `POST /reportes` | 99% em janela de 7 dias |
 | Latência p95 de `POST /reportes` | < 1 s em ambiente de teste sob carga simulada |
 | Jobs de transcrição concluídos com sucesso (incluindo retries) | > 95% |
-| Tempo até a ata ficar `pendente_revisao` | >= 95% das atas em <= 15 min, para áudio até 60 min ([7.4](#74-abordagem-de-avaliação)) |
+| Tempo até a ata ficar `pendente_revisao` | ≥ 95% das atas em <= 15 min, para áudio até 60 min ([7.4](#74-abordagem-de-avaliação)) |
 
 ### 8.8 Vista de deployment
 
@@ -690,7 +691,7 @@ Por fim, como tudo isto chega a correr. Um commit em `main` passa pela pipeline,
 
 - **Containers:** `api`, `worker`, `postgres`, `simulador-calendario` e o volume `media`; `prometheus` e `grafana`. API e Worker partilham uma imagem (mesmo código, comando diferente), construída de forma reproduzível com dependências fixadas.
 - **Configuração:** por variáveis de ambiente (`.env` por ambiente, não versionado); segredos (chave da API da OpenAI, chave de assinatura das credenciais) só por variáveis de ambiente ou secrets do GitHub Actions.
-- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`; hoje a CI usa SQLite, ver [§11](#11-walking-skeleton)) e verificação de dependências; em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. O ambiente de avaliação é uma VM Linux única de dimensão modesta (2 vCPU e 4 GB de RAM, suficiente para os containers; ajustada se os testes de carga do Sprint C o exigirem) com Docker Compose, a que a pipeline se liga por SSH; se não houver VM disponível, a mesma stack corre na máquina de um membro da equipa para a demonstração.
+- **Pipeline (CI/CD):** em cada PR, lint e análise estática (ruff, `flutter analyze`), testes (pytest com PostgreSQL em serviço, `flutter test`; hoje a CI usa SQLite, ver [§11](#11-walking-skeleton)) e verificação de dependências. Em `main`, build e push das imagens para o GitHub Container Registry com a tag do commit, e deploy para o ambiente de avaliação. O ambiente de avaliação é uma VM Linux única de dimensão modesta (2 vCPU e 4 GB de RAM, suficiente para os containers; ajustada se os testes de carga do Sprint C o exigirem) com Docker Compose, a que a pipeline se liga por SSH. Se não houver VM disponível, a mesma stack corre na máquina de um membro da equipa para a demonstração.
 - **Rollback:** voltar a `docker compose up` com a tag da imagem anterior; as migrações de base de dados (Alembic) são só aditivas no MVP, para o rollback não exigir reverter o esquema.
 - **App móvel:** APK Android gerado na pipeline e distribuído aos docentes. Android é a plataforma de demonstração; o Flutter mantém o iOS possível, mas não é testado no projeto ([ADR-002](#adr-002-app-móvel-em-flutter-demonstrada-em-android)).
 
@@ -706,7 +707,7 @@ Estimativa de ordem de grandeza para operar o produto, partindo dos [pressuposto
 |---|---|---|
 | IA (transcrição e rascunho) | cerca de US$ 0,27 por ata de 1 h (US$ 0,54 por prédio e por ano, com 2 atas) | Preços de `gpt-transcribe` (US$ 0,0045/min) e `gpt-4o-mini` confirmados a 2026-10-23 e reconfirmados a 2026-11-01 nas páginas de modelos e de preços da OpenAI ([7.4](#74-abordagem-de-avaliação)); o único custo variável relevante |
 | VM Linux (2 vCPU, 4 GB) com Docker Compose | 6 a 20 € por mês (72 a 240 € por ano), sem IVA | Referência Hetzner Cloud a 2026-10-23: CX23 a 5,99 € e CPX22 a 19,99 €, ambos com 2 vCPU e 4 GB e indisponíveis nessa data; o CX23 a 5,99 € foi reconfirmado a 2026-11-01 e continuava indisponível; fornecedor ainda por escolher ([8.8](#88-vista-de-deployment)) |
-| Repositório, CI/CD e imagens (GitHub Actions, GHCR) | 0 € | Plano GitHub Free, a 2026-11-01: US$ 12 por mês de utilização de computação incluída em repositórios privados (cerca de 2 000 min de runner Linux a US$ 0,006/min; grátis em repositórios públicos) e 500 MB de armazenamento partilhados entre artefactos e Packages; o armazenamento e a largura de banda do Container registry estão grátis (“currently free”, com aviso prévio de um mês antes de mudar) |
+| Repositório, CI/CD e imagens (GitHub Actions, GHCR) | 0 € | Plano GitHub Free, a 2026-11-01: US$ 12 por mês de utilização de computação incluída em repositórios privados (cerca de 2 000 min de runner Linux a US$ 0,006/min; grátis em repositórios públicos) e 500 MB de armazenamento partilhados entre artefactos e Packages; o armazenamento e a largura de banda do Container registry estão grátis ("currently free", com aviso prévio de um mês antes de mudar) |
 | Prometheus e Grafana | 0 € | Auto-alojados na mesma VM |
 | Simulador de calendário, PostgreSQL | 0 € | Containers na mesma VM |
 | Notificações | 0 € | Locais, sem fornecedor de push ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
@@ -771,7 +772,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 ### ADR-007 Integração de calendário por simulador e feed iCal
 - **Contexto:** o enunciado exige uma integração com um sistema externo "ou um simulador realista", que lide com dados indisponíveis, atrasados, incompletos ou inválidos, e que o que não possa ser executado pelos docentes seja identificado (secção 12). O serviço de IA não conta como integração externa, por isso a do calendário é a única. US-13 exige um calendário alternativo antes dos dados locais e um lembrete antes da reunião.
 - **Decisão:** um simulador de calendário em container próprio, que imita um subconjunto da API de eventos do Google Calendar e muda de comportamento por comando (`ok`, `indisponivel`, `lento`, `incompleto`, `invalido`), como serviço externo; um feed iCal publicado pela API como alternativa (subscrito por qualquer app de calendário); e dados locais como último recurso. O lembrete é uma notificação local agendada no telemóvel.
-- **Alternativas:** Google Calendar API: gratuita, mas exige projeto Google Cloud, OAuth ou service account e uma conta da equipa, os docentes não a conseguem executar, não responde a "de quem é o calendário" e não se pode fazer falhar à ordem; servidor CalDAV real em container (ex.: Radicale): reproduzível e com protocolo real, mas só se consegue simular "indisponível" (parar o container), exigiria um proxy de falhas para as outras três condições, e a equipa continua a ser dona do serviço; só iCal, sem simulador: não haveria integração externa nem falha a demonstrar.
+- **Alternativas:** Google Calendar API: gratuita, mas exige projeto Google Cloud, OAuth ou service account e uma conta da equipa; os docentes não a conseguem executar, não responde a "de quem é o calendário" e não se pode fazer falhar à ordem. Servidor CalDAV real em container (ex.: Radicale): reproduzível e com protocolo real, mas só se consegue simular "indisponível" (parar o container), exigiria um proxy de falhas para as outras três condições e a equipa continuaria a ser dona do serviço. Só iCal, sem simulador: não haveria integração externa nem falha a demonstrar.
 - **Consequências:** zero custo e zero contas externas; as quatro condições do enunciado disparam-se por comando, em demonstração e em testes automáticos sem rede; os residentes continuam a ver as reuniões no calendário que já usam, via iCal. O risco é o simulador parecer artificial: mitiga-se copiando o contrato de uma API real e testando o `ServicoCalendarioProvider` contra esse contrato. Se mais tarde se quiser um calendário real, entra como mais um `CalendarProvider` sem mudar o resto.
 
 ### ADR-008 Autenticação do administrador mock no MVP, autorização real
@@ -799,7 +800,7 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 - **Consequências:** o arranque é reproduzível com `docker compose up` e cabe no orçamento. Uma só VM é um ponto único de falha, mitigado pelo rollback por tag e pelo restauro de `pg_dump` ([8.3](#83-modelo-de-dados)). A pipeline já valida o código; o build e a publicação das imagens e o deploy por SSH entram no Sprint B ([11](#11-walking-skeleton), limitações assumidas).
 
 ### ADR-012 Observabilidade com Prometheus e Grafana auto-alojados
-- **Contexto:** o enunciado (6.7) pede logs estruturados, health checks, métricas, identificadores de correlação, reporte de erros e um pequeno dashboard operacional, e pede indicadores de nível de serviço (SLI, [8.7](#87-observabilidade)).
+- **Contexto:** o enunciado (6.7) pede logs estruturados, health checks, métricas, identificadores de correlação, registo de erros e um pequeno dashboard operacional, e pede indicadores de nível de serviço (SLI, [8.7](#87-observabilidade)).
 - **Decisão:** logs JSON para stdout em API e Worker, `/health` e `/metrics` em ambos, `X-Request-ID` propagado da app aos jobs e aos logs, Prometheus a recolher as métricas e Grafana a mostrar o dashboard dos SLIs, em containers na mesma VM.
 - **Alternativas:** OpenTelemetry com coletor e backend de traços (mais peças para um volume pequeno); stack de logs centralizados como ELK ou Loki (mais componentes na VM de 4 GB, sem ganho para este volume); serviço gerido de monitorização (conta externa e custo recorrente, com os dados fora da VM).
 - **Consequências:** métricas e dashboard sem custo e reproduzíveis com Compose. Em troca, não há rastreio distribuído completo (o `request_id` nos logs cobre a correlação), os logs não são centralizados (consultam-se com `docker compose logs`) e a VM suporta mais dois containers.
@@ -881,7 +882,7 @@ Os fluxos considerados são: entradas e ficheiros da app para a API por HTTPS; s
 
 ## 11. Walking Skeleton
 
-O Walking Skeleton prova o desenho ponta a ponta com a fatia mínima funcional: o residente submete um reporte na app Flutter -> `POST /reportes` -> PostgreSQL -> `GET /reportes` volta à lista na app. Sem autenticação real (ADR-008), sem IA, sem calendário, esses componentes entram no Sprint B.
+O Walking Skeleton prova o desenho ponta a ponta com a fatia mínima funcional: o residente submete um reporte na app Flutter -> `POST /reportes` -> PostgreSQL -> `GET /reportes` volta à lista na app. Não inclui autenticação real (ADR-008), IA nem calendário; estes componentes entram no Sprint B.
 
 Todo o código vive em `DomusCast/`.
 
@@ -963,7 +964,7 @@ flutter run
 
 | Componente | O que faz |
 |---|---|
-| `GET /health` | Verifica ligação à BD via sessão injectada; retorna `{"status":"ok","db":"ok"}` |
+| `GET /health` | Verifica ligação à BD via sessão injetada; devolve `{"status":"ok","db":"ok"}` |
 | `POST /reportes` | Cria reporte; idempotente via `idempotency_key` (offline-first) |
 | `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
 | Alembic `0001` | Cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
@@ -971,7 +972,7 @@ flutter run
 | Flutter list screen | Envia a fila offline pendente, carrega reportes; mostra loading -> lista / erro com "Tentar de novo" |
 | Flutter create screen | Formulário com validação; cai para `QueueDb` (SQLite) se sem internet |
 | `QueueDb` | Fila local persistente; cada item tem `idempotency_key` para envio sem duplicados; a lista envia-os por ordem a cada carregamento/refresh e remove os enviados |
-| `docker compose up` | Sobe `api` + `postgres`; health check garante ordem de arranque; migrations no `entrypoint.sh` |
+| `docker compose up` | Sobe `api` + `postgres`; health check garante ordem de arranque; migrações no `entrypoint.sh` |
 
 ### Testes automatizados
 
@@ -992,7 +993,7 @@ Pipeline `.github/workflows/ci.yml`, cinco jobs paralelos em cada PR e push para
 | `sca-dart` | SCA | `osv-scanner` sobre `pubspec.lock` (o `pip-audit` não cobre Dart) |
 | `secrets` | Segredos | `gitleaks` sobre o histórico do repositório (deteta credenciais commitadas) |
 
-**Secure by default na pipeline:**
+**Seguro por omissão na pipeline:**
 - `permissions: contents: read` ao nível do workflow: o `GITHUB_TOKEN` só lê o repositório (menor privilégio); cada job que precise de mais declara-o explicitamente.
 - Actions de terceiros fixadas ao SHA do commit, não a tags móveis, para travar ataques à cadeia de fornecimento; o `osv-scanner` é descarregado numa versão fixa e validado por SHA-256. O Dependabot propõe as atualizações.
 - `persist-credentials: false` no checkout: o token não fica guardado no `.git` do runner.
@@ -1000,11 +1001,15 @@ Pipeline `.github/workflows/ci.yml`, cinco jobs paralelos em cada PR e push para
 - `.github/dependabot.yml`: atualizações semanais de `pip`, `pub`, `docker` e `github-actions`.
 - Segredos (chaves, credenciais) apenas por secrets do GitHub Actions ou variáveis de ambiente, nunca no código; o job `secrets` verifica-o. Ver [§10 Security and Privacy Assessment](#10-security-and-privacy-assessment).
 
-**Secure by default no container e no ambiente local:**
+**Seguro por omissão no container e no ambiente local:**
 - A imagem da API corre como utilizador sem privilégios (`appuser`, uid 10001), e o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
 - No `docker-compose.yml`, o PostgreSQL só escuta em `127.0.0.1`.
 
-Limitações assumidas no Sprint A: o CodeQL e o `dependency-review-action` ficam de fora porque exigem repositório público ou GitHub Advanced Security; não há ainda scan da imagem Docker nem build/push para o GitHub Container Registry; e as credenciais do `docker-compose.yml` (`condoapp`) são valores de desenvolvimento, a substituir por secrets em qualquer ambiente partilhado.
+Limitações assumidas no Sprint A:
+
+- o CodeQL e o `dependency-review-action` ficam de fora porque exigem repositório público ou GitHub Advanced Security;
+- não há ainda scan da imagem Docker nem build/push para o GitHub Container Registry;
+- as credenciais do `docker-compose.yml` (`condoapp`) são valores de desenvolvimento, a substituir por secrets em qualquer ambiente partilhado.
 
 ### Componentes excluídos (Sprint B)
 

@@ -17,7 +17,7 @@
 | v0.3 | 2026-10-10 | Identificação pelo nome (US-15); reportes visíveis a todos com autor oculto por omissão (US-02, US-03, US-09, US-14); duplicados (US-04); seguir reportes (US-17); indicador de progresso (US-16); US-05 e US-11 alinhadas; plano de release do Sprint B com entregáveis técnicos. |
 | v0.4 | 2026-10-15 | US-18 (antes NFR-01) renomeada para não colidir com RNF-01 dos requisitos; US-11 passa a notificação local por sincronização em segundo plano, sem fornecedor de push; US-13 passa a simulador + iCal, sem Google Calendar (ADR-007, ADR-009). |
 | v0.5 | 2026-10-22 | Alinhado com o Technical Design: ocultar reporte (US-04), limites na criação de condomínios (US-01), token do feed iCal (US-13), notificações de avisos e atas (US-11), retenção de 24 meses (US-09), latência e retenção do áudio (US-10). |
-| v0.6 | 2026-11-01 | Épicos ligados às histórias e justificação da prioridade MoSCoW (secção 1.2); pontos do Sprint B backlog alinhados com este backlog. |
+| v0.6 | 2026-11-01 | Epics ligados às histórias e justificação da prioridade MoSCoW (secção 1.2); pontos do Sprint B backlog alinhados com este backlog. |
 
 ## 1. Product Backlog
 
@@ -71,11 +71,11 @@ As descrições seguintes complementam cada user story com o comportamento esper
 
 **Fora do âmbito (Won't have):** contabilidade/quotas, gestão financeira, votações formais em assembleia, integração com fornecedores de manutenção, multi-prédio para o mesmo administrador, reporte em nome de outro residente com autoria registada (um vizinho ou o porteiro reporta com a própria identidade).
 
-## 1.2 Épicos e justificação da prioridade
+## 1.2 Epics e justificação da prioridade
 
-Os épicos são os de [Rascunho de Requisitos](./sprintA/sprintA.md#4-rascunho-de-requisitos), agora ligados às histórias. Cada história é refinada a partir de um ou mais requisitos de [requisitos.md](./requisitos.md).
+Os epics são os de [Rascunho de Requisitos](./sprintA/sprintA.md#4-rascunho-de-requisitos), agora ligados às histórias. Cada história é refinada a partir de um ou mais requisitos de [requisitos.md](./requisitos.md).
 
-| Épico | Histórias | Requisitos |
+| Epic | Histórias | Requisitos |
 |---|---|---|
 | Gestão de avarias | US-02, US-03, US-04, US-05, US-11, US-17 | RF-01 a RF-05, RF-13, RF-14, RF-16 |
 | Comunicação e governação | US-06, US-07, US-10, US-12, US-13, US-14, US-16 | RF-06, RF-07, RF-09, RF-12, RF-17 |
