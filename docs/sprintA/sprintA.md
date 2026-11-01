@@ -217,9 +217,38 @@ A evidência qualitativa foi recolhida através da observação de três publica
 | **Software de gestão profissional** (GOcondomínios, GCondomPro, SolidSoft GC; int.: TownSq, Condo Control, Buildium) | Administradores profissionais; SaaS B2B por nº de frações | Robustez legal/financeira, documentação centralizada | Caro e complexo para 1 prédio; foco em dinheiro/governação; curva de aprendizagem íngreme | Coordenação do dia a dia, com onboarding e preço para 1 prédio |
 | **Plataformas comunitárias genéricas** (redes de vizinhança) | Vizinhança em geral; grátis, publicidade geolocalizada | Sentido de comunidade, recomendação de prestadores | Sem administrador nem tickets/estado; orientada ao envolvimento; privacidade moderada/baixa | Estrutura à volta do edifício, com administrador e reportes com estado |
 | **Tickets de manutenção** (UpKeep, Fixflo) | Facility managers, senhorios; SaaS B2B por ativo | SLA, despacho de fornecedores, manutenção preventiva | Sem dimensão comunitária; formulários técnicos; sem privacidade entre vizinhos | Reporte em segundos, sem formação técnica nem contrato |
-| **Gecond** ("o meu condomínio") | Condóminos cujo administrador já é cliente; B2B2C | Votação antecipada + registo de avarias | Só por convite; avaliação 1,7/5 nas lojas; experiência inconsistente | Adotável diretamente por qualquer administrador voluntário |
-| **My LDC** (Loja do Condomínio) | Condóminos e administrador; gratuito | Transparência; referência MB para pagamentos | Sem atualizações desde 2017 (possível abandono, a validar); sem política de privacidade pública | Mesma transparência, com manutenção ativa e reportes com estado |
-| **Unitify** (smart building) | Administradoras profissionais e novos empreendimentos; Multibanco/MB WAY + Stripe | UX moderna, pagamentos, foco em Portugal | Exige hardware (controlo de acesso, intercomunicadores) | Sem hardware, adotável por qualquer prédio de baixo orçamento |
+| **Gecond** ("o meu condomínio") | Condóminos cujo administrador já é cliente; B2B2C | Votação antecipada + registo de avarias | Só por convite; avaliações públicas baixas (ver dados abaixo); experiência inconsistente | Adotável diretamente por qualquer administrador voluntário |
+| **My LDC** (Loja do Condomínio) | Condóminos e administrador; gratuito | Transparência; referência MB para pagamentos | Volume de downloads e avaliações muito baixo; experiência pouco visível publicamente | Mesma transparência, com manutenção ativa e reportes com estado |
+| **Unitify** (smart building) | Administradoras profissionais e novos empreendimentos; Multibanco/MB WAY + Stripe | UX moderna, pagamentos | Exige hardware (controlo de acesso, intercomunicadores); presença ainda muito inicial nas lojas | Sem hardware, adotável por qualquer prédio de baixo orçamento |
+
+### 2.1.1 Dados de lojas de aplicações e escala (outubro/novembro 2026)
+
+Os números abaixo foram verificados nas páginas públicas das lojas. São apresentados como intervalos ou valores exactos tal como aparecem nas lojas; não foram estimados nem extrapolados.
+
+#### Concorrentes portugueses / locais
+
+| App | Google Play | Apple App Store | Notas / outras reivindicações | Fontes |
+|---|---|---|---|---|
+| **Gecond, o meu condomínio** (IMPROXY) | **50K+** downloads · **2,9★** (145 avaliações) | **1,8★** (38 avaliações) | Acesso apenas por convite (o administrador tem de usar o software Gecond). A reivindicação de “cerca de 200.000 utilizadores” aparece no artigo do Público (9/10/2024) sem atribuição explícita a fonte da empresa — tratada como não fundamentada. A afirmação de que **83%** dos clientes do software Gecond disponibilizam a app aos condóminos está documentada no blog da Improxy. | [Play Store](https://play.google.com/store/apps/details?id=com.improxy.Gecond) · [App Store](https://apps.apple.com/us/app/gecond-o-meu-condom%C3%ADnio/id1541353491) · [Improxy blog (83%)](https://www.improxy.com/blog/gecond-o-meu-condominio-pela-transformacao-digital/) · [Público](https://imobiliario.publico.pt/solucoes-casa/aplicacao-gecond-facilita-ligacao-entre-condominos-administradores-condominio/) |
+| **myLDC – Condomínios** | **10K+** downloads | **2,0★** (8 avaliações) | Volume de avaliações muito reduzido. | Google Play e App Store (páginas oficiais da app) |
+| **GC Condóminos** (SolidSoft) | **1K+** downloads · classificação pública não visível | Classificação e contagem de transferências não visíveis | Site da empresa ([gcsoftware.pt](https://www.gcsoftware.pt)) afirma que “mais de 100.000 frações” são já geridas com as suas soluções. Acesso restrito a condomínios que usam o software GC. | [Play Store](https://play.google.com/store/apps/details?id=pt.gcsoftware.condominos) · [gcsoftware.pt](https://www.gcsoftware.pt) |
+| **Unitify** | **500+** downloads · sem classificação pública | Não disponível | Presença ainda muito inicial. Site: [unitify.com](https://unitify.com). | [Play Store](https://play.google.com/store/apps/details?id=com.unitify.client) |
+| **GOcondomínios** | Sem app nativa com números públicos de downloads/avaliações identificados | — | Principalmente plataforma web/SaaS com portal para condóminos. | Site da empresa |
+
+#### Concorrentes internacionais
+
+| App | Google Play | Apple App Store | Notas | Fontes |
+|---|---|---|---|---|
+| **TownSq Community** | **500K+** downloads. Classificação variável conforme vista (ex.: ~4,2★ com 236 avaliações em vista móvel; valores mais baixos reportados em vista desktop) | **4,7★** (~12K avaliações) | Orientada a HOAs / gestão profissional. Site: [townsq.io](https://www.townsq.io). | Páginas oficiais das lojas |
+| **Buildium – Manager** | Sem avaliações visíveis | **4,7★** (4,5K avaliações) | App orientada a gestores profissionais. Site: [buildium.com](https://www.buildium.com). | Páginas oficiais das lojas |
+| **Buildium – Resident Center** | **4,7★** (25,1K avaliações) | **4,8★** (158K avaliações) | App residente do ecossistema Buildium; volume de avaliações muito elevado. | Páginas oficiais das lojas |
+| **Condo Control** | **100K+** downloads · **4,4★** (5 avaliações) | **3,8★** (37 avaliações) | Site: [condocontrol.com](https://www.condocontrol.com). | Páginas oficiais das lojas |
+
+**Leitura dos dados:**  
+- As apps portuguesas apresentam volumes de downloads e de avaliações públicas muito inferiores aos dos concorrentes internacionais.  
+- Gecond é a mais visível a nível nacional (50K+ downloads e 145 avaliações no Google Play), mas continua a operar em modelo de convite e com classificações modestas.  
+- As soluções internacionais de maior escala (TownSq, Buildium Resident Center) confirmam que existe procura por apps de comunicação e gestão de condomínio/HOA, mas estão desenhadas para administrações profissionais e incluem fortemente camadas financeiras e de governação.  
+- A ausência de um produto português com fricção zero, focado no reporte de problemas do dia a dia e adoptável directamente por um administrador voluntário, mantém-se.
 
 ### 2.2 Conclusão e oportunidade de diferenciação
 
