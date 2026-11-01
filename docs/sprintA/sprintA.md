@@ -13,6 +13,7 @@
 - [9. Architecture Decision Records](#9-architecture-decision-records)
 - [10. Security and Privacy Assessment](#10-security-and-privacy-assessment)
 - [11. Walking Skeleton](#11-walking-skeleton)
+- [12. Fontes e declaração de uso de IA](#12-fontes-e-declaração-de-uso-de-ia)
 
 ---
 
@@ -20,6 +21,12 @@
 
 ### Metodologia
 Scrum, com sprints alinhados com o enunciado (Sprint 1/2/3), dailies curtas, sprint review com os docentes (investidores) no fim de cada sprint e retrospetiva da equipa.
+
+**Porquê Scrum e GitHub Flow.** O produto tem requisitos que mudam com o feedback dos docentes a cada sprint (ver as duas decisões revistas abaixo), e uma equipa de 5 pessoas precisa de ciclos curtos com revisão externa. O Scrum dá esses ciclos e um backlog priorizado. O GitHub Flow, com uma `main` sempre estável e PRs revistos, dá integração contínua sem a cerimónia de um modelo com muitas branches.
+
+**Adaptação à mudança.** O backlog é refinado e repriorizado a cada sprint e a cada feedback dos docentes. Já aconteceu duas vezes neste sprint: a integração externa passou a ser o calendário em simulador (08/10) e a IA ficou num serviço externo em vez de um agente local (22/10).
+
+**Avaliação e melhoria do processo.** Na retrospetiva de cada sprint a equipa analisa o que impediu itens de cumprirem a DoD, quantas histórias falharam a DoR, e decide ações.
 
 ### Envolvimento dos investidores (docentes)
 
@@ -74,12 +81,14 @@ GitHub Issues/Projects; cada issue é referenciada nos commits e PRs.
 Uma User Story só entra num sprint quando todos os pontos aplicáveis estão confirmados:
 
 - **Valor e âmbito claros:** a equipa compreende quem beneficia, qual o problema resolvido e o que fica fora da tarefa; a história tem dimensão estimável para ser concluída num sprint.
-- **Diagrama de Sequência:** a tarefa de produto inclui o percurso completo necessário para cumprir a história: interface/frontend, API/backend, persistência e integração entre componentes, quando aplicável. Não se divide a mesma funcionalidade em tarefas independentes de frontend e backend; trabalho exclusivamente técnico ou sem interface deve ter essa exceção identificada e justificada.
+- **Percurso completo (frontend, API, persistência):** a tarefa de produto inclui o percurso completo necessário para cumprir a história: interface/frontend, API/backend, persistência e integração entre componentes, quando aplicável. Não se divide a mesma funcionalidade em tarefas independentes de frontend e backend; trabalho exclusivamente técnico ou sem interface deve ter essa exceção identificada e justificada.
 - **Comportamento definido:** critérios de aceitação claros, verificáveis e alinhados com as regras de negócio, incluindo estados relevantes (por exemplo, carregamento, sucesso, vazio, erro e modo offline, quando aplicáveis).
 - **Desenho da interface preparado:** se a história altera ou cria uma interface, existe um wireframe, mockup ou protótipo acessível à equipa, com os ecrãs e interações principais definidos. O nível de detalhe deve permitir implementar e validar a experiência; não é necessário um mockup para tarefas sem impacto visual, que devem ser marcadas como não aplicável.
 - **Contrato técnico conhecido:** endpoints e formatos de pedido/resposta, dados a persistir, validações, permissões e respostas de erro estão identificados ou têm uma decisão acordada. Se algum destes elementos não se aplicar, isso fica explícito.
 - **Dependências tratadas:** dependências externas estão disponíveis ou têm alternativa definida; dependências internas estão concluídas ou sequenciadas no sprint sem bloquear a conclusão da história.
 - **Validação planeada:** estão identificados os testes necessários para o percurso completo, incluindo frontend, backend e integração quando aplicáveis, com exemplos de sucesso e falha que permitam verificar os critérios de aceitação.
+
+**Revisão.** A DoR e a DoD estão neste documento e a [lista de itens do Sprint B](../sprintB/backlog.md) usa os mesmos 7 nomes da DoR como colunas. Revêem-se na retrospetiva de cada sprint: se histórias aceites falharam por um critério em falta, o critério é acrescentado ou refinado.
 
 ### Definition of Done (DoD)
 Uma User Story só é considerada concluída quando todos os pontos aplicáveis estão satisfeitos:
@@ -87,9 +96,12 @@ Uma User Story só é considerada concluída quando todos os pontos aplicáveis 
 - **Sequência cumprida:** a funcionalidade está implementada de ponta a ponta, incluindo frontend, backend, persistência e integração entre componentes, quando aplicáveis. Uma camada não fica como trabalho pendente separado para a mesma funcionalidade.
 - **Interface validada:** quando existe impacto visual, a interface implementada corresponde ao wireframe, mockup ou protótipo acordado; diferenças necessárias foram revistas e aprovadas pela equipa. Tarefas sem impacto visual ficam assinaladas como não aplicável.
 - **Critérios cumpridos:** todos os critérios de aceitação da história foram verificados, incluindo permissões, validações e requisitos de acessibilidade, quando aplicáveis.
-- **Testes concluídos:** os testes automatizados relevantes para as camadas alteradas foram adicionados ou atualizados e passam; o percurso integrado foi validado quando a história envolve mais de uma camada. A CI passa (build, testes automatizados e linting/análise estática).
+- **Testes concluídos:** os testes automatizados relevantes para as camadas alteradas foram adicionados ou atualizados e passam; o percurso integrado foi validado quando a história envolve mais de uma camada. A CI passa (lint e análise estática, testes automatizados, SAST, verificação de dependências e de segredos).
 - **Revisão e integração:** o PR foi revisto e aprovado por pelo menos uma pessoa e a alteração foi integrada em `main`.
+- **Higiene do repositório:** os commits seguem o formato `[#<id>] - <descrição>`, não há segredos, credenciais nem dados pessoais no código e, quando aplicável, `docker compose up` arranca sem erros. Corresponde ao [template de PR](../../.github/PULL_REQUEST_TEMPLATE/feature.md).
 - **Documentação atualizada:** a documentação técnica e de utilização afetada pela alteração foi atualizada.
+
+**Medição e revisão.** Cada critério é verificável: a CI fica verde ou vermelha, o PR tem ou não aprovação, e a checklist da secção "Definition of Done" do template de PR regista o resto. A DoD revê-se na retrospetiva de cada sprint, com a mesma regra da DoR.
 
 ---
 
@@ -164,6 +176,32 @@ A evidência qualitativa foi recolhida através da observação de três publica
 | Nome duplicado ou a fazer-se passar por outro | Nome único por fração; o administrador remove identidades indevidas. Risco aceite como baixo: a fração fica sempre registada ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) |
 | Residentes recusam indicar o nome | Finalidade explicada no ecrã; só o nome é pedido |
 | Reportes visíveis a todos expõem dados de terceiros | Aviso no formulário; autor oculto por omissão |
+
+**Avaliação dos riscos** (escala Baixa, Média, Alta; responsável por papel):
+
+| Risco | Probabilidade | Impacto | Exposição | Responsável |
+|---|---|---|---|---|
+| Custo de mudança do WhatsApp | Alta | Alta | Alta | Product Owner |
+| Residentes sem smartphone, pouco digitais ou idosos | Média | Média | Média | Frontend Developer |
+| Residentes com deficiência visual ou auditiva | Média | Alta | Alta | QA |
+| Administrador sente perda de controlo | Média | Média | Média | Product Owner |
+| Dados pessoais mal geridos ou guardados sem necessidade | Baixa | Alta | Média | Backend Developer |
+| QR code divulgado a terceiros | Média | Média | Média | Backend Developer |
+| Nome duplicado ou a fazer-se passar por outro | Média | Baixa | Baixa | Backend Developer |
+| Residentes recusam indicar o nome | Baixa | Média | Baixa | Business Analyst |
+| Reportes visíveis a todos expõem dados de terceiros | Média | Média | Média | QA |
+
+**Dependências** (o que o produto e a equipa precisam de terceiros para funcionar):
+
+| Dependência | Onde é usada | Impacto se falhar | Alternativa ou mitigação |
+|---|---|---|---|
+| Serviço de IA da OpenAI (API, chave, modelos e preços) | Ata assistida por IA (US-10) | Sem transcrição nem rascunho | Ata manual, novas tentativas com backoff ([7.5](#75-baseline-e-fallback), [ADR-010](#adr-010-serviço-de-ia-externo-openai-sem-agente-local)) |
+| Simulador de calendário (container nosso) e feed iCal | Reuniões (US-13) | Reunião não publicada no serviço externo | iCal e depois dados locais ([8.6](#86-integração-externa), [ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)) |
+| GitHub (repositório, Projects, Actions) | Controlo de versões, gestão de issues e CI | Sem pipeline nem quadro | Clones locais permitem continuar; a pipeline corre os mesmos comandos descritos em [11](#11-walking-skeleton) |
+| Flutter SDK e toolchain Android | App móvel | Sem build da app | Versão do Flutter fixada na CI; demonstração em emulador Android |
+| Ambiente de avaliação (VM, fornecedor por escolher) | Demonstração e deploy | Sem ambiente partilhado | A mesma stack corre na máquina de um membro da equipa ([8.8](#88-vista-de-deployment)) |
+| Docentes (feedback e revisão) | Decisões de produto e arquitetura | Decisões por validar, em Draft | Decisões registadas em ADRs e no quadro de investidores ([0](#envolvimento-dos-investidores-docentes)) |
+| Bibliotecas de terceiros (FastAPI, SQLAlchemy, plugins Flutter) | Backend e app | Vulnerabilidade ou rutura de versão | Dependabot, `pip-audit` e `osv-scanner` na CI ([11](#11-walking-skeleton)) |
 
 ---
 
@@ -264,10 +302,10 @@ A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão**
 
 ### 5.1. Personas
 
-- **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações.
-- **Condómina Residente Ocupada** ("Marta", 34, proprietária): trabalha fora, acompanha o grupo de forma intermitente e falta a assembleias. Quer reportar em segundos e saber o estado sem perguntar a ninguém.
-- **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem.
-- **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca".
+- **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações. *Evidência:* administrador voluntário sem ferramentas adequadas e vizinhos que "nunca recebem" avisos ([§1, 2.ª fonte](#evidência-do-problema)). *Histórias:* US-01, US-04, US-05, US-06, US-10, US-19.
+- **Condómina Residente Ocupada** ("Marta", 34, proprietária): trabalha fora, acompanha o grupo de forma intermitente e falta a assembleias. Quer reportar em segundos e saber o estado sem perguntar a ninguém. *Evidência:* avarias sem resolução e sem estado visível ([§1, 1.ª fonte](#evidência-do-problema)). *Histórias:* US-02, US-03, US-11, US-17.
+- **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem. *Evidência:* sem evidência direta nas fontes consultadas; é uma hipótese a validar com o inquérito (perguntas 1, 10 e 11). *Histórias:* US-07, US-09, US-15.
+- **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca". *Evidência:* sem evidência direta nas fontes consultadas; hipótese a validar com o inquérito (perguntas 13 e 15). *Histórias:* US-08, US-06 e US-07 (consulta de avisos); reporta através de um vizinho ou do porteiro com a identidade deles.
 
 ### 5.2. Proposta de Valor
 
@@ -322,11 +360,11 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 | **Valor com utilização mínima** | Valor imediato só com o administrador e alguns residentes | Cenário com prédio fictício (dados sintéticos): jornadas de reporte e triagem concluem-se sem mais utilizadores; criar o prédio e convidar residentes em poucos passos. Adoção real por % de frações fica como hipótese |
 | **Privacidade nativa e retenção** | RGPD; reportes visíveis a todos mas nome do autor só ao administrador (ou a todos, por escolha); só o nome é recolhido | Testes automatizados de autorização; período de retenção (incluindo áudios) com teste automatizado; só dados sintéticos |
 | **Redução do ruído comunicacional** | Nenhum duplicado em aberto; fim da incerteza sobre o que já foi tratado | Testes de integração: duplicado fica ligado ao original, autor passa a co-reporter, ambos notificados; cenário com guião a procurar uma avaria numa conversa de WhatsApp simulada com ruído vs na lista de reportes (nº de passos, ambiguidade) |
-| **Transparência do estado** | Cada reporte tem sempre estado atualizado e visível a todos | Testes de integração: 100% das mudanças de estado geram entrada no histórico e notificação ao residente e seguidores; tempo de entrega medido, alvo a definir no Technical Design |
+| **Transparência do estado** | Cada reporte tem sempre estado atualizado e visível a todos | Testes de integração: 100% das mudanças de estado geram entrada no histórico e notificação ao residente e seguidores; tempo de entrega medido, alvo: notificação local gerada até 15 minutos depois da mudança de estado, o intervalo de sincronização em segundo plano ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
 | **Capacidade de resposta do administrador** | Menos esforço de triagem | Cenário com guião: um membro no papel de administrador tria o mesmo conjunto de reportes no WhatsApp simulado e na app (passos, tempo, reportes esquecidos/mal classificados); indicativo |
 | **Alcance das decisões e avisos** | Convocatórias, atas e avisos chegam a quem faltou | Testes automatizados: cada publicação fica acessível a todos e gera notificação; cenário com guião a localizar uma decisão no quadro de avisos vs no WhatsApp simulado |
 | **Inclusão e acessibilidade** | Pouco digitais e pessoas com limitações de visão/audição não ficam excluídos | Ferramentas automáticas de acessibilidade + verificação manual com leitor de ecrã e teclado (WCAG 2.1 AA); um vizinho conclui o reporte por outro com a própria identidade; avaliação heurística (Nielsen) |
-| **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), serviço de calendário em baixo (iCal como alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, valores a definir no Technical Design |
+| **Fiabilidade e degradação controlada** | O produto continua útil quando algo falha | Testes de resiliência com falhas injetadas: IA em baixo (áudio preservado, ata manual), serviço de calendário em baixo (iCal como alternativa, depois modo degradado com aviso), sem internet (fila local e sincronização); disponibilidade e latência p95 da submissão sob carga em ambiente containerizado, com os valores de [8.7](#87-observabilidade) (99% em 7 dias e p95 < 1 s) |
 | **Qualidade da ata assistida por IA** | Rascunho útil e fiável, nunca publicado sem aprovação humana | Assembleias simuladas gravadas pela equipa a partir de guiões, comparadas com ata de referência: % de decisões captadas, nº de informações inventadas, taxa de erro de palavras, tempo de processamento (critérios propostos em [7.4](#74-abordagem-de-avaliação)); ata manual como baseline; teste automatizado confirma bloqueio de publicação enquanto "pendente de revisão" |
 
 ---
@@ -361,6 +399,8 @@ Pontos, badges e leaderboards ficam de fora de propósito: num prédio de 8 a 60
 **Fronteira do MVP.** O MVP é a experiência mais pequena que testa a hipótese central: *reportes com estado, dono e histórico, com privacidade por desenho, são melhores do que um grupo de WhatsApp*. Inclui o onboarding por QR code, o ciclo completo de um reporte (criar, consultar, triar, resolver, com histórico auditável), a privacidade do autor, a ata assistida por IA com fallback manual, o calendário externo simulado e o modo degradado. Fica de fora a contabilidade, as votações formais, os fornecedores de manutenção e a gestão de vários prédios. A lista de histórias e o plano por sprint são mantidos só no [Product Backlog (MVP e fora do âmbito)](../backlog.md#3-mvp).
 
 **Riscos do produto:** ver [Pressupostos e riscos](#pressupostos-e-riscos) no capítulo 1 e [7.3](#73-riscos-e-mitigações) para a IA.
+
+**Viabilidade.** Tecnicamente, a stack foi escolhida para minimizar a curva de aprendizagem da equipa ([ADR-002](#adr-002-app-móvel-em-flutter-demonstrada-em-android), [ADR-003](#adr-003-backend-em-python-com-fastapi)) e há um [Walking Skeleton](#11-walking-skeleton) a funcionar ponta a ponta, com cada escolha justificada nas [ADRs](#9-architecture-decision-records). Financeiramente, o custo de operar é de cerca de 6 a 20 € por mês de infraestrutura mais cerca de US$ 0,27 por ata de 1 h ([8.10](#810-estimativa-de-custos-operacionais)), o que sustenta a promessa de baixo custo. A dependência mais arriscada, o serviço de IA, tem fallback manual ([7.5](#75-baseline-e-fallback)). Os limites desta análise são a ausência de dados de utilizadores reais e preços ainda por confirmar para a VM.
 
 **Critérios de sucesso:** ver [5.4](#54-critérios-de-sucesso).
 
@@ -505,6 +545,32 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, estado, aprovada_em | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10) |
 | `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
 
+**Relações e cardinalidades** (o diagrama usa notação pé-de-galinha):
+
+| Relação | Cardinalidade | Notas |
+|---|---|---|
+| `condominio` - `fracao`, `administrador`, `aviso`, `reuniao`, `reporte` | 1 para N | Tudo pertence a um condomínio; a API nunca devolve dados de outro ([10.2](#102-controlo-de-acessos)) |
+| `administrador` - `convite_admin` | 1 para N (`criado_por`) | Um convite de uso único cria um novo administrador (US-19) |
+| `fracao` - `qr_token` | 1 para N | Só um token ativo; os revogados ficam marcados (US-01) |
+| `fracao` - `identidade` | 1 para N | Vários residentes na mesma fração, cada um com a sua identidade (US-15) |
+| `identidade` - `reporte` | 1 para N (`autor_id`) | O autor de cada reporte |
+| `reporte` - `reporte_historico` | 1 para N | Só inserção (US-05) |
+| `reporte` - `reporte_seguidor` - `identidade` | N para N | Autor, co-reporter ou seguidor (US-04, US-17) |
+| `reporte` - `aviso` | 0 ou 1 para N (`reporte_id` opcional) | Um aviso pode ligar-se a um reporte de risco (US-14) |
+| `reuniao` - `ata` | 1 para 0 ou 1 na prática | De cada reunião pode sair uma ata, que nasce de um áudio (US-10) |
+| `job` - `ata`, `reuniao` | Referência no `payload` | Trabalho assíncrono sobre uma ata ou uma reunião ([8.5](#85-workflow-assíncrono)) |
+
+**Termos do negócio e entidades.** Residente e condómino são uma `identidade` (papel `residente` ou `comissao`); administrador é `administrador`; reporte, aviso, assembleia e ata são `reporte`, `aviso`, `reuniao` e `ata`. Todos os substantivos usados nas histórias e nos [Workflows](#53-user-journey) correspondem a uma entidade ou a um campo.
+
+**Porquê esta modelação.**
+- `qr_token` está separado de `fracao` para o administrador revogar e regenerar o QR code sem perder a fração nem as identidades (US-01).
+- `identidade` está separada de `administrador` porque o residente não tem conta com contactos ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) e o administrador tem credencial e permissões próprias ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)).
+- `reporte_historico` é uma tabela só de inserção para o histórico não se perder quando o reporte muda; é a prova de diligência do administrador (US-05, TM-05).
+- `reporte_seguidor` tem um `tipo` em vez de três tabelas, porque autor, co-reporter e seguidor são a mesma relação com notificações iguais.
+- `nome_normalizado` garante a unicidade do nome por fração sem distinguir maiúsculas, acentos nem espaços (US-15).
+- `ata` guarda `transcricao`, `rascunho` e `texto_aprovado` em colunas separadas para só o texto aprovado ser publicado: um rascunho de IA nunca é apresentado como facto (US-10).
+- `job` é o outbox: é criado na mesma transação que a alteração de domínio, por isso não há trabalho perdido nem duplicado ([ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).
+
 Sobre a vida destes dados: cada pedido à API corre numa transação, e o job é criado na mesma transação que a alteração de domínio, por isso não há job sem registo nem registo sem job. Entre API e Worker a consistência é eventual: a ata fica `a_transcrever` até o Worker terminar, e a app mostra isso. A retenção segue o definido em [10.4](#104-retenção): o áudio é apagado depois de a ata ser aprovada, uma identidade removida deixa os reportes como "Residente removido", e os reportes resolvidos e o seu histórico são eliminados 24 meses depois, por uma limpeza diária do Worker. Para recuperação, um `pg_dump` diário do PostgreSQL e uma cópia do volume de ficheiros, com o restauro documentado no guia de deploy.
 
 ### 8.4 API (esboço)
@@ -638,21 +704,23 @@ Estimativa de ordem de grandeza para operar o produto, partindo dos [pressuposto
 
 | Item | Custo estimado | Base |
 |---|---|---|
-| IA (transcrição e rascunho) | cerca de US$ 0,27 por ata de 1 h | Preços de `gpt-transcribe` (US$ 0,0045/min) e `gpt-4o-mini` confirmados a 2026-10-23 ([7.4](#74-abordagem-de-avaliação)); o único custo variável relevante |
-| VM Linux (2 vCPU, 4 GB) com Docker Compose | 6 a 20 € por mês, sem IVA | Referência Hetzner Cloud a 2026-10-23: CX23 a 5,99 € e CPX22 a 19,99 €, ambos com 2 vCPU e 4 GB e indisponíveis nessa data; fornecedor ainda por escolher ([8.8](#88-vista-de-deployment)) |
-| Repositório, CI/CD e imagens (GitHub Actions, GHCR) | 0 € | Plano GitHub Free: 2 000 min/mês de Actions em repositórios privados (grátis em públicos) e 500 MB partilhados entre artefactos e Packages; o armazenamento e a largura de banda do Container registry estão grátis (“currently free”, com aviso prévio de um mês antes de mudar) |
+| IA (transcrição e rascunho) | cerca de US$ 0,27 por ata de 1 h (US$ 0,54 por prédio e por ano, com 2 atas) | Preços de `gpt-transcribe` (US$ 0,0045/min) e `gpt-4o-mini` confirmados a 2026-10-23 e reconfirmados a 2026-11-01 nas páginas de modelos e de preços da OpenAI ([7.4](#74-abordagem-de-avaliação)); o único custo variável relevante |
+| VM Linux (2 vCPU, 4 GB) com Docker Compose | 6 a 20 € por mês (72 a 240 € por ano), sem IVA | Referência Hetzner Cloud a 2026-10-23: CX23 a 5,99 € e CPX22 a 19,99 €, ambos com 2 vCPU e 4 GB e indisponíveis nessa data; o CX23 a 5,99 € foi reconfirmado a 2026-11-01 e continuava indisponível; fornecedor ainda por escolher ([8.8](#88-vista-de-deployment)) |
+| Repositório, CI/CD e imagens (GitHub Actions, GHCR) | 0 € | Plano GitHub Free, a 2026-11-01: US$ 12 por mês de utilização de computação incluída em repositórios privados (cerca de 2 000 min de runner Linux a US$ 0,006/min; grátis em repositórios públicos) e 500 MB de armazenamento partilhados entre artefactos e Packages; o armazenamento e a largura de banda do Container registry estão grátis (“currently free”, com aviso prévio de um mês antes de mudar) |
 | Prometheus e Grafana | 0 € | Auto-alojados na mesma VM |
 | Simulador de calendário, PostgreSQL | 0 € | Containers na mesma VM |
 | Notificações | 0 € | Locais, sem fornecedor de push ([ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
 | Distribuição da app | 0 € | APK direto aos docentes; publicar na Google Play exige pagar uma taxa de registo (valor não confirmado), fora do MVP |
 | Backups (`pg_dump` e volume) | 0 € no MVP | Em disco da VM; armazenamento externo fica fora do MVP |
 
+Os valores da OpenAI estão em US$ e os da VM em €. À taxa de referência do BCE de 2026-10-30 (1 € = US$ 1,1172), os US$ 0,27 por ata de 1 h são cerca de 0,24 € e os US$ 54 por ano dos 100 prédios cerca de 48 €.
+
 **Cenários** (assumindo 2 assembleias de 1 h por prédio e por ano):
 
 | Cenário | IA por ano | Infraestrutura por mês | Total por mês |
 |---|---|---|---|
 | 1 prédio (demonstração) | cerca de US$ 0,54 | 6 a 20 € | 6 a 20 € |
-| 100 prédios | cerca de US$ 54 | 6 a 20 €, se uma VM aguentar a carga (a validar nos testes de carga do Sprint C) | 10 a 25 € |
+| 100 prédios | cerca de US$ 54 | 6 a 20 €, se uma VM aguentar a carga (a validar nos testes de carga do Sprint C) | 10 a 24 € |
 
 **Conclusão:** o custo é dominado pela VM e não cresce de forma relevante com o número de prédios, o que sustenta a proposta de valor de baixo custo ([2.3](#23-proposta-de-valor)). No cenário de 100 prédios fica em cerca de 0,25 € por prédio e por mês, no máximo; a disposição a pagar vai ser medida na pergunta 16 do questionário (resultados ainda por obter).
 
@@ -721,6 +789,18 @@ Cada decisão do [capítulo 8](#8-technical-design) tem aqui o seu porquê: o co
 - **Decisão:** o Worker chama a API da OpenAI (`gpt-transcribe` e `gpt-4o-mini`), com modelos e prompt fixados por versão; a chave fica só em variável de ambiente. O `gpt-transcribe` é o modelo de transcrição recomendado pela OpenAI; os `gpt-4o-*-transcribe` são desativados a 2027-02-26. O serviço de IA não é a integração externa exigida pelo enunciado ([ADR-007](#adr-007-integração-de-calendário-por-simulador-e-feed-ical)).
 - **Alternativas:** agente ou modelo local (exige hardware e operação próprios, torna o ambiente difícil de reproduzir pelos docentes e não há evidência de qualidade em português europeu equivalente); outro fornecedor de nuvem (sem vantagem demonstrada para o volume e o orçamento).
 - **Consequências:** custo previsto de cerca de US$ 0,27 por ata de 1 h ([7.4](#74-abordagem-de-avaliação)) e nada para operar. Em troca, áudio e transcrição saem para um terceiro e o produto depende da disponibilidade da OpenAI; mitigado por dados sintéticos nos testes, aviso aos presentes, retry com backoff e ata manual como fallback ([7.3](#73-riscos-e-mitigações), [7.5](#75-baseline-e-fallback)). Trocar de fornecedor exige só mudar o cliente no Worker.
+
+### ADR-011 Entrega por containers: Docker Compose numa VM única, imagens no GHCR e pipeline GitHub Actions
+- **Contexto:** o enunciado exige entrega por containers, builds reproduzíveis, pipeline automatizada, deploy e rollback documentados, e que os docentes consigam executar o produto (secção 12). A equipa tem 5 pessoas e o custo de operação tem de ser baixo ([8.10](#810-estimativa-de-custos-operacionais)).
+- **Decisão:** `api`, `worker`, `postgres`, `simulador-calendario`, `prometheus` e `grafana` como containers geridos por Docker Compose numa VM Linux única (2 vCPU, 4 GB). API e Worker partilham uma imagem. A pipeline do GitHub Actions valida cada PR (lint, testes, SAST, dependências e segredos) e, em `main`, constrói e publica as imagens no GitHub Container Registry com a tag do commit e implanta por SSH na VM. O rollback volta à tag anterior. Os segredos ficam em variáveis de ambiente e GitHub secrets ([8.8](#88-vista-de-deployment)).
+- **Alternativas:** Kubernetes (o enunciado encoraja orquestração quando justificada, mas para um prédio e uma VM acrescenta operação e configuração sem ganho: não há escala horizontal a gerir); serviço PaaS gerido (menos operação, mas depende de uma conta e dos preços de um fornecedor, e a stack ficaria menos reproduzível pelos docentes); outro serviço de CI, como Jenkins (exige um servidor próprio) ou GitLab CI (exige migrar o repositório).
+- **Consequências:** o arranque é reproduzível com `docker compose up` e cabe no orçamento. Uma só VM é um ponto único de falha, mitigado pelo rollback por tag e pelo restauro de `pg_dump` ([8.3](#83-modelo-de-dados)). A pipeline já valida o código; o build e a publicação das imagens e o deploy por SSH entram no Sprint B ([11](#11-walking-skeleton), limitações assumidas).
+
+### ADR-012 Observabilidade com Prometheus e Grafana auto-alojados
+- **Contexto:** o enunciado (6.7) pede logs estruturados, health checks, métricas, identificadores de correlação, reporte de erros e um pequeno dashboard operacional, e pede indicadores de nível de serviço (SLI, [8.7](#87-observabilidade)).
+- **Decisão:** logs JSON para stdout em API e Worker, `/health` e `/metrics` em ambos, `X-Request-ID` propagado da app aos jobs e aos logs, Prometheus a recolher as métricas e Grafana a mostrar o dashboard dos SLIs, em containers na mesma VM.
+- **Alternativas:** OpenTelemetry com coletor e backend de traços (mais peças para um volume pequeno); stack de logs centralizados como ELK ou Loki (mais componentes na VM de 4 GB, sem ganho para este volume); serviço gerido de monitorização (conta externa e custo recorrente, com os dados fora da VM).
+- **Consequências:** métricas e dashboard sem custo e reproduzíveis com Compose. Em troca, não há rastreio distribuído completo (o `request_id` nos logs cobre a correlação), os logs não são centralizados (consultam-se com `docker compose logs`) e a VM suporta mais dois containers.
 
 ---
 
@@ -794,7 +874,7 @@ Os fluxos considerados são: entradas e ficheiros da app para a API por HTTPS; s
 
 **Riscos residuais e decisões pendentes:** o QR partilhado e o nome autodeclarado não provam que a pessoa vive na fração; a revisão pelo administrador reduz, mas não elimina, o acesso indevido antes da deteção. A autenticação mock do administrador ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)) serve apenas para a demonstração académica. O envio de áudio/texto à OpenAI e o feed iCal com token são exposições a serviços ou aplicações fora do controlo do backend. Faltam fixar o prazo de retenção de reportes, áudios sem ata aprovada e backups, bem como as condições de tratamento dos dados enviados à IA. Estes pontos devem ser resolvidos antes de testar com moradores ou lançar o produto.
 
-![alt text](images/DFD.svg)
+![Diagrama de fluxo de dados (DFD) com as fronteiras de confiança TB1 a TB4 e os identificadores TM-01 a TM-10 do modelo de ameaças](images/DFD.svg)
 ---
 
 ## 11. Walking Skeleton
@@ -927,3 +1007,24 @@ Limitações assumidas no Sprint A: o CodeQL e o `dependency-review-action` fica
 ### Componentes excluídos (Sprint B)
 
 O Worker com a integração ao serviço de IA, o simulador de calendário e o feed iCal ficam para o Sprint B, conforme o [plano de release](#62-plano-de-release-inicial).
+
+---
+
+## 12. Fontes e declaração de uso de IA
+
+O enunciado (secção 11) pede que o código, os dados, as ferramentas e o conteúdo gerado de terceiros sejam reconhecidos, e que o conteúdo gerado por IA seja revisto antes de ser tratado como autoritativo.
+
+**Fontes de terceiros usadas neste documento:**
+
+| Fonte | Usada em |
+|---|---|
+| Publicações do Reddit (r/TudoCasa e r/tudoCondominio), outubro de 2026 | [Evidência do problema](#evidência-do-problema) |
+| [Documentação da OpenAI](https://developers.openai.com/api/docs/models/gpt-transcribe) (modelos, preços, descontinuações, limites), consultada a 2026-11-01 | [7.4](#74-abordagem-de-avaliação), [8.5](#85-workflow-assíncrono), [8.10](#810-estimativa-de-custos-operacionais), [ADR-010](#adr-010-serviço-de-ia-externo-openai-sem-agente-local) |
+| [Hetzner Cloud](https://www.hetzner.com/cloud/cost-optimized), preços consultados a 2026-11-01 | [8.10](#810-estimativa-de-custos-operacionais) |
+| [Taxas de câmbio de referência do BCE](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml), de 2026-10-30 | [8.10](#810-estimativa-de-custos-operacionais) |
+| [Documentação de faturação do GitHub](https://docs.github.com/en/billing/concepts/product-billing/github-packages), consultada a 2026-11-01 | [8.10](#810-estimativa-de-custos-operacionais) |
+| [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html) | [10.6](#106-modelo-de-ameaças-inicial) |
+
+**Uso de IA na elaboração deste projeto:** a equipa usa IA em quatro situações: para rever texto, para pesquisar informação, para rever código e para gerar a interface gráfica da app, onde obtém um resultado melhor do que o da equipa. Fora destas situações, os documentos e o código são escritos pela equipa e a IA não os gera por completo.
+
+Dentro do produto, o conteúdo gerado pelo serviço de IA (rascunho de ata) está sempre assinalado como "gerado por IA, pendente de revisão" e só é publicado depois de aprovado por um administrador ([7.1](#71-fluxo-assistido-por-ia)).

@@ -17,6 +17,7 @@
 | v0.3 | 2026-10-10 | Identificação pelo nome (US-15); reportes visíveis a todos com autor oculto por omissão (US-02, US-03, US-09, US-14); duplicados (US-04); seguir reportes (US-17); indicador de progresso (US-16); US-05 e US-11 alinhadas; plano de release do Sprint B com entregáveis técnicos. |
 | v0.4 | 2026-10-15 | US-18 (antes NFR-01) renomeada para não colidir com RNF-01 dos requisitos; US-11 passa a notificação local por sincronização em segundo plano, sem fornecedor de push; US-13 passa a simulador + iCal, sem Google Calendar (ADR-007, ADR-009). |
 | v0.5 | 2026-10-22 | Alinhado com o Technical Design: ocultar reporte (US-04), limites na criação de condomínios (US-01), token do feed iCal (US-13), notificações de avisos e atas (US-11), retenção de 24 meses (US-09), latência e retenção do áudio (US-10). |
+| v0.6 | 2026-11-01 | Épicos ligados às histórias e justificação da prioridade MoSCoW (secção 1.2); pontos do Sprint B backlog alinhados com este backlog. |
 
 ## 1. Product Backlog
 
@@ -69,6 +70,43 @@ As descrições seguintes complementam cada user story com o comportamento esper
 | US-19 | Permitir que um administrador convide outro através de um código de uso único com validade, consulte os administradores do condomínio e remova um administrador que saiu, impedindo a remoção do último. | `POST /condominios/{id}/convites-admin`; `POST /administradores`; `GET /condominios/{id}/administradores`; `DELETE /administradores/{id}` |
 
 **Fora do âmbito (Won't have):** contabilidade/quotas, gestão financeira, votações formais em assembleia, integração com fornecedores de manutenção, multi-prédio para o mesmo administrador, reporte em nome de outro residente com autoria registada (um vizinho ou o porteiro reporta com a própria identidade).
+
+## 1.2 Épicos e justificação da prioridade
+
+Os épicos são os de [Rascunho de Requisitos](./sprintA/sprintA.md#4-rascunho-de-requisitos), agora ligados às histórias. Cada história é refinada a partir de um ou mais requisitos de [requisitos.md](./requisitos.md).
+
+| Épico | Histórias | Requisitos |
+|---|---|---|
+| Gestão de avarias | US-02, US-03, US-04, US-05, US-11, US-17 | RF-01 a RF-05, RF-13, RF-14, RF-16 |
+| Comunicação e governação | US-06, US-07, US-10, US-12, US-13, US-14, US-16 | RF-06, RF-07, RF-09, RF-12, RF-17 |
+| Privacidade e confiança | US-01, US-09, US-15, US-19 | RF-08, RF-10, RF-11, RF-15 |
+| Qualidade transversal (acessibilidade e resiliência) | US-08, US-18 | RNF-02, RNF-06, RNF-07 |
+
+A prioridade MoSCoW segue três critérios: contributo para a hipótese central do MVP (*reportes com estado, dono e histórico, com privacidade por desenho, são melhores do que um grupo de WhatsApp*), risco e dependências.
+
+| ID | Prioridade | Justificação |
+|---|---|---|
+| US-01 | M | Sem condomínio e QR codes não há onboarding; pré-requisito de US-15 e das restantes histórias |
+| US-02 | M | Núcleo do MVP: troca a mensagem perdida do WhatsApp por um reporte estruturado |
+| US-03 | M | Sem ver o estado, o residente volta a perguntar no grupo; testa a hipótese central |
+| US-04 | M | Triagem e duplicados reduzem o ruído e são o valor principal para o administrador |
+| US-05 | M | O histórico auditável prova a diligência do administrador; é a proposta de valor |
+| US-06 | S | Substitui os posters, mas o MVP testa-se sem avisos; depende do ciclo de reportes |
+| US-07 | S | Par de US-06: de pouco serve publicar sem consulta |
+| US-08 | S | Evita excluir residentes com limitações; não bloqueia a hipótese central |
+| US-09 | M | A privacidade por desenho é o diferenciador ([2.2](./sprintA/sprintA.md#22-conclusão-e-oportunidade-de-diferenciação)); é mais barata se desenhada desde o início |
+| US-10 | S | Alto valor, mas risco alto (IA); entra no Sprint B porque o enunciado exige a primeira versão da IA |
+| US-11 | C | O estado já é visível na lista (US-03); a notificação é um extra ([ADR-009](./sprintA/sprintA.md#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
+| US-12 | C | Serve a comissão, não a hipótese central |
+| US-13 | S | Lembra as assembleias; entra no Sprint B porque o enunciado exige uma integração externa |
+| US-14 | S | Liga o aviso ao risco de um reporte; depende de US-05 e US-06 |
+| US-15 | M | Sem identidade não há autor nem privacidade por desenho |
+| US-16 | C | Mecanismo de participação ética ([5.5](./sprintA/sprintA.md#55-mecanismo-de-participação-ética)); não bloqueia o MVP |
+| US-17 | C | Melhora as notificações; depende de US-11 |
+| US-18 | S | Exigido pelo enunciado (6.8); depende de US-10 e US-13 |
+| US-19 | S | Partilha a gestão e evita um condomínio sem administrador; depende de US-01 |
+
+**Validação com os docentes (estado "Approved"):** `[A PREENCHER PELA EQUIPA: data e feedback dos docentes sobre a prioridade; até lá, as histórias ficam em Draft]`.
 
 ## 2. Plano de release inicial (visão multi-sprint)
 
