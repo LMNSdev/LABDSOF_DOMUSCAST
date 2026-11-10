@@ -377,7 +377,7 @@ Nos prédios autogeridos, a comunidade-alvo do produto, todas as frustrações f
 | "Vizinhos mais velhos não vão usar" é o maior inibidor (8/10) | A persona Condómina Sénior Pouco Digital é confirmada; o reporte por um vizinho ou pelo porteiro com a própria identidade e a acessibilidade (WCAG 2.1 AA) ficam como critérios de aceitação transversais. Fica como hipótese para o backlog um aviso imprimível, para o administrador afixar no hall a partir da app |
 | Ser rápida é o fator mais importante (5/10) | Mantém-se a meta de reportar em menos de 1 minuto e no máximo 5 interações ([5.4](#54-critérios-de-sucesso)) |
 | 7/10 pagariam nada ou até 0,50 € por fração/mês | O MVP é gratuito; a arquitetura evita custos recorrentes por utilizador (sem fornecedor de push, uma só base de dados: [ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs), [ADR-009](#adr-009-notificações-locais-por-sincronização-em-segundo-plano-sem-fornecedor-de-push)) |
-| Decisões e assembleias com frustração moderada (3,1) | Quadro de avisos e ata assistida por IA (US-06, US-07, US-10) mantêm a prioridade atual, sem subir |
+| Decisões e assembleias com frustração moderada (3,1) | Quadro de avisos e ata assistida por IA (US-06, US-10) mantêm a prioridade atual, sem subir |
 
 ---
 
@@ -399,10 +399,10 @@ A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão**
 
 ### 5.1 Personas
 
-- **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações. *Evidência:* administrador voluntário sem ferramentas adequadas e vizinhos que "nunca recebem" avisos ([§1, 2.ª fonte](#evidência-do-problema)). *Histórias:* US-01, US-04, US-05, US-06, US-13, US-10, US-22, US-24, US-25, US-19.
+- **Administrador Voluntário** ("Rui", 58, eleito em assembleia): gere o prédio nas horas livres, sem ferramentas. Tem dificuldade em triar problemas e em provar diligência perante os outros. Precisa de gerir ocorrências e registar o histórico de decisões e reparações. *Evidência:* administrador voluntário sem ferramentas adequadas e vizinhos que "nunca recebem" avisos ([§1, 2.ª fonte](#evidência-do-problema)). *Histórias:* US-01, US-03, US-05, US-06, US-13, US-10, US-22, US-24, US-25, US-19.
 - **Condómina Residente Ocupada** ("Marta", 34, proprietária): trabalha fora, acompanha o grupo de forma intermitente e falta a assembleias. Quer reportar em segundos e saber o estado sem perguntar a ninguém. *Evidência:* avarias sem resolução e sem estado visível ([§1, 1.ª fonte](#evidência-do-problema)). *Histórias:* US-02, US-03, US-11, US-17.
-- **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem. *Evidência:* sem evidência direta nas fontes consultadas; é uma hipótese a validar com o inquérito (perguntas 1, 10 e 11). *Histórias:* US-07, US-09, US-15.
-- **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca". *Evidência:* sem evidência direta nas fontes consultadas; hipótese a validar com o inquérito (perguntas 13 e 15). *Histórias:* US-08, US-06 e US-07 (consulta de avisos); reporta através de um vizinho ou do porteiro com a identidade deles.
+- **Inquilino/Residente Recente** ("Tiago", 25, inquilino): raramente passa pelo hall, não conhece os vizinhos nem está no grupo. Quer só os avisos que lhe dizem respeito e reportar sem expor o telefone. Só sabe das avarias e decisões depois de o afetarem. *Evidência:* sem evidência direta nas fontes consultadas; é uma hipótese a validar com o inquérito (perguntas 1, 10 e 11). *Histórias:* US-06 (consulta de avisos), US-09, US-15.
+- **Condómina Sénior Pouco Digital** ("D. Amélia", 76, proprietária): telemóvel básico, confia no papel e no contacto presencial. Quer continuar informada e comunicar problemas sem tecnologia que não domina. Sente-se excluída pelos posters desatualizados e pelo "boca em boca". *Evidência:* sem evidência direta nas fontes consultadas; hipótese a validar com o inquérito (perguntas 13 e 15). *Histórias:* US-08 e US-06 (consulta de avisos); reporta através de um vizinho ou do porteiro com a identidade deles.
 
 ### 5.2 Proposta de Valor
 
@@ -427,11 +427,11 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Onboarding do condomínio](images/workflow-1.drawio.png)
 
-- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-04, US-05, US-22, US-08, US-09, US-11, US-18):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: se for duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); se já estiver resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica o autor e os co-reporters (notificação local com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
+- **Reportar e acompanhar uma avaria (Workflow 2, US-02, US-03, US-05, US-22, US-08, US-09, US-11, US-18):** o residente descreve o problema e junta, opcionalmente, uma fotografia com texto alternativo. O backend valida (campos obrigatórios, anexos, identidade); se inválido, o residente corrige. O reporte válido fica "Aberto", com o residente como autor, visível a todos (o autor só ao administrador, ou a todos se o residente escolher mostrar o nome), e a submissão é confirmada. O administrador vê o reporte com nome e fração e decide: se for duplicado, fecha-o com "Reporte duplicado do #<id>" e o autor passa a co-reporter do original (que aparece em "Os meus reportes"); se já estiver resolvido, fecha-o como "Resolvido" com nota; caso contrário, aceita-o e trata-o (Workflow 3). Cada decisão vai para o histórico e notifica o autor e os co-reporters (notificação local com alternativa visual). Os residentes consultam a lista de reportes (filtro "Os meus reportes") com estado, data de criação e última atualização, e podem seguir um reporte para receber notificações (autores e co-reporters seguem automaticamente).
 
 ![Reportar e acompanhar uma avaria](images/workflow-2.drawio.png)
 
-- **Acompanhar e resolver reportes (Workflow 3, US-04, US-05, US-14, US-32):** o administrador filtra a lista por estado e analisa cada reporte. Se há risco para os residentes, cria um aviso ligado ao reporte (título, texto, local), publicado no quadro de avisos e notificado a todos, sem expor o autor. Altera o estado (Aberto, Em curso, Resolvido) e acrescenta uma nota. Cada alteração fica num histórico imutável com data, hora e autor, e o residente é notificado. Quando o reporte é resolvido, o aviso ligado é arquivado no histórico de avisos.
+- **Acompanhar e resolver reportes (Workflow 3, US-03, US-05, US-14, US-32):** o administrador filtra a lista por estado e analisa cada reporte. Se há risco para os residentes, cria um aviso ligado ao reporte (título, texto, local), publicado no quadro de avisos e notificado a todos, sem expor o autor. Altera o estado (Aberto, Em curso, Resolvido) e acrescenta uma nota. Cada alteração fica num histórico imutável com data, hora e autor, e o residente é notificado. Quando o reporte é resolvido, o aviso ligado é arquivado no histórico de avisos.
 
 ![Acompanhar e resolver reportes](images/workflow-3.drawio.png)
 
@@ -443,7 +443,7 @@ Cada jornada é um workflow em diagrama de atividade com raias por ator ([workfl
 
 ![Ata da assembleia assistida por IA](images/workflow-5.drawio.png)
 
-- **Quadro de avisos (Workflow 6, US-06, US-07, US-14):** o administrador publica um aviso, geral ou ligado a um reporte, sem expor o autor. Os residentes consultam o quadro a partir do ecrã principal, com os mais recentes primeiro, e os antigos no histórico.
+- **Quadro de avisos (Workflow 6, US-06, US-14):** o administrador publica um aviso, geral ou ligado a um reporte, sem expor o autor. Os residentes consultam o quadro a partir do ecrã principal, com os mais recentes primeiro, e os antigos no histórico.
 
 ![Quadro de avisos](images/workflow-6.drawio.png)
 
@@ -691,7 +691,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `PATCH /identidades/me` | residente | US-21: editar nome |
 | `PUT /identidades/{id}/papel` | admin | US-33: `{papel: residente\|comissao}` |
 | `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; aceita `Idempotency-Key` da fila local |
-| `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03, US-04: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
+| `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
 | `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
 | `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`; cria entrada no histórico; se `resolvido`, arquiva o aviso ligado (US-14) |
 | `POST /reportes/{id}/duplicado` | admin | US-22: `{original_id}`; fecha e adiciona co-reporter |
@@ -699,7 +699,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `POST /reportes/{id}/seguir`, `DELETE .../seguir` | residente | US-17 |
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
-| `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-07, US-14; `publicado_desde` serve a sincronização em segundo plano |
+| `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
 | `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano) |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |

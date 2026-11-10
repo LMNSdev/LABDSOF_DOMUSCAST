@@ -196,7 +196,7 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 ## O que vem a seguir (Sprint B)
 
 - Autenticação real por QR code por fração (US-01, US-15)
-- Gestão de estado dos reportes pelo administrador (US-04, US-05, US-22)
+- Gestão de estado dos reportes pelo administrador (US-03, US-05, US-22)
 - Transcrição de atas por IA com fallback manual (US-10, US-24, US-25), ver [Onde a IA entra](#onde-a-ia-entra-sprint-b-ainda-não-implementado)
 - Integração com calendário de assembleias (US-13, US-28, US-29)
 - Workflow assíncrono com Worker + PostgreSQL queue (SKIP LOCKED)
