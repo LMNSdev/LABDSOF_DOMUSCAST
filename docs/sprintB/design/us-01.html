@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-01 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+  .grad{background:linear-gradient(135deg,#0A2559,#0F3478,#1A52A8);color:#fff}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .btn.white{background:#fff;color:#0F3478}
+  .btn.ghost{background:transparent;border:1.5px solid rgba(255,255,255,.6);color:#fff}
+  .btn.out{background:#fff;color:#0F3478;border:1.5px solid #0F3478}
+  .field{background:#fff;border:1px solid #c6cfdf;border-radius:8px;padding:8px}
+  .field small{display:block;color:#667;font-size:10px}
+  .row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:8px}
+  .badge{width:30px;height:30px;border-radius:8px;background:#dfe7f6;color:#0F3478;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .qrbig{width:160px;height:160px;margin:6px auto;background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0 0/16px 16px;border:6px solid #fff;outline:2px solid #111}
+  .empty{width:160px;height:160px;margin:6px auto;border:2px dashed #9aa7bf;border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:#667;padding:10px}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+
+</style>
+</head>
+<body>
+<h1>US-01: criar condomínio e QR code por fração</h1>
+<p class="subtitle">Wireframe do fluxo do administrador, acordado pela equipa antes da implementação (Sprint B). O QR code é gerado a pedido, porque o servidor só guarda o hash do token; os QR codes gerados antes continuam válidos até serem revogados (US-20). Implementação: <a href="../us-01.md">evidências da US-01</a>.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone grad">
+      <div class="body" style="justify-content:flex-end;min-height:410px">
+        <div style="font-size:24px;font-weight:800;text-align:center;margin-bottom:auto;margin-top:60px">DomusCast</div>
+        <div class="btn white">Entrar</div>
+        <div class="btn ghost">Sou administrador: criar condomínio</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Entrada</b>Novo botão para o administrador; "Entrar" fica como está.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Criar condomínio</div>
+      <div class="body">
+        <div class="field"><small>Nome do condomínio</small>Edifício Rua das Flores, 12</div>
+        <div class="field"><small>O seu nome (administrador)</small>Ana Costa</div>
+        <div class="field"><small>Nº de frações (1 a 200)</small>12</div>
+        <div class="note">As frações ficam com as letras A, B, C…</div>
+        <div style="margin-top:auto" class="btn">Criar condomínio</div>
+      </div>
+    </div>
+    <div class="cap"><b>2. Formulário</b>Validação na app e na API.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Rua das Flores, 12</div>
+      <div class="body">
+        <div class="row"><div class="badge">A</div><div style="flex:1"><b>Fração A</b><div class="note">0 residentes</div></div>›</div>
+        <div class="row"><div class="badge">B</div><div style="flex:1"><b>Fração B</b><div class="note">0 residentes</div></div>›</div>
+        <div class="row"><div class="badge">C</div><div style="flex:1"><b>Fração C</b><div class="note">0 residentes</div></div>›</div>
+        <div class="row"><div class="badge">D</div><div style="flex:1"><b>Fração D</b><div class="note">0 residentes</div></div>›</div>
+        <div class="note" style="text-align:center">…</div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Lista de frações</b>Abre aqui sempre que o administrador volta à app.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">‹ Fração A</div>
+      <div class="body">
+        <div class="empty">Gera um QR code para enviar ou mostrar a um residente da fração A.</div>
+        <div class="btn">Gerar QR code</div>
+      </div>
+    </div>
+    <div class="cap"><b>4a. Fração, antes</b>Nenhum QR é guardado para mostrar.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">‹ Fração A</div>
+      <div class="body">
+        <div class="qrbig"></div>
+        <div class="note" style="text-align:center">Serve para todos os residentes da fração A. Os QR codes gerados antes continuam válidos.</div>
+        <div class="btn">Partilhar</div>
+        <div class="btn out">Ecrã inteiro</div>
+      </div>
+    </div>
+    <div class="cap"><b>4b. Fração, depois de gerar</b>Partilhar envia a imagem e um link; ecrã inteiro para mostrar pessoalmente.</div>
+  </div>
+</div>
+</body>
+</html>
