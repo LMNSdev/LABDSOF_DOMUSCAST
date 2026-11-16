@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../services/sessao_admin.dart';
+import 'criar_condominio_screen.dart';
+import 'fracoes_screen.dart';
 import 'reportes_list_screen.dart';
 
 class LandingScreen extends StatefulWidget {
-  const LandingScreen({super.key});
+  final SessaoAdminStore? store;
+  final ApiService? api;
+
+  const LandingScreen({super.key, this.store, this.api});
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -13,11 +20,15 @@ class _LandingScreenState extends State<LandingScreen>
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
   late final Animation<Offset> _slide;
+  late final SessaoAdminStore _store = widget.store ?? SeguraSessaoAdminStore();
+  late final ApiService _api = widget.api ?? ApiService();
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _abrirSessaoAdmin();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _slide = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
@@ -28,6 +39,22 @@ class _LandingScreenState extends State<LandingScreen>
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  // US-01: o administrador que já criou o condomínio entra direto nas frações.
+  Future<void> _abrirSessaoAdmin() async {
+    final sessao = await _store.ler();
+    if (sessao == null || !mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => FracoesScreen(api: _api, sessao: sessao)),
+    );
+  }
+
+  void _criarCondominio() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (_) => CriarCondominioScreen(api: _api, store: _store)),
+    );
   }
 
   void _enter() {
@@ -63,88 +90,126 @@ class _LandingScreenState extends State<LandingScreen>
               position: _slide,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 36),
-                child: Column(
-                  children: [
-                    SizedBox(height: size.height * 0.12),
+                // Desliza quando o ecrã é baixo demais para o conteúdo.
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          children: [
+                            SizedBox(height: size.height * 0.12),
 
-                    // ── Ícone ──────────────────────────────────────────────
-                    Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.12),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: const Color.fromRGBO(255, 255, 255, 0.2),
-                          width: 1.5,
+                            // ── Ícone ──────────────────────────────────────────────
+                            Container(
+                              width: 96,
+                              height: 96,
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color.fromRGBO(255, 255, 255, 0.12),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color:
+                                      const Color.fromRGBO(255, 255, 255, 0.2),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const _BuildingIcon(),
+                            ),
+
+                            const SizedBox(height: 28),
+
+                            // ── Nome ───────────────────────────────────────────────
+                            const Text(
+                              'DomusCast',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 38,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1.2,
+                                height: 1,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'A gestão do seu condomínio,\nsimplificada.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color.fromRGBO(255, 255, 255, 0.72),
+                                fontSize: 17,
+                                height: 1.5,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+
+                            const SizedBox(height: 56),
+
+                            // ── Features ───────────────────────────────────────────
+                            ..._features.map(
+                                (f) => _FeatureTile(icon: f.$1, text: f.$2)),
+
+                            const Spacer(),
+
+                            // ── CTA ────────────────────────────────────────────────
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton(
+                                onPressed: _enter,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF0F3478),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 18),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                child: const Text('Entrar'),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: _criarCondominio,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(
+                                      color: Color.fromRGBO(255, 255, 255, 0.6),
+                                      width: 1.5),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                child: const Text(
+                                    'Sou administrador: criar condomínio'),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Acesso por QR code da fração',
+                              style: TextStyle(
+                                color: Color.fromRGBO(255, 255, 255, 0.4),
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 36),
+                          ],
                         ),
                       ),
-                      child: const _BuildingIcon(),
                     ),
-
-                    const SizedBox(height: 28),
-
-                    // ── Nome ───────────────────────────────────────────────
-                    const Text(
-                      'DomusCast',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 38,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1.2,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'A gestão do seu condomínio,\nsimplificada.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.72),
-                        fontSize: 17,
-                        height: 1.5,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-
-                    const SizedBox(height: 56),
-
-                    // ── Features ───────────────────────────────────────────
-                    ..._features.map((f) => _FeatureTile(icon: f.$1, text: f.$2)),
-
-                    const Spacer(),
-
-                    // ── CTA ────────────────────────────────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _enter,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF0F3478),
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                        child: const Text('Entrar'),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Acesso por QR code da fração',
-                      style: TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.4),
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 36),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -253,7 +318,8 @@ class _BuildingPainter extends CustomPainter {
       final r = 10.0 + i * 8;
       arcPaint.strokeWidth = 2.5 - i * 0.5;
       canvas.drawArc(
-        Rect.fromCenter(center: Offset(cx, cy - 26), width: r * 2, height: r * 2),
+        Rect.fromCenter(
+            center: Offset(cx, cy - 26), width: r * 2, height: r * 2),
         3.7,
         2.0,
         false,
