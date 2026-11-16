@@ -2,7 +2,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://condoapp:condoapp@localhost:5432/condoapp")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://condoapp:condoapp@localhost:5433/condoapp")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
