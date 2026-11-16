@@ -10,7 +10,7 @@ Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
 | Ferramenta | Versão mínima | Para quê |
 |---|---|---|
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | 24+ | Correr API + base de dados |
-| [Flutter SDK](https://docs.flutter.dev/get-started/install/windows/mobile) | 3.24+ | Compilar e correr a app Android |
+| [Flutter SDK](https://docs.flutter.dev/get-started/install/windows/mobile) | 3.47+ | Compilar e correr a app Android |
 | [Android Studio](https://developer.android.com/studio) | Qualquer | Emulador Android (AVD) |
 | Python 3.11+ | -- | Só para correr os testes da API localmente (opcional) |
 
