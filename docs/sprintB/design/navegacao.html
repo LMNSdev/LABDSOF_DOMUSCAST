@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Navegação wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:900px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:250px;height:470px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px;display:flex;flex-direction:column}
+  .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between}
+  .body{padding:12px;flex:1;display:flex;flex-direction:column;gap:8px;position:relative}
+  .card{background:#fff;border-radius:10px;padding:9px}
+  .card b{display:block}
+  .pill{display:inline-block;font-size:10px;border-radius:10px;padding:1px 7px;margin-top:4px}
+  .aberto{background:#ffe9d6;color:#9a4b00}.curso{background:#dfe9ff;color:#1546a3}.resolvido{background:#dff5e3;color:#1c6b2c}
+  .note{font-size:11px;color:#667}
+  .nav{display:flex;background:#fff;border-top:1px solid #d8dfec}
+  .nav div{flex:1;text-align:center;padding:8px 2px 10px;font-size:10px;color:#667}
+  .nav div i{display:block;font-style:normal;font-size:16px;margin-bottom:2px}
+  .nav .on{color:#0F3478;font-weight:700}
+  .nav .soon{opacity:.45}
+  .fab{position:absolute;right:12px;bottom:12px;background:#0F3478;color:#fff;border-radius:14px;padding:10px 14px;font-weight:700}
+  .badge{background:#d33;color:#fff;border-radius:8px;font-size:9px;padding:0 5px;margin-left:2px}
+  .cap{width:250px;font-size:13px;margin-top:8px}
+  .cap b{display:block}
+
+</style>
+</head>
+<body>
+<h1>Navegação da app: separadores por papel</h1>
+<p class="subtitle">Wireframe acordado pela equipa (Sprint B). Uma só app com uma barra de separadores em baixo, que depende do papel. Avisos (US-06) e as opções esbatidas do separador Condomínio ainda não existem. "Voltar" fecha o ecrã aberto no separador; no início de outro separador regressa aos Reportes; nos Reportes sai da app. Implementação: <a href="../navegacao.md">navegação</a>.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar"><span>Reportes</span><span>⚲</span></div>
+      <div class="body">
+        <div class="note">Rua das Flores, 12 · administrador</div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">Fração C · há 2 h</span><br><span class="pill aberto">Aberto</span></div>
+        <div class="card"><b>Luz da garagem fundida</b><span class="note">Fração A · ontem</span><br><span class="pill curso">Em curso</span></div>
+        <div class="card"><b>Porta da rua não fecha</b><span class="note">Fração F · 3 dias</span><br><span class="pill resolvido">Resolvido</span></div>
+      </div>
+      <div class="nav">
+        <div class="on"><i>⚑</i>Reportes<span class="badge">1</span></div>
+        <div><i>▦</i>Reuniões</div>
+        <div class="soon"><i>✉</i>Avisos</div>
+        <div><i>⌂</i>Condomínio</div>
+      </div>
+    </div>
+    <div class="cap"><b>Administrador</b>Abre nos reportes (os novos primeiro). "Condomínio" tem as frações e os QR codes; mais tarde, os administradores (US-19).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar"><span>Reportes</span><span>⚲</span></div>
+      <div class="body">
+        <div class="note">Fração B · Maria</div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">há 2 h</span><br><span class="pill aberto">Aberto</span></div>
+        <div class="card"><b>Infiltração no teto (meu)</b><span class="note">ontem</span><br><span class="pill curso">Em curso</span></div>
+        <div class="fab">+ Reportar</div>
+      </div>
+      <div class="nav">
+        <div class="on"><i>⚑</i>Reportes</div>
+        <div><i>▦</i>Reuniões</div>
+        <div class="soon"><i>✉</i>Avisos</div>
+      </div>
+    </div>
+    <div class="cap"><b>Residente</b>Abre nos reportes, com o botão para reportar sempre à mão. Sem "Condomínio".</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar"><span>Condomínio</span></div>
+      <div class="body">
+        <div class="note">Rua das Flores, 12</div>
+        <div class="card"><b>Frações e QR codes</b><span class="note">12 frações · 0 residentes</span></div>
+        <div class="card" style="opacity:.45"><b>Administradores</b><span class="note">convidar e remover (US-19, US-30)</span></div>
+        <div class="card" style="opacity:.45"><b>Feed de calendário</b><span class="note">link iCal (US-29)</span></div>
+      </div>
+      <div class="nav">
+        <div><i>⚑</i>Reportes</div>
+        <div><i>▦</i>Reuniões</div>
+        <div class="soon"><i>✉</i>Avisos</div>
+        <div class="on"><i>⌂</i>Condomínio</div>
+      </div>
+    </div>
+    <div class="cap"><b>Separador "Condomínio" (admin)</b>Aqui fica a lista de frações da US-01, com voltar atrás normal dentro do separador.</div>
+  </div>
+</div>
+</body>
+</html>
