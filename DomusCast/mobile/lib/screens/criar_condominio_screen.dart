@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
-import 'fracoes_screen.dart';
+import 'home_screen.dart';
 
 const maxFracoes = 200;
 
@@ -53,7 +53,14 @@ class _CriarCondominioScreenState extends State<CriarCondominioScreen> {
       await widget.store.guardar(sessao);
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => FracoesScreen(api: widget.api, sessao: sessao)),
+        // Logo a seguir a criar, o passo natural é gerar QR codes: abre no Condomínio.
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            api: widget.api,
+            sessao: sessao,
+            separadorInicial: Separador.condominio,
+          ),
+        ),
         (_) => false,
       );
     } on ApiException catch (e) {

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:domuscast/screens/criar_condominio_screen.dart';
 import 'package:domuscast/screens/fracao_qr_screen.dart';
 import 'package:domuscast/screens/fracoes_screen.dart';
+import 'package:domuscast/screens/home_screen.dart';
 import 'package:domuscast/screens/landing_screen.dart';
 import 'package:domuscast/services/api_service.dart';
 import 'package:domuscast/services/sessao_admin.dart';
@@ -34,7 +35,7 @@ void main() {
     expect(find.text('Sou administrador: criar condomínio'), findsOneWidget);
   });
 
-  testWidgets('entrada abre a lista de frações se já houver sessão de administrador',
+  testWidgets('entrada abre a app do administrador nos Reportes se já houver sessão',
       (tester) async {
     final api = ApiService(client: MockClient((_) async => _json([], 200)));
     await tester.pumpWidget(_app(LandingScreen(
@@ -42,7 +43,9 @@ void main() {
       api: api,
     )));
     await tester.pumpAndSettle();
-    expect(find.byType(FracoesScreen), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 0);
+    expect(find.text('Condomínio'), findsOneWidget);
   });
 
   group('Criar condomínio', () {
@@ -74,7 +77,7 @@ void main() {
       });
     }
 
-    testWidgets('criar envia os dados, guarda a sessão e abre as frações', (tester) async {
+    testWidgets('criar envia os dados, guarda a sessão e abre o separador Condomínio', (tester) async {
       Map<String, dynamic>? enviado;
       final store = MemoriaSessaoAdminStore();
       final api = ApiService(client: MockClient((req) async {
@@ -105,8 +108,8 @@ void main() {
 
       expect(enviado, {'nome': 'Rua das Flores, 12', 'nome_admin': 'Ana Costa', 'n_fracoes': 2});
       expect(await store.ler(), _sessao);
-      expect(find.byType(FracoesScreen), findsOneWidget);
-      expect(find.text('Fração A'), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.text('Frações e QR codes'), findsOneWidget);
     });
 
     testWidgets('limite de pedidos (429) mostra mensagem', (tester) async {

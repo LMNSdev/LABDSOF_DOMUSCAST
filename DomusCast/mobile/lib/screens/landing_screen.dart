@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
 import 'criar_condominio_screen.dart';
-import 'fracoes_screen.dart';
-import 'reportes_list_screen.dart';
+import 'home_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   final SessaoAdminStore? store;
@@ -41,12 +40,12 @@ class _LandingScreenState extends State<LandingScreen>
     super.dispose();
   }
 
-  // US-01: o administrador que já criou o condomínio entra direto nas frações.
+  // O administrador que já criou o condomínio entra direto na app (nos Reportes).
   Future<void> _abrirSessaoAdmin() async {
     final sessao = await _store.ler();
     if (sessao == null || !mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => FracoesScreen(api: _api, sessao: sessao)),
+      MaterialPageRoute(builder: (_) => HomeScreen(api: _api, sessao: sessao)),
     );
   }
 
@@ -60,7 +59,7 @@ class _LandingScreenState extends State<LandingScreen>
   void _enter() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, a, __) => const ReportesListScreen(),
+        pageBuilder: (_, a, __) => HomeScreen(api: _api),
         transitionsBuilder: (_, a, __, child) =>
             FadeTransition(opacity: a, child: child),
         transitionDuration: const Duration(milliseconds: 400),

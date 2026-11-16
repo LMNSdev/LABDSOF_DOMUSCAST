@@ -4,14 +4,16 @@ import '../services/api_service.dart';
 import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
-  const ReportesListScreen({super.key});
+  final ApiService? api;
+
+  const ReportesListScreen({super.key, this.api});
 
   @override
   State<ReportesListScreen> createState() => _ReportesListScreenState();
 }
 
 class _ReportesListScreenState extends State<ReportesListScreen> {
-  final ApiService _api = ApiService();
+  late final ApiService _api = widget.api ?? ApiService();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
   String? _error;
