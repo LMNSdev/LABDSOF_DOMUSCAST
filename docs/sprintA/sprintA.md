@@ -1094,7 +1094,7 @@ O ambiente local e de avaliação sobe com um único comando (`docker compose up
 
 **Configuração por variáveis de ambiente.** A `DATABASE_URL` é injetada no container `api` via `environment`; em qualquer ambiente partilhado substitui-se por secrets — os valores de desenvolvimento (`condoapp`) nunca entram em produção.
 
-**Segurança no container.** O PostgreSQL só escuta em `127.0.0.1:5432` (não exposto na rede do host). A imagem da API usa `python:3.12-slim` como base e corre como utilizador sem privilégios (`appuser`, uid 10001); o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
+**Segurança no container.** O PostgreSQL só escuta em `127.0.0.1:5433` (não exposto na rede do host). A imagem da API usa `python:3.12-slim` como base e corre como utilizador sem privilégios (`appuser`, uid 10001); o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
 
 **Entrypoint.** O `entrypoint.sh` executa primeiro `alembic upgrade head` (aplica migrações pendentes) e só depois inicia o `uvicorn`, garantindo que o esquema está sempre atualizado antes de a API aceitar pedidos.
 
