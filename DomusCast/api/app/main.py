@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from .database import get_db
-from .routers import reportes
+from .routers import condominios, fracoes, reportes
 
 
 @asynccontextmanager
@@ -16,6 +16,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="DomusCast API", version="0.1.0", lifespan=lifespan)
 
 app.include_router(reportes.router, prefix="/reportes", tags=["reportes"])
+app.include_router(condominios.router, prefix="/condominios", tags=["condominios"])
+app.include_router(fracoes.router, prefix="/fracoes", tags=["fracoes"])
 
 
 @app.get("/health", tags=["infra"])

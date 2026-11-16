@@ -423,7 +423,7 @@ A lista completa vive em [docs/requisitos.md](../requisitos.md), com **versão**
 
 Cada jornada é um workflow em diagrama de atividade com raias por ator ([workflows.drawio](workflows.drawio)), ligado às user stories do backlog.
 
-- **Onboarding do condomínio (Workflow 1, US-01, US-15):** o administrador cria o condomínio (nome, nº de frações) e a app gera um QR code único por fração, partilhado pelos residentes dessa fração. Cada residente faz scan: se o QR code é válido e o dispositivo não tem identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existe identidade, não volta a pedir. QR code inválido ou revogado mostra erro.
+- **Onboarding do condomínio (Workflow 1, US-01, US-15):** o administrador cria o condomínio (nome, nº de frações) e, no ecrã de cada fração, gera um QR code quando precisa de o enviar ou mostrar; o QR code é partilhado pelos residentes dessa fração e os gerados antes continuam válidos. Cada residente faz scan: se o QR code é válido e o dispositivo não tem identidade, a app pede o nome (único na fração) e guarda a identidade no dispositivo, sem pedir contactos; se já existe identidade, não volta a pedir. QR code inválido ou revogado mostra erro.
 
 ![Onboarding do condomínio](images/workflow-1.drawio.png)
 
@@ -633,7 +633,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em | Um ou mais por condomínio, todos com as mesmas permissões (US-19, US-30); o último não pode ser removido. Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
 | `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
-| `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado; revogar cria um novo token e marca o antigo (US-20) |
+| `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado, por isso o QR code só é mostrado quando é gerado (US-01); pode haver vários ativos por fração e revogar marca `revogado_em` (US-20) |
 | `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12, US-33); remover apaga `nome` e `nome_normalizado` e preenche `removida_em` (US-23) |
 | `reporte` | id, condominio_id, autor_id, idempotency_key, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, oculto_em, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-22); `idempotency_key` única por autor, para reenvios da fila local (US-18); `oculto_em` preenchido quando o administrador oculta o reporte (US-32; deixa de aparecer aos residentes, o histórico mantém-se) |
 | `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
@@ -649,7 +649,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 |---|---|---|
 | `condominio` - `fracao`, `administrador`, `aviso`, `reuniao`, `reporte` | 1 para N | Tudo pertence a um condomínio; a API nunca devolve dados de outro ([10.2](#102-controlo-de-acessos)) |
 | `administrador` - `convite_admin` | 1 para N (`criado_por`) | Um convite de uso único cria um novo administrador (US-19) |
-| `fracao` - `qr_token` | 1 para N | Só um token ativo; os revogados ficam marcados (US-20) |
+| `fracao` - `qr_token` | 1 para N | Vários tokens ativos por fração; os revogados ficam marcados (US-20) |
 | `fracao` - `identidade` | 1 para N | Vários residentes na mesma fração, cada um com a sua identidade (US-15) |
 | `identidade` - `reporte` | 1 para N (`autor_id`) | O autor de cada reporte |
 | `reporte` - `reporte_historico` | 1 para N | Só inserção (US-05) |
@@ -661,7 +661,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 **Termos do negócio e entidades.** Residente e condómino correspondem a uma `identidade` (papel `residente` ou `comissao`); administrador é `administrador`; reporte, aviso, assembleia e ata são `reporte`, `aviso`, `reuniao` e `ata`. Todos os substantivos usados nas histórias e nos [Workflows](#53-user-journey) correspondem a uma entidade ou a um campo.
 
 **Porquê esta modelação.**
-- `qr_token` está separado de `fracao` para o administrador revogar e regenerar o QR code sem perder a fração nem as identidades (US-20).
+- `qr_token` está separado de `fracao` para o administrador gerar QR codes a pedido e revogá-los, todos ou um a um, sem perder a fração nem as identidades (US-01, US-20). A `identidade` guarda `qr_token_id` (coluna a criar na US-15), para a lista de QR codes mostrar quantos residentes entraram com cada um.
 - `identidade` está separada de `administrador` porque o residente não tem conta com contactos ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) e o administrador tem credencial e permissões próprias ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)).
 - `reporte_historico` é uma tabela só de inserção para o histórico não se perder quando o reporte muda; é a prova de diligência do administrador (US-05, TM-05).
 - `reporte_seguidor` tem um `tipo` em vez de três tabelas, porque autor, co-reporter e seguidor são a mesma relação com notificações iguais.
@@ -679,13 +679,16 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 
 | Método e rota | Quem | User Story |
 |---|---|---|
-| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio, frações e QR codes; devolve a credencial do primeiro administrador; limite de pedidos por IP e de frações por condomínio ([10.6](#106-modelo-de-ameaças-inicial)) |
+| `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio e frações (A, B, C…); devolve a credencial do primeiro administrador; máximo de 200 frações e de 5 criações por hora por IP ([10.6](#106-modelo-de-ameaças-inicial)) |
 | `POST /condominios/{id}/calendario/regenerar` | admin | US-29: gera novo token do feed iCal e invalida o anterior |
 | `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
 | `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
 | `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19, US-30: lista e remove; 409 ao tentar remover o último |
-| `GET /condominios/{id}/fracoes` | admin | US-01: frações, QR codes e identidades por fração |
-| `POST /fracoes/{id}/qr/regenerar` | admin | US-20: revoga e gera novo token |
+| `GET /condominios/{id}/fracoes` | admin | US-01: frações e nº de residentes por fração |
+| `POST /fracoes/{id}/qr` | admin | US-01: gera um novo token e devolve-o uma única vez (com o link `domuscast://entrar?t=`); os anteriores continuam ativos |
+| `GET /fracoes/{id}/qr` | admin | US-20: lista os QR codes ativos (data e hora de criação, nº de residentes que entraram com cada um), sem o token |
+| `POST /fracoes/{id}/qr/revogar` | admin | US-20: revoga todos os QR codes ativos da fração |
+| `POST /qr/{id}/revogar` | admin | US-20: revoga um QR code específico |
 | `DELETE /identidades/{id}` | admin | US-23: remove identidade |
 | `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve credencial do dispositivo; limite de tentativas por IP e máximo de identidades por fração ([10.5](#105-qr-code-revogação-e-abuso)) |
 | `PATCH /identidades/me` | residente | US-21: editar nome |
@@ -943,7 +946,7 @@ Autorização verificada no servidor, com testes automáticos que confirmam que 
 - **Atas aprovadas:** enquanto o condomínio existir, por serem o registo das assembleias.
 
 ### 10.5 QR code, revogação e abuso
-- O QR code contém um token aleatório (só o hash fica guardado). Revogar/regenerar bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
+- O QR code contém um token aleatório de 256 bits (só o hash fica guardado), por isso só é mostrado quando é gerado; o administrador gera um novo sempre que precisa e os anteriores continuam válidos. Revogar (todos os da fração ou um específico) bloqueia novos acessos e mantém as identidades existentes; o administrador remove as que não reconheça.
 - Criar identidades tem limite de tentativas e máximo por fração (proposta: 10).
 
 ### 10.6 Modelo de ameaças inicial

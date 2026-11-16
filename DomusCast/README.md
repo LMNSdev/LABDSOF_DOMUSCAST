@@ -10,7 +10,7 @@ Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
 | Ferramenta | Versão mínima | Para quê |
 |---|---|---|
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | 24+ | Correr API + base de dados |
-| [Flutter SDK](https://docs.flutter.dev/get-started/install/windows/mobile) | 3.24+ | Compilar e correr a app Android |
+| [Flutter SDK](https://docs.flutter.dev/get-started/install/windows/mobile) | 3.47+ | Compilar e correr a app Android |
 | [Android Studio](https://developer.android.com/studio) | Qualquer | Emulador Android (AVD) |
 | Python 3.11+ | -- | Só para correr os testes da API localmente (opcional) |
 
@@ -58,6 +58,9 @@ A base de dados é criada e as migrações correm automaticamente.
 | `GET  /health` | Estado da API e da base de dados |
 | `POST /reportes` | Criar reporte |
 | `GET  /reportes` | Listar reportes |
+| `POST /condominios` | Criar condomínio e frações (devolve a credencial do administrador) |
+| `GET  /condominios/{id}/fracoes` | Listar frações (administrador) |
+| `POST /fracoes/{id}/qr` | Gerar QR code de uma fração (administrador) |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
 
 ### App Flutter
@@ -171,6 +174,9 @@ docs/                              ← Documentação do projeto (Sprint A, back
 |---|---|
 | `POST /reportes` | Cria reporte; idempotente via `idempotency_key` |
 | `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
+| `POST /condominios` | US-01: cria condomínio, frações (A, B, C…) e primeiro administrador; 1 a 200 frações, 5 criações por hora por IP (429) |
+| `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador (401/403) |
+| `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |
 | `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
 | Swagger UI | Documentação interativa automática em `/docs` |
