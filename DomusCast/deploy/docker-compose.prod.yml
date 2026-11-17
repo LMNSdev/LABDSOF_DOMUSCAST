@@ -1,0 +1,52 @@
+# Stack de produção na VM (Azure). Copiado pela pipeline para /opt/domuscast
+# e arrancado por deploy.sh. Ver docs/sprintB/VM/README.md.
+#
+# Só o Caddy está exposto (80/443); a API e o PostgreSQL ficam na rede interna.
+# Variáveis: IMAGE_TAG (vX.Y.Z, passada pelo deploy.sh) e POSTGRES_PASSWORD
+# (no .env da VM, criado no primeiro deploy e nunca versionado).
+name: domuscast
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: condoapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: condoapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condoapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
+    environment:
+      DATABASE_URL: postgresql://condoapp:${POSTGRES_PASSWORD}@postgres:5432/condoapp
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.11.9
+    environment:
+      DOMAIN: domuscast.belgiumcentral.cloudapp.azure.com
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

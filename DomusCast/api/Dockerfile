@@ -1,5 +1,8 @@
 FROM python:3.13-slim
 
+# Liga a imagem publicada no GHCR a este repositório
+LABEL org.opencontainers.image.source="https://github.com/LMNSdev/LABDSOF_DOMUSCAST"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
