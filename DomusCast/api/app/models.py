@@ -122,6 +122,7 @@ class Identidade(Base):
 
     id = Column(Integer, primary_key=True)
     fracao_id = Column(Integer, ForeignKey("fracao.id"), nullable=False)
+    qr_token_id = Column(Integer, ForeignKey("qr_token.id"), nullable=True)
     nome = Column(String(200), nullable=True)           # apagado ao remover identidade (US-09)
     nome_normalizado = Column(String(200), nullable=True)
     papel = Column(
