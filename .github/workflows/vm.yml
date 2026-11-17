@@ -1,0 +1,59 @@
+name: VM
+
+# Ligar ou desligar a VM de produção sem conta na Azure (Actions → VM → Run workflow),
+# e desalocá-la todas as noites para poupar o crédito Azure for Students.
+# O cron do GitHub é em UTC: 00:00 UTC = 00:00 em Lisboa no inverno e 01:00 no verão.
+# Ver docs/sprintB/VM/README.md.
+on:
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: Ligar ou desligar a VM de produção
+        type: choice
+        options: [ligar, desligar]
+        required: true
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: read
+
+# Partilhado com o deploy: nunca ligar/desligar a VM a meio de um deploy
+concurrency:
+  group: production-vm
+  cancel-in-progress: false
+
+jobs:
+  vm:
+    name: Ligar / desligar a VM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      id-token: write # login na Azure por OIDC
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Login na Azure (OIDC)
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+        run: bash .github/scripts/azure-login.sh
+
+      - name: Ligar ou desligar
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          # O agendamento desliga sempre
+          ACAO: ${{ github.event_name == 'schedule' && 'desligar' || inputs.acao }}
+        run: |
+          set -euo pipefail
+          case "$ACAO" in
+            ligar)    estado=$(bash .github/scripts/vm.sh start | tail -n1) ;;
+            desligar) estado=$(bash .github/scripts/vm.sh deallocate | tail -n1) ;;
+            *) echo "::error::Ação desconhecida: $ACAO"; exit 1 ;;
+          esac
+          echo "Estado da VM: $estado"
+          echo "### VM domuscast-vm: \`$estado\` (ação: $ACAO)" >> "$GITHUB_STEP_SUMMARY"
