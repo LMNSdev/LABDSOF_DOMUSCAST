@@ -23,8 +23,9 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 [Wireframe](design/us-15.html) aprovado.
 
 - **Token inválido ou revogado:** a API responde 404 nos dois casos, para não revelar que tokens existiram (TM-01). Para o residente, a solução é a mesma: pedir um novo QR code ao administrador.
-- **Limite de tentativas:** 10 por hora por IP, acima dos 5 da US-01, porque os vizinhos partilham muitas vezes a rede Wi-Fi do prédio e podem enganar-se no nome.
-- **Máximo por fração:** 10 identidades ativas (proposta de 10.5); a 11.ª recebe 409.
+- **Limite de tentativas:** contado por QR code e não por IP, porque os vizinhos partilham o IP público do Wi-Fi do prédio (ou o CGNAT da operadora) e, no dia em que o administrador distribui os QR codes, um limite por IP bloquearia o resto do prédio. Cada QR code aceita 30 tentativas por hora, o que chega para os 10 residentes de uma fração com enganos no nome. Por IP só contam as tentativas com token inválido ou revogado (20 por hora): um vizinho com um QR code válido nunca as gasta, e quem tenta tokens ao acaso é travado. Corrigido após a revisão do PR; a primeira proposta era 10 tentativas por hora por IP.
+- **Máximo por fração:** 10 identidades ativas (proposta de 10.5). A 11.ª recebe 409 com `codigo: fracao_cheia`, distinto do `nome_duplicado`, para a app mostrar a mensagem certa: mudar o nome não resolve uma fração completa. Os erros seguem o formato `{codigo, mensagem, request_id}` de 8.4.
+- **Finalidade do nome:** o ecrã diz só "para o administrador saber quem reportou cada problema", que é a finalidade de 10.3. Não promete contacto, porque não se recolhe telefone nem e-mail (transparência, RGPD).
 
 ### US-02 e US-09: Reportar avaria e privacidade do autor
 
@@ -33,7 +34,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Foto:** uma, JPEG ou PNG, até 5 MB; com foto, o texto alternativo é obrigatório (acessibilidade, RNF-02).
 - **Reenvio:** `Idempotency-Key` no cabeçalho, única por autor; um reenvio devolve 200 com o reporte já criado, sem criar outro.
 - **Permissões:** o administrador não cria reportes (403, [10.2](../sprintA/sprintA.md#102-controlo-de-acessos)).
-- **Privacidade:** a API recusa campos desconhecidos com 422, o que prova que nenhum contacto (telefone, e-mail) é aceite.
+- **Privacidade:** a API recusa campos desconhecidos com 422, o que prova que nenhum contacto (telefone, e-mail) é aceite. Como o pedido é multipart e o FastAPI ignora por omissão campos `Form` a mais, a implementação recebe o formulário num modelo Pydantic com `extra="forbid"` (`Annotated[Modelo, Form()]`). Corrigido após a revisão do PR.
 
 ### US-03: Consultar reportes
 

@@ -63,7 +63,7 @@
     <div class="phone">
       <div class="bar">O seu nome</div>
       <div class="body">
-        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou um problema e o poder contactar.<br><br><b>Quem vê?</b><br>Só o administrador. Num reporte, pode escolher mostrar o nome aos vizinhos.</div>
+        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou cada problema.<br><br><b>Quem vê?</b><br>Só o administrador. Num reporte, pode escolher mostrar o nome aos vizinhos.</div>
         <div class="field"><small>Nome (obrigatório)</small>Marta Silva</div>
         <div class="note">Não pedimos telefone nem e-mail.</div>
         <div style="margin-top:auto" class="btn">Continuar</div>
@@ -76,13 +76,26 @@
     <div class="phone">
       <div class="bar">O seu nome</div>
       <div class="body">
-        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou um problema e o poder contactar.</div>
+        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou cada problema.</div>
         <div class="field err"><small>Nome (obrigatório)</small>marta silva</div>
         <div class="errtxt">Já existe alguém com este nome na sua fração. Acrescente, por exemplo, um apelido.</div>
         <div style="margin-top:auto" class="btn">Continuar</div>
       </div>
     </div>
-    <div class="cap"><b>4a. Nome vazio ou repetido</b>Repetido ignora maiúsculas, acentos e espaços (409 da API). Vazio é recusado na app e na API.</div>
+    <div class="cap"><b>4a. Nome vazio ou repetido</b>Repetido ignora maiúsculas, acentos e espaços (409 com <code>codigo: nome_duplicado</code>). Vazio é recusado na app e na API.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">O seu nome</div>
+      <div class="body">
+        <div class="icon">!</div>
+        <div style="text-align:center"><b>Fração completa</b></div>
+        <div class="note" style="text-align:center">Esta fração já tem 10 residentes. Peça ao administrador para remover quem já não vive lá.</div>
+        <div style="margin-top:auto" class="btn">Voltar</div>
+      </div>
+    </div>
+    <div class="cap"><b>4b. Fração completa</b>409 com <code>codigo: fracao_cheia</code>. Mudar o nome não resolve, por isso o ecrã não pede outro nome.</div>
   </div>
 
   <div>
@@ -95,7 +108,7 @@
         <div style="margin-top:auto" class="btn">Ler outro QR code</div>
       </div>
     </div>
-    <div class="cap"><b>4b. QR code inválido ou revogado</b>A app não diz qual dos dois, para não dar pistas sobre tokens.</div>
+    <div class="cap"><b>4c. QR code inválido ou revogado</b>A app não diz qual dos dois, para não dar pistas sobre tokens.</div>
   </div>
 
   <div>
@@ -108,7 +121,7 @@
         <div style="margin-top:auto" class="btn">Tentar novamente</div>
       </div>
     </div>
-    <div class="cap"><b>4c. Sem internet ou demasiadas tentativas</b>Mesmo ecrã para o limite de tentativas (429), com outra mensagem.</div>
+    <div class="cap"><b>4d. Sem internet ou demasiadas tentativas</b>Mesmo ecrã para o limite de tentativas (429), com outra mensagem.</div>
   </div>
 
   <div>
