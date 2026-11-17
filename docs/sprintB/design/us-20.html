@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-20 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px;position:relative}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .btn.out{background:#fff;color:#0F3478;border:1.5px solid #0F3478}
+  .btn.danger{background:#fff;color:#B3261E;border:1.5px solid #B3261E}
+  .row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:8px}
+  .row .link{color:#B3261E;font-weight:600;font-size:11px}
+  .shade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
+  .dialog{background:#fff;border-radius:14px;padding:14px;width:180px;font-size:12px}
+  .dialog .acts{display:flex;justify-content:flex-end;gap:12px;margin-top:12px;font-weight:700;color:#0F3478}
+  .dialog .acts .red{color:#B3261E}
+  .snack{background:#1c6b2c;color:#fff;border-radius:8px;padding:8px;font-size:11px}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-20: revogar QR codes</h1>
+<p class="subtitle">Wireframe do administrador, no ecrã da fração da US-01, para acordo da equipa antes da implementação (Sprint B). A lista mostra só os QR codes ativos (<code>GET /fracoes/{id}/qr</code>), sem o token, que o servidor não guarda. Revogar pede confirmação, bloqueia novos acessos com esse QR code e não afeta as identidades já criadas. O residente que leia um QR code revogado vê o erro do ecrã 4b da <a href="us-15.html">US-15</a>.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Fração A</div>
+      <div class="body">
+        <div class="btn">Gerar QR code</div>
+        <b>QR codes ativos</b>
+        <div class="row"><div style="flex:1"><b>16/11 às 14:32</b><div class="note">3 residentes entraram</div></div><span class="link">Revogar</span></div>
+        <div class="row"><div style="flex:1"><b>17/11 às 10:05</b><div class="note">0 residentes entraram</div></div><span class="link">Revogar</span></div>
+        <div style="margin-top:auto" class="btn danger">Revogar todos</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Fração com QR codes ativos</b>Cada QR code identificado pela data e hora de criação e pelo nº de residentes que entraram com ele.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Fração A</div>
+      <div class="body">
+        <div class="btn">Gerar QR code</div>
+        <b>QR codes ativos</b>
+        <div class="row"><div style="flex:1"><b>16/11 às 14:32</b><div class="note">3 residentes entraram</div></div><span class="link">Revogar</span></div>
+      </div>
+      <div class="shade"><div class="dialog"><b>Revogar este QR code?</b><br><br>Deixa de permitir novos acessos. Os 3 residentes que já entraram continuam com acesso.<div class="acts"><span>Cancelar</span><span class="red">Revogar</span></div></div></div>
+    </div>
+    <div class="cap"><b>2. Confirmação</b>Revogar não se desfaz; para dar acesso outra vez, gera-se um novo QR code (US-01).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Fração A</div>
+      <div class="body">
+        <div class="btn">Gerar QR code</div>
+        <b>QR codes ativos</b>
+        <div class="row"><div style="flex:1"><b>16/11 às 14:32</b><div class="note">3 residentes entraram</div></div><span class="link">Revogar</span></div>
+      </div>
+      <div class="shade"><div class="dialog"><b>Revogar todos os QR codes da fração A?</b><br><br>Ninguém consegue entrar com eles. Quem já entrou mantém o acesso; para remover alguém, use a lista de residentes (US-23).<div class="acts"><span>Cancelar</span><span class="red">Revogar todos</span></div></div></div>
+    </div>
+    <div class="cap"><b>3. Revogar todos</b>Para quando um QR code foi divulgado e não se sabe qual.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Fração A</div>
+      <div class="body">
+        <div class="snack">2 QR codes revogados.</div>
+        <div class="btn">Gerar QR code</div>
+        <b>QR codes ativos</b>
+        <div class="note">Nenhum QR code ativo. Gere um novo para dar acesso a um residente.</div>
+      </div>
+    </div>
+    <div class="cap"><b>4. Depois de revogar</b>A lista atualiza; o botão para gerar um novo fica à mão.</div>
+  </div>
+</div>
+</body>
+</html>

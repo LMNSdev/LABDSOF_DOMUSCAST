@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-02 e US-09 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px;position:relative}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .btn.out{background:#fff;color:#0F3478;border:1.5px solid #0F3478}
+  .field{background:#fff;border:1px solid #c6cfdf;border-radius:8px;padding:8px}
+  .field.err{border:1.5px solid #B3261E}
+  .field small{display:block;color:#667;font-size:10px}
+  .errtxt{color:#B3261E;font-size:11px}
+  .warn{background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:8px;font-size:11px;color:#795548}
+  .photo{height:70px;border-radius:8px;background:repeating-linear-gradient(45deg,#c9d3e6 0 8px,#dfe6f3 8px 16px);display:flex;align-items:flex-end;justify-content:flex-end;padding:4px;font-size:10px}
+  .toggle{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:8px;padding:8px}
+  .sw{width:30px;height:16px;border-radius:8px;background:#c6cfdf;position:relative}
+  .sw::after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff}
+  .card{background:#fff;border-radius:10px;padding:9px}
+  .card b{display:block}
+  .pill{display:inline-block;font-size:10px;border-radius:10px;padding:1px 7px;margin-top:4px;background:#ffe9d6;color:#9a4b00}
+  .fab{position:absolute;right:12px;bottom:12px;background:#0F3478;color:#fff;border-radius:14px;padding:10px 14px;font-weight:700}
+  .snack{background:#1c6b2c;color:#fff;border-radius:8px;padding:8px;font-size:11px}
+  .snack.orange{background:#B26A00}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-02 e US-09: reportar avaria e privacidade do autor</h1>
+<p class="subtitle">Wireframe do residente, para acordo da equipa antes da implementação (Sprint B). O formulário envia <code>POST /reportes</code> (multipart) com a descrição, a foto opcional e o seu texto alternativo, e <code>mostrar_nome</code> (US-09, desligado por omissão). O autor é a identidade do dispositivo (US-15); o formulário não tem campos de contacto. O administrador não cria reportes.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">há 2 h</span><br><span class="pill">Aberto</span></div>
+        <div class="fab">+ Reportar</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Lista</b>O botão "Reportar" está sempre à mão (navegação já existente).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Nova avaria</div>
+      <div class="body">
+        <div class="field"><small>Descrição (obrigatória)</small>Fuga de água na garagem, junto ao lugar 4</div>
+        <div class="btn out">Adicionar foto (opcional)</div>
+        <div class="toggle"><span>Mostrar o meu nome neste reporte</span><span class="sw"></span></div>
+        <div class="note">Desligado: os vizinhos não sabem quem reportou. O administrador vê sempre o seu nome e fração.</div>
+        <div class="warn">O reporte é visível a todos os residentes. Não inclua dados de terceiros.</div>
+        <div style="margin-top:auto" class="btn">Submeter reporte</div>
+      </div>
+    </div>
+    <div class="cap"><b>2. Formulário</b>A opção do nome é a US-09; vem desligada em cada reporte novo.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Nova avaria</div>
+      <div class="body">
+        <div class="field"><small>Descrição (obrigatória)</small>Fuga de água na garagem, junto ao lugar 4</div>
+        <div class="photo">Remover</div>
+        <div class="field"><small>Descreva a foto (para leitores de ecrã)</small>Poça de água no chão da garagem</div>
+        <div class="toggle"><span>Mostrar o meu nome neste reporte</span><span class="sw"></span></div>
+        <div style="margin-top:auto" class="btn">Submeter reporte</div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Com foto</b>Uma foto, JPEG ou PNG, até 5 MB. Com foto, a descrição da foto passa a obrigatória.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Nova avaria</div>
+      <div class="body">
+        <div class="field err"><small>Descrição (obrigatória)</small>&nbsp;</div>
+        <div class="errtxt">Descreva o problema.</div>
+        <div class="photo">Remover</div>
+        <div class="field err"><small>Descreva a foto (para leitores de ecrã)</small>&nbsp;</div>
+        <div class="errtxt">Descreva a foto ou remova-a.</div>
+        <div style="margin-top:auto" class="btn">Submeter reporte</div>
+      </div>
+    </div>
+    <div class="cap"><b>4a. Validação</b>Descrição vazia, foto sem descrição, foto grande demais ou noutro formato. A API valida o mesmo (422).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="snack">Reporte enviado. Estado: Aberto.</div>
+        <div class="card"><b>Fuga de água na garagem</b><span class="note">agora - o meu reporte</span><br><span class="pill">Aberto</span></div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">há 2 h</span><br><span class="pill">Aberto</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>4b. Enviado</b>Confirmação e o reporte no topo da lista, como "Aberto".</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="snack orange">Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.</div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">há 2 h</span><br><span class="pill">Aberto</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>4c. Sem internet</b>Comportamento atual da app. O reenvio pela ordem certa e sem perdas é a US-18; a mesma chave de idempotência evita duplicados.</div>
+  </div>
+</div>
+</body>
+</html>

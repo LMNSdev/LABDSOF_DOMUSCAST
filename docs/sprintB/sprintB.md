@@ -1,10 +1,10 @@
 # Sprint B
 
-[Sprint Backlog](backlog.md) - [Registo diário](daily-log.md)
+[Sprint Backlog](backlog.md) - [Refinamento](refinamento.md) - [Registo diário](daily-log.md)
 
 ## Sprint A retrospective
 
-Realizada pela equipa no início do Sprint B, depois da sprint review com os docentes e antes do planeamento do sprint.
+Realizada pela equipa a 16/11/2026, no início do Sprint B, depois da sprint review com os docentes e antes do planeamento do sprint.
 
 ### Feedback dos docentes na review do Sprint A
 

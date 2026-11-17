@@ -20,12 +20,10 @@ Facilitada por Pedro Soares (Scrum Master).
 
 | Pessoa | Ontem | Hoje | Bloqueios |
 |---|---|---|---|
-| Luis Santos | N/A (primeira daily do sprint) | Fechou a capacidade da equipa no Sprint Backlog (compromisso com os 16 pontos Must; Should como esforço adicional, sem velocidade histórica); reviu valor/âmbito da US-15 | Nenhum |
-| Pedro Soares | N/A (primeira daily do sprint) | Criou este registo diário; facilitou a [retrospetiva do Sprint A](sprintB.md#sprint-a-retrospective) | Nenhum |
-| Pedro Costa | N/A (primeira daily do sprint) | Vai preparar o wireframe do ecrã "pedir o nome" da US-15 (critério "Desenho da interface" em falta na DoR) | Nenhum |
-| Marco Garcia | N/A (primeira daily do sprint) | Vai rever o contrato técnico de `POST /identidades` (formato, validações, 409 para nome duplicado) | Nenhum |
-| Leonardo Costa | N/A (primeira daily do sprint) | Vai preparar os casos de teste de sucesso/falha da US-15 para fechar a coluna "Validação planeada" | Nenhum |
+| Luis Santos | N/A (primeira daily do sprint) | Fechar a capacidade da equipa no Sprint Backlog (16 pontos Must; Should como esforço adicional, sem velocidade histórica) e escolher as histórias a refinar primeiro, pela ordem das dependências | Nenhum |
+| Pedro Soares | N/A (primeira daily do sprint) | Facilitar a [retrospetiva do Sprint A](sprintB.md#sprint-a-retrospective) e a sessão de refinamento; criar este registo diário; abrir a issue e o PR do planeamento | O hook `commit-msg` não estava ativo no clone; resolvido com `git config core.hooksPath .githooks` |
+| Pedro Costa | N/A (primeira daily do sprint) | Preparar os wireframes das histórias a refinar (US-15, US-02, US-09, US-03, US-20), em falta na DoR | Nenhum |
+| Marco Garcia | N/A (primeira daily do sprint) | Rever o contrato técnico das mesmas histórias (endpoints, validações e códigos de erro), a partir de 8.4 e 10.5 | Nenhum |
+| Leonardo Costa | N/A (primeira daily do sprint) | Definir, a partir dos critérios de aceitação, que situações de sucesso e de falha cada história tem de provar (ex.: nome repetido na fração dá 409), para fechar a coluna "Validação planeada"; os testes automáticos são escritos depois, na implementação | Nenhum |
 
-**Refinamento da US-15 (depois da daily):** a equipa aprovou o [wireframe](design/us-15.html) e decidiu o que faltava no contrato técnico. A API responde 404 tanto a token inválido como a revogado, para não revelar que tokens existiram (TM-01). O limite é de 10 tentativas por hora por IP, acima dos 5 da US-01, porque os vizinhos partilham muitas vezes a rede Wi-Fi do prédio. Cada fração tem no máximo 10 identidades ativas (proposta de 10.5). DoR da US-15 cumprida.
-
-**Próximo passo da equipa:** abrir a branch da US-15 e começar a implementação (API e app).
+**Próximo passo da equipa:** sessão de [refinamento](refinamento.md) a seguir à daily, para fechar a DoR das primeiras histórias.
