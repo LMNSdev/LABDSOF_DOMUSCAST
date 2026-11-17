@@ -105,6 +105,8 @@ Before each `Shot`, check the screen with `Textos` (or open the PNG with the `vi
 
 Create `docs/sprintB/us-nn.md` from [the template](./templates/evidencias.md) (model: `docs/sprintB/us-01.md`). Screenshots in `docs/sprintB/screenshots/us-nn/`, named `01-<ecra>.png`, `02-<ecra>.png`, in the order of the wireframe. Record decisions taken during implementation and differences from the wireframe. Update other docs the story changes (Sprint Backlog row, `sprintA.md` §8.3/§8.4 when a table or endpoint was added, `DomusCast/README.md` when setup changed).
 
+**Gitleaks reads the docs too.** Its `generic-api-key` rule flags a keyword (`API`, `token`, `key`, `secret`, `credential`, `auth`...) followed by `:`, `=` or `,` and a code-like value, e.g. "API: \`test_nome_vazio_devolve_422\`". In evidence tables write "pytest: \`test_...\`", never put real tokens or credentials in docs or screenshots, and check before giving the commit commands: `docker run --rm -v "${PWD}:/repo" zricethezav/gitleaks:v8.24.3 detect --source /repo --no-git --redact -v` (same version as CI). A false positive already pushed is fixed by correcting the text and listing its fingerprints (shown in the CI log) in `.gitleaksignore`, because the PR scan rereads every commit of the branch.
+
 ## Phase 6: commits and PR (user runs)
 
 After each coherent piece of work (migration, endpoint with tests, screen with tests, evidence page), give the user the commands, listing only the story's files:
