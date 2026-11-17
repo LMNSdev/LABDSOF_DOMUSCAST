@@ -14,7 +14,7 @@ A app passou a ter uma **barra de separadores em baixo**, que depende do papel d
 - **Avisos:** visível mas desativado, até à US-06.
 - **Condomínio** (só administrador): o que se configura de vez em quando. Frações e QR codes (US-01); administradores (US-19, US-30) e calendário do condomínio (US-29) aparecem como "em breve".
 - **Voltar:** fecha o ecrã aberto dentro do separador; no início de outro separador regressa aos Reportes; nos Reportes sai da app. Cada separador guarda o seu ponto de navegação ao trocar de separador.
-- **Entrada:** o ecrã com "Entrar" e "Sou administrador" só aparece a quem ainda não tem sessão. Para o residente, "Entrar" passa a ser a leitura do QR code na US-15; até lá, entra diretamente como residente.
+- **Entrada:** o ecrã com "Entrar" e "Sou administrador" só aparece a quem ainda não tem sessão. Para o residente, "Entrar" abre a leitura do QR code e o pedido do nome ([US-15](us-15.md)); quem já tem identidade no telemóvel entra diretamente nos Reportes.
 
 ## Desenho da interface
 
