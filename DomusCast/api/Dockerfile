@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # O processo corre sem privilégios de root
 RUN useradd --system --no-create-home --uid 10001 appuser
+RUN mkdir -p /app/media && chown appuser:appuser /app/media
 
 COPY --chown=appuser:appuser . .
 
