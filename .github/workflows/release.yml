@@ -1,0 +1,66 @@
+name: Release
+
+# Cria automaticamente uma tag de versão (vX.Y.Z) e a respetiva GitHub Release
+# sempre que o CI passa na main (ou seja, depois de cada merge).
+#   feat/*        -> MINOR   |   restantes branches/push direto -> PATCH
+# O MAJOR (ex.: v1.0.0 no fim do sprint B) é criado à mão; a pipeline continua
+# a partir da tag mais alta que existir.
+#
+# Nota: tags/releases criadas com o GITHUB_TOKEN não disparam outros workflows.
+# Um futuro deploy deve correr neste workflow ou via workflow_run deste.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Uma release de cada vez, sem cancelar as que estão em curso
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Tag + GitHub Release
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # criar a tag e a release
+      pull-requests: read # descobrir o branch do PR do commit
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0 # histórico + tags
+          persist-credentials: false
+
+      - name: Criar tag e release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          semver='^v[0-9]+\.[0-9]+\.[0-9]+$'
+
+          # Re-run ou tag manual (ex.: v1.0.0) neste commit -> nada a fazer
+          if git tag --points-at "$SHA" | grep -qE "$semver"; then
+            echo "O commit $SHA já tem tag de versão; nada a fazer."
+            exit 0
+          fi
+
+          latest=$(git tag -l 'v*' --sort=-v:refname | grep -E "$semver" | head -n1 || true)
+          branch=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null)][0].head.ref // ""')
+          next=$(bash .github/scripts/next-version.sh "$latest" "$branch")
+
+          echo "Última tag: ${latest:-<nenhuma>} | branch: ${branch:-<push direto>} | nova: $next"
+          gh release create "$next" --target "$SHA" --title "$next" --generate-notes
+          echo "### Release $next criada" >> "$GITHUB_STEP_SUMMARY"
