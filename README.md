@@ -7,7 +7,7 @@ Aplicação móvel de gestão de condomínio para prédios autogeridos em Portug
 
 ## Stack
 
-Flutter (Android) · FastAPI (Python) · PostgreSQL · Docker. As decisões de arquitetura estão nas [ADRs](docs/sprintA/sprintA.md#9-architecture-decision-records).
+Flutter (Android) - FastAPI (Python) - PostgreSQL - Docker. As decisões de arquitetura estão nas [ADRs](docs/sprintA/sprintA.md#9-architecture-decision-records).
 
 ## Estrutura do repositório
 

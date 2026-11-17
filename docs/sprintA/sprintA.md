@@ -229,20 +229,20 @@ Os números abaixo foram verificados nas páginas públicas das lojas. São apre
 
 | App | Google Play | Apple App Store | Notas / outras reivindicações | Fontes |
 |---|---|---|---|---|
-| **Gecond, o meu condomínio** (IMPROXY) | **50K+** downloads · **2,9★** (145 avaliações) | **1,8★** (38 avaliações) | Acesso apenas por convite (o administrador tem de usar o software Gecond). A reivindicação de “cerca de 200.000 utilizadores” aparece no artigo do Público (9/10/2024) sem atribuição explícita a fonte da empresa — tratada como não fundamentada. A afirmação de que **83%** dos clientes do software Gecond disponibilizam a app aos condóminos está documentada no blog da Improxy. | [Play Store](https://play.google.com/store/apps/details?id=com.improxy.Gecond) · [App Store](https://apps.apple.com/us/app/gecond-o-meu-condom%C3%ADnio/id1541353491) · [Improxy blog (83%)](https://www.improxy.com/blog/gecond-o-meu-condominio-pela-transformacao-digital/) · [Público](https://imobiliario.publico.pt/solucoes-casa/aplicacao-gecond-facilita-ligacao-entre-condominos-administradores-condominio/) |
-| **myLDC – Condomínios** | **10K+** downloads | **2,0★** (8 avaliações) | Volume de avaliações muito reduzido. | Google Play e App Store (páginas oficiais da app) |
-| **GC Condóminos** (SolidSoft) | **1K+** downloads · classificação pública não visível | Classificação e contagem de transferências não visíveis | Site da empresa ([gcsoftware.pt](https://www.gcsoftware.pt)) afirma que “mais de 100.000 frações” são já geridas com as suas soluções. Acesso restrito a condomínios que usam o software GC. | [Play Store](https://play.google.com/store/apps/details?id=pt.gcsoftware.condominos) · [gcsoftware.pt](https://www.gcsoftware.pt) |
-| **Unitify** | **500+** downloads · sem classificação pública | Não disponível | Presença ainda muito inicial. Site: [unitify.com](https://unitify.com). | [Play Store](https://play.google.com/store/apps/details?id=com.unitify.client) |
-| **GOcondomínios** | Sem app nativa com números públicos de downloads/avaliações identificados | — | Principalmente plataforma web/SaaS com portal para condóminos. | Site da empresa |
+| **Gecond, o meu condomínio** (IMPROXY) | **50K+** downloads - **2,9** (145 avaliações) | **1,8** (38 avaliações) | Acesso apenas por convite (o administrador tem de usar o software Gecond). A reivindicação de “cerca de 200.000 utilizadores” aparece no artigo do Público (9/10/2024) sem atribuição explícita a fonte da empresa - tratada como não fundamentada. A afirmação de que **83%** dos clientes do software Gecond disponibilizam a app aos condóminos está documentada no blog da Improxy. | [Play Store](https://play.google.com/store/apps/details?id=com.improxy.Gecond) - [App Store](https://apps.apple.com/us/app/gecond-o-meu-condom%C3%ADnio/id1541353491) - [Improxy blog (83%)](https://www.improxy.com/blog/gecond-o-meu-condominio-pela-transformacao-digital/) - [Público](https://imobiliario.publico.pt/solucoes-casa/aplicacao-gecond-facilita-ligacao-entre-condominos-administradores-condominio/) |
+| **myLDC – Condomínios** | **10K+** downloads | **2,0** (8 avaliações) | Volume de avaliações muito reduzido. | Google Play e App Store (páginas oficiais da app) |
+| **GC Condóminos** (SolidSoft) | **1K+** downloads - classificação pública não visível | Classificação e contagem de transferências não visíveis | Site da empresa ([gcsoftware.pt](https://www.gcsoftware.pt)) afirma que “mais de 100.000 frações” são já geridas com as suas soluções. Acesso restrito a condomínios que usam o software GC. | [Play Store](https://play.google.com/store/apps/details?id=pt.gcsoftware.condominos) - [gcsoftware.pt](https://www.gcsoftware.pt) |
+| **Unitify** | **500+** downloads - sem classificação pública | Não disponível | Presença ainda muito inicial. Site: [unitify.com](https://unitify.com). | [Play Store](https://play.google.com/store/apps/details?id=com.unitify.client) |
+| **GOcondomínios** | Sem app nativa com números públicos de downloads/avaliações identificados | - | Principalmente plataforma web/SaaS com portal para condóminos. | Site da empresa |
 
 #### Concorrentes internacionais
 
 | App | Google Play | Apple App Store | Notas | Fontes |
 |---|---|---|---|---|
-| **TownSq Community** | **500K+** downloads. Classificação variável conforme vista (ex.: ~4,2★ com 236 avaliações em vista móvel; valores mais baixos reportados em vista desktop) | **4,7★** (~12K avaliações) | Orientada a HOAs / gestão profissional. Site: [townsq.io](https://www.townsq.io). | Páginas oficiais das lojas |
-| **Buildium – Manager** | Sem avaliações visíveis | **4,7★** (4,5K avaliações) | App orientada a gestores profissionais. Site: [buildium.com](https://www.buildium.com). | Páginas oficiais das lojas |
-| **Buildium – Resident Center** | **4,7★** (25,1K avaliações) | **4,8★** (158K avaliações) | App residente do ecossistema Buildium; volume de avaliações muito elevado. | Páginas oficiais das lojas |
-| **Condo Control** | **100K+** downloads · **4,4★** (5 avaliações) | **3,8★** (37 avaliações) | Site: [condocontrol.com](https://www.condocontrol.com). | Páginas oficiais das lojas |
+| **TownSq Community** | **500K+** downloads. Classificação variável conforme vista (ex.: ~4,2 com 236 avaliações em vista móvel; valores mais baixos reportados em vista desktop) | **4,7** (~12K avaliações) | Orientada a HOAs / gestão profissional. Site: [townsq.io](https://www.townsq.io). | Páginas oficiais das lojas |
+| **Buildium – Manager** | Sem avaliações visíveis | **4,7** (4,5K avaliações) | App orientada a gestores profissionais. Site: [buildium.com](https://www.buildium.com). | Páginas oficiais das lojas |
+| **Buildium – Resident Center** | **4,7** (25,1K avaliações) | **4,8** (158K avaliações) | App residente do ecossistema Buildium; volume de avaliações muito elevado. | Páginas oficiais das lojas |
+| **Condo Control** | **100K+** downloads - **4,4** (5 avaliações) | **3,8** (37 avaliações) | Site: [condocontrol.com](https://www.condocontrol.com). | Páginas oficiais das lojas |
 
 **Leitura dos dados:**  
 - As apps portuguesas apresentam volumes de downloads e de avaliações públicas muito inferiores aos dos concorrentes internacionais.  
@@ -304,23 +304,23 @@ Não existe em Portugal um produto pensado para o administrador voluntário de u
 
 ### Resultados
 
-Os resultados abaixo referem-se ao inquérito (método 1). Foram recolhidas **10 respostas** entre 1 de outubro e 1 de novembro de 2026; os dados em bruto estão em [Investigação de Utilizadores — Gestão de Condomínios (Respostas).xlsx](Investigação%20de%20Utilizadores%20—%20Gestão%20de%20Condomínios%20(Respostas).xlsx). Com uma amostra deste tamanho, as contagens são apresentadas em valores absolutos (x/10) e devem ser lidas como indicativas.
+Os resultados abaixo referem-se ao inquérito (método 1). Foram recolhidas **10 respostas** entre 1 de outubro e 1 de novembro de 2026; os dados em bruto estão em [Investigação de Utilizadores - Gestão de Condomínios (Respostas).xlsx](Investigação%20de%20Utilizadores%20-%20Gestão%20de%20Condomínios%20(Respostas).xlsx). Com uma amostra deste tamanho, as contagens são apresentadas em valores absolutos (x/10) e devem ser lidas como indicativas.
 
 **A - Perfil**
 
 | Pergunta | Respostas |
 |---|---|
-| Papel | Inquilino 5 · Proprietário residente 3 · Administrador 2 |
-| Nº de frações | Menos de 10: 3 · 10-30: 3 · 31-60: 2 · Mais de 60: 2 |
-| Administração | Condómino voluntário 7 · Profissional 1 · Não sei 2 (ver [Limitações](#limitações)) |
+| Papel | Inquilino 5 - Proprietário residente 3 - Administrador 2 |
+| Nº de frações | Menos de 10: 3 - 10-30: 3 - 31-60: 2 - Mais de 60: 2 |
+| Administração | Condómino voluntário 7 - Profissional 1 - Não sei 2 (ver [Limitações](#limitações)) |
 
 **B - Comunicação atual**
 
 | Pergunta | Respostas |
 |---|---|
-| Canal para reportar avarias | WhatsApp/Messenger 4 · Contacto direto com o administrador 3 · Poster físico 2 · E-mail 1 · App dedicada 0 |
-| Frequência de reportes | Nunca ou raramente 4 · Às vezes 5 · Frequentemente 1 |
-| Fica a saber se foi resolvido? | Sim, sempre 3 · Às vezes 4 · Raramente 3 |
+| Canal para reportar avarias | WhatsApp/Messenger 4 - Contacto direto com o administrador 3 - Poster físico 2 - E-mail 1 - App dedicada 0 |
+| Frequência de reportes | Nunca ou raramente 4 - Às vezes 5 - Frequentemente 1 |
+| Fica a saber se foi resolvido? | Sim, sempre 3 - Às vezes 4 - Raramente 3 |
 
 Ninguém usa hoje uma app dedicada, e **7 em 10 nem sempre sabem se o problema que reportaram foi resolvido**.
 
@@ -341,10 +341,10 @@ Nos prédios autogeridos, a comunidade-alvo do produto, todas as frustrações f
 
 | Pergunta | Respostas |
 |---|---|
-| Usaria uma app dedicada? | Sim, definitivamente 6 · Provavelmente sim 4 · Provavelmente não 0 · Definitivamente não 0 |
-| Fator mais importante | Ser rápida 5 · Gratuita ou barata 3 · Privacidade 1 · Que os vizinhos também usassem 1 |
-| Maior inibidor | **Vizinhos mais velhos não vão usar 8** · O WhatsApp já chega 1 · Mais uma app para instalar 1 |
-| Disposição a pagar por fração/mês | Nada 3 · Até 0,50 € 4 · Até 1 € 1 · Até 2 € 2 |
+| Usaria uma app dedicada? | Sim, definitivamente 6 - Provavelmente sim 4 - Provavelmente não 0 - Definitivamente não 0 |
+| Fator mais importante | Ser rápida 5 - Gratuita ou barata 3 - Privacidade 1 - Que os vizinhos também usassem 1 |
+| Maior inibidor | **Vizinhos mais velhos não vão usar 8** - O WhatsApp já chega 1 - Mais uma app para instalar 1 |
+| Disposição a pagar por fração/mês | Nada 3 - Até 0,50 € 4 - Até 1 € 1 - Até 2 € 2 |
 
 **Administradores (n=2):** ambos são condóminos voluntários em prédios de 10 a 60 frações, um coordena por poster e outro por contacto direto, e um reporta problemas mais de 6 vezes por ano. Os dois dão 3 ou mais a todas as frustrações, responderam "Sim, definitivamente", apontam os vizinhos mais velhos como maior inibidor e pagariam até 0,50 € e até 1 € por fração/mês.
 
@@ -955,25 +955,25 @@ Este modelo cobre o desenho do Sprint A e não resulta de um teste de intrusão.
 
 **Fronteiras de confiança (TB):**
 
-1. **TB1 — Dispositivo móvel do utilizador:** a app Flutter, a credencial e a fila offline SQLite estão fora do controlo do backend. QR codes, credenciais, IDs, papéis, campos e ficheiros enviados pelo cliente são entradas não confiáveis.
-2. **TB2 — Rede interna do backend (VM Linux / Docker):** a API e o Worker comunicam com PostgreSQL e com o volume `media`; a API cria jobs na mesma transação que os dados e o Worker consome a fila. A API valida cada pedido e o Worker não deve tratar uploads nem resultados da IA como confiáveis.
-3. **TB3 — Persistência e observabilidade:** PostgreSQL guarda dados de domínio, histórico e jobs; o volume guarda fotos e áudios; logs JSON e Prometheus recolhem eventos e métricas. Acesso operacional a estes recursos pode contornar as restrições da app.
-4. **TB4 — Serviços externos (terceiros):** o Worker envia áudio/texto à OpenAI e sincroniza eventos com o simulador de calendário; a API publica o feed iCal, consumido por aplicações de calendário fora do nosso controlo. Chaves e tokens são segredos, e os dados enviados a terceiros ficam sujeitos às respetivas fronteiras e políticas.
+1. **TB1 - Dispositivo móvel do utilizador:** a app Flutter, a credencial e a fila offline SQLite estão fora do controlo do backend. QR codes, credenciais, IDs, papéis, campos e ficheiros enviados pelo cliente são entradas não confiáveis.
+2. **TB2 - Rede interna do backend (VM Linux / Docker):** a API e o Worker comunicam com PostgreSQL e com o volume `media`; a API cria jobs na mesma transação que os dados e o Worker consome a fila. A API valida cada pedido e o Worker não deve tratar uploads nem resultados da IA como confiáveis.
+3. **TB3 - Persistência e observabilidade:** PostgreSQL guarda dados de domínio, histórico e jobs; o volume guarda fotos e áudios; logs JSON e Prometheus recolhem eventos e métricas. Acesso operacional a estes recursos pode contornar as restrições da app.
+4. **TB4 - Serviços externos (terceiros):** o Worker envia áudio/texto à OpenAI e sincroniza eventos com o simulador de calendário; a API publica o feed iCal, consumido por aplicações de calendário fora do nosso controlo. Chaves e tokens são segredos, e os dados enviados a terceiros ficam sujeitos às respetivas fronteiras e políticas.
 
 Os fluxos considerados são: entradas e ficheiros da app para a API por HTTPS; sincronização da fila local; publicação do feed iCal com token; transação SQL com job outbox; gravação e leitura de fotos/áudios no volume; consumo de jobs pelo Worker; envio de áudio/texto à OpenAI; sincronização de eventos com o calendário; e emissão de logs e métricas. Não existe fornecedor externo de push: as notificações são locais no dispositivo.
 
 | ID / STRIDE | Cenário e impacto | Controlo previsto | Verificação no Sprint B/C |
 |---|---|---|---|
-| TM-01 · Spoofing (QR / convites) | QR code ou convite divulgado/adivinhado permite criar uma identidade ou obter acesso de administrador. | Tokens longos e aleatórios; hash na base de dados; limite de tentativas; convite de uso único e com validade curta; administrador pode regenerar o QR e remover identidades ([10.5](#105-qr-code-revogação-e-abuso)). | Testar tentativas repetidas, convite expirado/reutilizado, rotação do QR e remoção de identidade. |
-| TM-02 · Spoofing (credencial / fila offline) | Dispositivo perdido ou credencial/fila copiada permite agir como residente ou sincronizar reportes depois de a identidade ser removida. | Guardar a credencial no armazenamento seguro e a fila no espaço privado da app; usar HTTPS; API recusa pedidos de identidades removidas. | Inspecionar armazenamento e testar envio de itens pendentes após remover a identidade. |
-| TM-03 · Tampering (uploads / path; corrida da IA) | Upload adulterado ou caminho controlado pelo cliente altera conteúdo/acede a ficheiros indevidos; um resultado tardio do Worker pode sobrescrever uma ata aprovada. | Validar formato e tamanho; gerar nomes/caminhos no servidor e guardar fora de acesso público; controlar transições de estado para nunca substituir uma ata aprovada ([7.5](#75-baseline-e-fallback)). | Testar ficheiros e caminhos inválidos, acesso direto aos uploads e resposta tardia após aprovação manual. |
-| TM-04 · Prompt Injection no áudio | Instruções no áudio influenciam a transcrição ou o rascunho e introduzem decisões falsas. | Tratar transcrição como entrada não confiável; IA sem ferramentas; revisão humana obrigatória antes de aprovar a ata ([7.3](#73-riscos-e-mitigações)). | Executar casos de prompt injection e confirmar que só a aprovação humana publica a ata. |
-| TM-05 · Repudiation (histórico / atas) | Alterações administrativas ou de estado sem autoria verificável comprometem a rastreabilidade e a prova do que foi decidido. | Histórico de reportes só de inserção, com data e autor; registar ações administrativas e preservar atas aprovadas; restringir permissões da base de dados. | Tentar alterar/apagar histórico por rotas públicas e confirmar autoria e ordem dos registos. |
-| TM-06 · Information Disclosure (IDOR / autor) | Alterar IDs ou explorar respostas da API revela reportes de outro condomínio ou a identidade/fração do autor. | Aplicar autorização no servidor por condomínio e papel; não confiar em IDs ou papéis enviados pelo cliente; omitir nome/fração nas respostas a residentes quando não autorizados ([10.2](#102-controlo-de-acessos)). | Testar IDs de outro condomínio e confirmar que respostas a residentes não expõem dados do autor. |
-| TM-07 · Information Disclosure (EXIF / voz / terceiros) | Metadados de fotos ou gravações expõem localização/identidade; o envio de áudio e texto à OpenAI divulga dados a um terceiro. | Remover EXIF; limitar acesso ao volume `media`; enviar à IA apenas os dados necessários e definir retenção e condições de tratamento para o serviço externo ([10.4](#104-retenção)). | Verificar remoção de EXIF, permissões e ficheiros enviados; confirmar os dados e retenção acordados com o fornecedor. |
-| TM-08 · Information Disclosure (métricas / logs / notificações / token URL) | Métricas expostas, PII em logs/notificações ou divulgação do token iCal permitem inferir atividade ou consultar reuniões. | Restringir `/metrics`; usar `identidade_id` e `request_id` sem nomes nem conteúdo nos logs; notificações locais apenas com dados mínimos; usar token iCal aleatório e regenerável, sem o registar, e limitar o feed a data, hora e local. | Testar acesso não autorizado a métricas; inspecionar logs/notificações; confirmar os campos do feed e a invalidação do URL após regenerar o token. |
-| TM-09 · Denial of Service (uploads / rate limit / quota) | Flood de pedidos ou uploads esgota recursos; jobs duplicados ou abuso da API de IA aumentam custos e atrasam o serviço. | Limites por IP, tamanho e duração; limite de frações por condomínio; chave de idempotência, `SKIP LOCKED`, máximo de 5 retries e timeout para chamadas externas ([7.4](#74-abordagem-de-avaliação)). | Testar limites de pedidos e uploads, duplicação de jobs, retries e falhas/limites do serviço de IA. |
-| TM-10 · Elevation of Privilege (papéis / admin) | Um residente altera o papel enviado pelo cliente ou acede a operações administrativas sem autorização. | Determinar o papel no servidor a partir da identidade autenticada; validar autorização em todos os endpoints; autenticação mock do MVP apenas para demonstração ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)). | Chamar endpoints administrativos com credencial de residente e tentar alterar o papel no pedido; exigir recusa. |
+| TM-01 - Spoofing (QR / convites) | QR code ou convite divulgado/adivinhado permite criar uma identidade ou obter acesso de administrador. | Tokens longos e aleatórios; hash na base de dados; limite de tentativas; convite de uso único e com validade curta; administrador pode regenerar o QR e remover identidades ([10.5](#105-qr-code-revogação-e-abuso)). | Testar tentativas repetidas, convite expirado/reutilizado, rotação do QR e remoção de identidade. |
+| TM-02 - Spoofing (credencial / fila offline) | Dispositivo perdido ou credencial/fila copiada permite agir como residente ou sincronizar reportes depois de a identidade ser removida. | Guardar a credencial no armazenamento seguro e a fila no espaço privado da app; usar HTTPS; API recusa pedidos de identidades removidas. | Inspecionar armazenamento e testar envio de itens pendentes após remover a identidade. |
+| TM-03 - Tampering (uploads / path; corrida da IA) | Upload adulterado ou caminho controlado pelo cliente altera conteúdo/acede a ficheiros indevidos; um resultado tardio do Worker pode sobrescrever uma ata aprovada. | Validar formato e tamanho; gerar nomes/caminhos no servidor e guardar fora de acesso público; controlar transições de estado para nunca substituir uma ata aprovada ([7.5](#75-baseline-e-fallback)). | Testar ficheiros e caminhos inválidos, acesso direto aos uploads e resposta tardia após aprovação manual. |
+| TM-04 - Prompt Injection no áudio | Instruções no áudio influenciam a transcrição ou o rascunho e introduzem decisões falsas. | Tratar transcrição como entrada não confiável; IA sem ferramentas; revisão humana obrigatória antes de aprovar a ata ([7.3](#73-riscos-e-mitigações)). | Executar casos de prompt injection e confirmar que só a aprovação humana publica a ata. |
+| TM-05 - Repudiation (histórico / atas) | Alterações administrativas ou de estado sem autoria verificável comprometem a rastreabilidade e a prova do que foi decidido. | Histórico de reportes só de inserção, com data e autor; registar ações administrativas e preservar atas aprovadas; restringir permissões da base de dados. | Tentar alterar/apagar histórico por rotas públicas e confirmar autoria e ordem dos registos. |
+| TM-06 - Information Disclosure (IDOR / autor) | Alterar IDs ou explorar respostas da API revela reportes de outro condomínio ou a identidade/fração do autor. | Aplicar autorização no servidor por condomínio e papel; não confiar em IDs ou papéis enviados pelo cliente; omitir nome/fração nas respostas a residentes quando não autorizados ([10.2](#102-controlo-de-acessos)). | Testar IDs de outro condomínio e confirmar que respostas a residentes não expõem dados do autor. |
+| TM-07 - Information Disclosure (EXIF / voz / terceiros) | Metadados de fotos ou gravações expõem localização/identidade; o envio de áudio e texto à OpenAI divulga dados a um terceiro. | Remover EXIF; limitar acesso ao volume `media`; enviar à IA apenas os dados necessários e definir retenção e condições de tratamento para o serviço externo ([10.4](#104-retenção)). | Verificar remoção de EXIF, permissões e ficheiros enviados; confirmar os dados e retenção acordados com o fornecedor. |
+| TM-08 - Information Disclosure (métricas / logs / notificações / token URL) | Métricas expostas, PII em logs/notificações ou divulgação do token iCal permitem inferir atividade ou consultar reuniões. | Restringir `/metrics`; usar `identidade_id` e `request_id` sem nomes nem conteúdo nos logs; notificações locais apenas com dados mínimos; usar token iCal aleatório e regenerável, sem o registar, e limitar o feed a data, hora e local. | Testar acesso não autorizado a métricas; inspecionar logs/notificações; confirmar os campos do feed e a invalidação do URL após regenerar o token. |
+| TM-09 - Denial of Service (uploads / rate limit / quota) | Flood de pedidos ou uploads esgota recursos; jobs duplicados ou abuso da API de IA aumentam custos e atrasam o serviço. | Limites por IP, tamanho e duração; limite de frações por condomínio; chave de idempotência, `SKIP LOCKED`, máximo de 5 retries e timeout para chamadas externas ([7.4](#74-abordagem-de-avaliação)). | Testar limites de pedidos e uploads, duplicação de jobs, retries e falhas/limites do serviço de IA. |
+| TM-10 - Elevation of Privilege (papéis / admin) | Um residente altera o papel enviado pelo cliente ou acede a operações administrativas sem autorização. | Determinar o papel no servidor a partir da identidade autenticada; validar autorização em todos os endpoints; autenticação mock do MVP apenas para demonstração ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)). | Chamar endpoints administrativos com credencial de residente e tentar alterar o papel no pedido; exigir recusa. |
 
 **Riscos residuais e decisões pendentes:** o QR partilhado e o nome autodeclarado não provam que a pessoa vive na fração; a revisão pelo administrador reduz, mas não elimina, o acesso indevido antes da deteção. A autenticação mock do administrador ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)) serve apenas para a demonstração académica. O envio de áudio/texto à OpenAI e o feed iCal com token são exposições a serviços ou aplicações fora do controlo do backend. Faltam fixar o prazo de retenção de reportes, áudios sem ata aprovada e backups, bem como as condições de tratamento dos dados enviados à IA. Estes pontos devem ser resolvidos antes de testar com moradores ou lançar o produto.
 
@@ -1092,7 +1092,7 @@ O ambiente local e de avaliação sobe com um único comando (`docker compose up
 
 **Ordem de arranque garantida por health check.** O `postgres` declara um health check (`pg_isready -U condoapp`, intervalo de 5 s, até 10 tentativas); o serviço `api` tem `depends_on: postgres: condition: service_healthy`, pelo que o Uvicorn só sobe depois de a base de dados aceitar ligações.
 
-**Configuração por variáveis de ambiente.** A `DATABASE_URL` é injetada no container `api` via `environment`; em qualquer ambiente partilhado substitui-se por secrets — os valores de desenvolvimento (`condoapp`) nunca entram em produção.
+**Configuração por variáveis de ambiente.** A `DATABASE_URL` é injetada no container `api` via `environment`; em qualquer ambiente partilhado substitui-se por secrets - os valores de desenvolvimento (`condoapp`) nunca entram em produção.
 
 **Segurança no container.** O PostgreSQL só escuta em `127.0.0.1:5433` (não exposto na rede do host). A imagem da API usa `python:3.12-slim` como base e corre como utilizador sem privilégios (`appuser`, uid 10001); o `.dockerignore` impede que `.env`, testes e ficheiros de desenvolvimento entrem na imagem.
 

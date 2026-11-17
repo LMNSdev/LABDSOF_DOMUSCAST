@@ -1,4 +1,4 @@
-"""full schema — todas as entidades do modelo de dados (8.3)
+"""full schema - todas as entidades do modelo de dados (8.3)
 
 Revision ID: 0002
 Revises: 0001
@@ -92,7 +92,7 @@ def upgrade() -> None:
     op.add_column("reporte", sa.Column("mostrar_nome", sa.Boolean(), nullable=False, server_default="false"))
     op.add_column("reporte", sa.Column("duplicado_de_id", sa.Integer(), sa.ForeignKey("reporte.id"), nullable=True))
 
-    # --- reporte_historico (só inserção — nunca update/delete) ---
+    # --- reporte_historico (só inserção - nunca update/delete) ---
     op.create_table(
         "reporte_historico",
         sa.Column("id", sa.Integer(), primary_key=True),

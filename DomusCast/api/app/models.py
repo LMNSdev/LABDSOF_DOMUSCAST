@@ -149,7 +149,7 @@ class Reporte(Base):
     condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=True)  # NOT NULL a partir de Sprint B
     autor_id = Column(Integer, ForeignKey("identidade.id"), nullable=True)       # NOT NULL a partir de Sprint B
     descricao = Column(Text, nullable=False)
-    foto_url = Column(String(500), nullable=True)        # walking skeleton — substituído por foto_path
+    foto_url = Column(String(500), nullable=True)        # walking skeleton - substituído por foto_path
     foto_path = Column(String(500), nullable=True)
     foto_alt = Column(String(300), nullable=True)
     mostrar_nome = Column(Boolean, nullable=False, server_default="false")

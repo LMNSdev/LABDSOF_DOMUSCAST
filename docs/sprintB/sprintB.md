@@ -1,6 +1,40 @@
 # Sprint B
 
+[Sprint Backlog](backlog.md) - [Registo diário](daily-log.md)
+
 ## Sprint A retrospective
+
+Realizada pela equipa no início do Sprint B, depois da sprint review com os docentes e antes do planeamento do sprint.
+
+### Feedback dos docentes na review do Sprint A
+
+- Algumas user stories eram grandes e podiam ser divididas.
+- Não concordavam com a prioridade Must de algumas histórias nem com alguns story points.
+
+O backlog foi revisto em resposta (versão v0.7 do [Product Backlog](../backlog.md#histórico-de-versões)): as histórias grandes foram divididas (US-20 a US-34), os story points foram refeitos numa escala até 3 (acima disso divide-se) e a prioridade foi reordenada, com justificação MoSCoW por história.
+
+### O que correu bem
+
+- **Comunicação da equipa:** a informação circulou e as decisões foram tomadas em conjunto.
+- **Eficácia:** os entregáveis do Sprint A foram concluídos.
+
+### O que correu mal
+
+- **Divisão do trabalho:** as tarefas eram atribuídas em blocos grandes, o que dificultava saber quem fazia o quê e equilibrar a carga entre as 5 pessoas.
+
+### Ações para o Sprint B
+
+| Ação | Responsável | Como se verifica |
+|---|---|---|
+| Dividir cada user story em tarefas pequenas, uma issue por tarefa no GitHub Projects, cada uma com um só responsável | Pedro Soares (Scrum Master) | Cada US do Sprint B tem tarefas com responsável no quadro do Project |
+| Registar na daily o que cada pessoa fez e vai fazer, para tornar a divisão visível e detetar desequilíbrios cedo | Pedro Soares (Scrum Master) | [Registo diário](daily-log.md) com uma linha por pessoa em cada daily |
+| Manter as histórias pequenas: nenhuma entra no sprint acima de 3 story points | Luis Santos (Product Owner) | Coluna SP do [Sprint Backlog](backlog.md) |
+
+Na retrospetiva do Sprint B a equipa avalia se estas ações resolveram o problema da divisão do trabalho.
+
+### Revisão da DoR e da DoD
+
+Sem alterações. O problema identificado foi de organização do trabalho e não de critérios em falta; o feedback sobre o tamanho das histórias já está coberto pelo critério "Valor e âmbito claros" da [DoR](../sprintA/sprintA.md#definition-of-ready-dor) (dimensão estimável para ser concluída num sprint) e pelo limite de 3 story points.
 
 ## Develop user stories from sprint backlog (ensuring Definition of Done)
 

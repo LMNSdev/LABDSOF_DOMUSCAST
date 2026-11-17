@@ -1,7 +1,7 @@
 # DomusCast
 
 Aplicação de gestão de condomínio para prédios autogeridos.  
-Stack: Flutter (Android) · FastAPI · PostgreSQL · Docker
+Stack: Flutter (Android) - FastAPI - PostgreSQL - Docker
 
 ---
 
