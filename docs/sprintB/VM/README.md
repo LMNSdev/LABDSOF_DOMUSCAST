@@ -257,7 +257,7 @@ flowchart TB
     on -->|"deploy ou rollback<br/>para vX.Y.Z"| on
 ```
 
-O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por exemplo, `v0.2.3`): a imagem dessa versão ainda está no GHCR e as migrações são aditivas, por isso voltar atrás não exige reverter o esquema da base de dados.
+O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por exemplo, `v0.3.0`): a imagem dessa versão continua no GHCR e as migrações são aditivas, por isso voltar atrás não exige reverter o esquema da base de dados.
 
 ### Resumo do desenho e onde está implementado
 
@@ -272,7 +272,7 @@ O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por e
 1. **Imagem da API.** Depois de o workflow `Release` criar a tag `vX.Y.Z`, a imagem é construída e publicada no GitHub Container Registry com a tag da versão e a do commit. O repositório é público, por isso a VM descarrega a imagem sem token.
 2. **Compose de produção.** `docker-compose.prod.yml` com `postgres` (sem porta exposta), `api` (imagem do GHCR, sem build na VM) e `caddy` à frente, que obtém e renova o certificado HTTPS (Let's Encrypt) para `domuscast.belgiumcentral.cloudapp.azure.com`. Worker, Prometheus e Grafana entram quando existirem.
 3. **Deploy a cada merge**, no *environment* `production`: ver o estado da VM → ligá-la se estiver desligada → copiar o compose e fazer `pull`/`up` da nova versão por SSH → confirmar que o `/health` responde → voltar a desalocá-la se estava desligada.
-4. **Rollback** por *Run workflow* no GitHub, indicando a versão (ex.: `v0.2.3`). As migrações são aditivas, por isso voltar atrás não exige reverter o esquema.
+4. **Rollback** por *Run workflow* no GitHub, indicando a versão (ex.: `v0.3.0`). As migrações são aditivas, por isso voltar atrás não exige reverter o esquema.
 5. **Ligar/desligar pelo GitHub** por *Run workflow*, para quem não tem acesso à subscrição.
 6. **Desalocar todas as noites às 00:00** com um workflow agendado.
 7. **APK** gerado com a versão da tag (`--build-name`) e o endereço HTTPS da VM (`--dart-define`), anexado à GitHub Release.
@@ -288,10 +288,12 @@ O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por e
 | `DEPLOY_SSH_KEY` | secret | environment `production` | chave privada `~/.ssh/domuscast_deploy` |
 | `DEPLOY_KNOWN_HOSTS` | secret | environment `production` | chaves públicas da VM (`ssh-keyscan`), para o runner confirmar que fala com o servidor certo |
 
+O *environment* `production` só aceita jobs que corram na `main` (*deployment branch policy*): um workflow noutro branch não recebe a chave SSH nem o acesso à Azure.
+
 ### Como usar
 
 - **Deploy:** automático, a cada merge na `main` com o CI verde. Acompanhar em *Actions → Release*; o resumo do job `Deploy` diz a versão e se a VM foi ligada só para o deploy.
-- **Rollback:** *Actions → Deploy → Run workflow*, com a versão anterior (ex.: `v0.2.3`). Uma versão mal escrita ou sem imagem no GHCR falha logo no primeiro passo, sem ligar a VM.
+- **Rollback:** *Actions → Deploy → Run workflow*, com a versão anterior (ex.: `v0.3.0`). Só há imagens a partir da primeira versão publicada por esta pipeline (`v0.3.0`); uma versão mal escrita ou sem imagem no GHCR falha logo no primeiro passo, sem ligar a VM.
 - **Ligar/desligar a VM:** *Actions → VM → Run workflow → ligar* (ou *desligar*). Ligar demora cerca de 1 minuto; a API arranca sozinha (`restart: unless-stopped`).
 - **Desalocação noturna:** o mesmo workflow `VM` corre todos os dias às 00:00 **UTC** (00:00 em Lisboa no inverno, 01:00 no verão), porque o cron do GitHub não tem fuso horário.
 - **APK:** em cada GitHub Release, ficheiro `domuscast-vX.Y.Z.apk`, já a apontar para `https://domuscast.belgiumcentral.cloudapp.azure.com`.

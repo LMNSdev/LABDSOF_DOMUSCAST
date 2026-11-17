@@ -2,7 +2,7 @@ name: Deploy
 
 # Implanta uma versão da API na VM de produção (Azure).
 #  - Chamado pelo workflow Release depois de cada nova tag.
-#  - Rollback: Actions → Deploy → Run workflow, com a versão anterior (ex.: v0.2.3).
+#  - Rollback: Actions → Deploy → Run workflow, com a versão anterior (ex.: v0.3.0).
 # Se a VM estiver desalocada, é ligada só durante o deploy e volta a ser desalocada no fim.
 # Ver docs/sprintB/VM/README.md.
 on:
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versão a implantar, ex.: v0.2.3 (rollback)"
+        description: "Versão a implantar, ex.: v0.3.0 (rollback)"
         required: true
         type: string
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Versão inválida: '$VERSION' (esperado vX.Y.Z, ex.: v0.2.3)"
+            echo "::error::Versão inválida: '$VERSION' (esperado vX.Y.Z, ex.: v0.3.0)"
             exit 1
           fi
           if ! docker manifest inspect "$IMAGE:$VERSION" > /dev/null; then

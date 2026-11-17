@@ -35,7 +35,9 @@ if [ "${SKIP_PULL:-}" != "1" ]; then
   "${compose[@]}" pull
 fi
 "${compose[@]}" up -d --remove-orphans
-docker image prune -f >/dev/null
+# Apaga imagens que nenhum container usa (versões antigas da API), para o disco
+# de 30 GB não encher; um rollback volta a descarregar a versão do GHCR.
+docker image prune -af >/dev/null
 
 echo "$VERSION" > VERSION
 echo "DomusCast $VERSION em execução."
