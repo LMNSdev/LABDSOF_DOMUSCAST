@@ -6,8 +6,8 @@ A app passou a ter uma **barra de separadores em baixo**, que depende do papel d
 
 | Papel | Separadores | Abre em |
 |---|---|---|
-| Administrador | Reportes · Reuniões · Avisos · Condomínio | Reportes (logo depois de criar o condomínio, abre no Condomínio para gerar os QR codes) |
-| Residente | Reportes · Reuniões · Avisos | Reportes |
+| Administrador | Reportes, Reuniões, Avisos, Condomínio | Reportes (logo depois de criar o condomínio, abre no Condomínio para gerar os QR codes) |
+| Residente | Reportes, Reuniões, Avisos | Reportes |
 
 - **Reportes:** o uso diário (ver os reportes novos, reportar uma avaria). Por agora é a lista de reportes que já existia; o detalhe e a mudança de estado chegam com a US-03 e a US-05.
 - **Reuniões:** por agora só o estado vazio, até à US-13 e à US-27.

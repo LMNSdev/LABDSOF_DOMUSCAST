@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-15 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+  .grad{background:linear-gradient(135deg,#0A2559,#0F3478,#1A52A8);color:#fff}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .btn.white{background:#fff;color:#0F3478}
+  .btn.ghost{background:transparent;border:1.5px solid rgba(255,255,255,.6);color:#fff}
+  .btn.out{background:#fff;color:#0F3478;border:1.5px solid #0F3478}
+  .field{background:#fff;border:1px solid #c6cfdf;border-radius:8px;padding:8px}
+  .field.err{border:1.5px solid #B3261E}
+  .field small{display:block;color:#667;font-size:10px}
+  .errtxt{color:#B3261E;font-size:11px}
+  .info{background:#fff;border-radius:10px;padding:10px;line-height:1.4}
+  .viewfinder{height:200px;margin:4px 0;background:#222;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  .viewfinder div{width:120px;height:120px;border:3px solid #fff;border-radius:10px}
+  .icon{font-size:36px;text-align:center;margin-top:30px}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-15: identificar o residente pelo nome (QR code partilhado)</h1>
+<p class="subtitle">Wireframe do primeiro acesso do residente, para acordo da equipa antes da implementação (Sprint B). O token do QR code só é validado no servidor quando o residente envia o nome (<code>POST /identidades {token, nome}</code>), por isso a fração só aparece depois de a identidade ser criada. O residente entra pela câmara ou pelo link <code>domuscast://entrar?t=</code> partilhado pelo administrador (US-01). Todos os campos e botões têm etiqueta para leitor de ecrã.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone grad">
+      <div class="body" style="justify-content:flex-end;min-height:410px">
+        <div style="font-size:24px;font-weight:800;text-align:center;margin-bottom:auto;margin-top:60px">DomusCast</div>
+        <div class="btn white">Entrar</div>
+        <div class="btn ghost">Sou administrador: criar condomínio</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Entrada</b>"Entrar" abre a leitura do QR code. O link partilhado abre diretamente o ecrã 3.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Ler QR code</div>
+      <div class="body">
+        <div class="viewfinder"><div></div></div>
+        <div class="note" style="text-align:center">Aponte a câmara para o QR code da sua fração, enviado ou mostrado pelo administrador.</div>
+        <div class="btn out">Recebi um link</div>
+      </div>
+    </div>
+    <div class="cap"><b>2. Ler QR code</b>Pede permissão de câmara na primeira vez.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">O seu nome</div>
+      <div class="body">
+        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou cada problema.<br><br><b>Quem vê?</b><br>Só o administrador. Num reporte, pode escolher mostrar o nome aos vizinhos.</div>
+        <div class="field"><small>Nome (obrigatório)</small>Marta Silva</div>
+        <div class="note">Não pedimos telefone nem e-mail.</div>
+        <div style="margin-top:auto" class="btn">Continuar</div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Pedir o nome</b>Só aparece se o dispositivo ainda não tem identidade.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">O seu nome</div>
+      <div class="body">
+        <div class="info"><b>Para que serve?</b><br>Para o administrador saber quem reportou cada problema.</div>
+        <div class="field err"><small>Nome (obrigatório)</small>marta silva</div>
+        <div class="errtxt">Já existe alguém com este nome na sua fração. Acrescente, por exemplo, um apelido.</div>
+        <div style="margin-top:auto" class="btn">Continuar</div>
+      </div>
+    </div>
+    <div class="cap"><b>4a. Nome vazio ou repetido</b>Repetido ignora maiúsculas, acentos e espaços (409 com <code>codigo: nome_duplicado</code>). Vazio é recusado na app e na API.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">O seu nome</div>
+      <div class="body">
+        <div class="icon">!</div>
+        <div style="text-align:center"><b>Fração completa</b></div>
+        <div class="note" style="text-align:center">Esta fração já tem 10 residentes. Peça ao administrador para remover quem já não vive lá.</div>
+        <div style="margin-top:auto" class="btn">Voltar</div>
+      </div>
+    </div>
+    <div class="cap"><b>4b. Fração completa</b>409 com <code>codigo: fracao_cheia</code>. Mudar o nome não resolve, por isso o ecrã não pede outro nome.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Ler QR code</div>
+      <div class="body">
+        <div class="icon">!</div>
+        <div style="text-align:center"><b>QR code inválido</b></div>
+        <div class="note" style="text-align:center">Este QR code não é válido ou foi revogado. Peça um novo ao administrador.</div>
+        <div style="margin-top:auto" class="btn">Ler outro QR code</div>
+      </div>
+    </div>
+    <div class="cap"><b>4c. QR code inválido ou revogado</b>A app não diz qual dos dois, para não dar pistas sobre tokens.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">O seu nome</div>
+      <div class="body">
+        <div class="icon">!</div>
+        <div style="text-align:center"><b>Sem ligação à internet</b></div>
+        <div class="note" style="text-align:center">O primeiro acesso precisa de internet. O nome que escreveu não se perde.</div>
+        <div style="margin-top:auto" class="btn">Tentar novamente</div>
+      </div>
+    </div>
+    <div class="cap"><b>4d. Sem internet ou demasiadas tentativas</b>Mesmo ecrã para o limite de tentativas (429), com outra mensagem.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="info" style="text-align:center"><b>Olá, Marta</b><br>Entrou na fração A.</div>
+        <div class="note" style="text-align:center;margin-top:auto">Ao abrir a app outra vez, entra diretamente aqui sem pedir o nome.</div>
+      </div>
+    </div>
+    <div class="cap"><b>5. Entrou</b>Credencial guardada no armazenamento seguro do telemóvel.</div>
+  </div>
+</div>
+</body>
+</html>

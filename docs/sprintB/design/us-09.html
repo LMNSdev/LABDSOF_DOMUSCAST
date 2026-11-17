@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-09 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:12px;min-height:380px;display:flex;flex-direction:column;gap:8px}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .field{background:#fff;border:1px solid #c6cfdf;border-radius:8px;padding:8px}
+  .field small{display:block;color:#667;font-size:10px}
+  .toggle{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:8px;padding:8px;gap:6px}
+  .sw{flex:none;width:30px;height:16px;border-radius:8px;background:#c6cfdf;position:relative}
+  .sw::after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff}
+  .sw.on{background:#0F3478}
+  .sw.on::after{left:16px}
+  .card{background:#fff;border-radius:10px;padding:9px}
+  .card b{display:block}
+  .pill{display:inline-block;font-size:10px;border-radius:10px;padding:1px 7px;margin-top:4px;background:#ffe9d6;color:#9a4b00}
+  .tag{display:inline-block;font-size:10px;border-radius:6px;padding:1px 6px;background:#0F3478;color:#fff}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-09: privacidade do autor e dos contactos</h1>
+<p class="subtitle">Wireframe das regras de visibilidade, para acordo da equipa antes da implementação (Sprint B). O mesmo reporte visto por três pessoas: o autor, outro residente e o administrador. O autor escolhe, reporte a reporte, se mostra o nome (<code>mostrar_nome</code>, desligado por omissão). A fração nunca é mostrada a outros residentes. Só se guarda o nome e a fração: nenhum ecrã pede telefone, e-mail ou perfil, e a API recusa esses campos (422). O formulário completo está no <a href="us-02.html">wireframe da US-02</a> e a lista no <a href="us-03.html">da US-03</a>.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Nova avaria</div>
+      <div class="body">
+        <div class="field"><small>Descrição (obrigatória)</small>Fuga de água na garagem</div>
+        <div class="toggle"><span>Mostrar o meu nome neste reporte</span><span class="sw"></span></div>
+        <div class="note">Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.</div>
+        <div style="margin-top:auto" class="btn">Submeter reporte</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Opção desligada (por omissão)</b>Vem desligada em cada reporte novo, mesmo que no anterior tenha sido ligada.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Nova avaria</div>
+      <div class="body">
+        <div class="field"><small>Descrição (obrigatória)</small>Fuga de água na garagem</div>
+        <div class="toggle"><span>Mostrar o meu nome neste reporte</span><span class="sw on"></span></div>
+        <div class="note">Ligado: os vizinhos veem "Marta Silva". A fração continua escondida.</div>
+        <div style="margin-top:auto" class="btn">Submeter reporte</div>
+      </div>
+    </div>
+    <div class="cap"><b>2. Opção ligada</b>O texto explica o efeito antes de submeter.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="note">Vista de outro residente</div>
+        <div class="card"><b>Fuga de água na garagem</b><span class="note">Residente - há 5 min</span><br><span class="pill">Aberto</span></div>
+        <div class="card"><b>Luz da escada fundida</b><span class="note">Marta Silva - ontem</span><br><span class="pill">Aberto</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Outro residente</b>Nome oculto ("Residente") ou visível, conforme o autor escolheu. Nunca a fração.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="note">Vista do autor (Marta)</div>
+        <div class="card"><b>Fuga de água na garagem</b><span class="note">O meu reporte - nome oculto aos vizinhos</span><br><span class="pill">Aberto</span></div>
+        <div class="card"><b>Luz da escada fundida</b><span class="note">O meu reporte - nome visível aos vizinhos</span><br><span class="pill">Aberto</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>4. O próprio autor</b>Vê os seus reportes e sabe, em cada um, se o nome está visível.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="note">Vista do administrador</div>
+        <div class="card"><b>Fuga de água na garagem</b><span class="note">Marta Silva, fração C - há 5 min</span><br><span class="pill">Aberto</span></div>
+        <div class="card"><b>Luz da escada fundida</b><span class="note">Marta Silva, fração C - ontem</span> <span class="tag">nome visível</span><br><span class="pill">Aberto</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>5. Administrador</b>Vê sempre o nome e a fração, para saber quem reportou e priorizar. Nunca vê telefone nem e-mail, porque não existem.</div>
+  </div>
+</div>
+</body>
+</html>

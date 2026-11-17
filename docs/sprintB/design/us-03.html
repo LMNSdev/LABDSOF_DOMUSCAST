@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-03 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:12px;min-height:380px;display:flex;flex-direction:column;gap:8px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .chip{font-size:10px;border:1px solid #9aa7bf;border-radius:12px;padding:2px 8px;background:#fff}
+  .chip.on{background:#0F3478;color:#fff;border-color:#0F3478}
+  .card{background:#fff;border-radius:10px;padding:9px}
+  .card b{display:block}
+  .pill{display:inline-block;font-size:10px;border-radius:10px;padding:1px 7px;margin-top:4px}
+  .aberto{background:#ffe9d6;color:#9a4b00}.curso{background:#dfe9ff;color:#1546a3}.resolvido{background:#dff5e3;color:#1c6b2c}
+  .hist{border-left:2px solid #c6cfdf;padding-left:8px;font-size:11px}
+  .hist div{margin-bottom:6px}
+  .photo{height:60px;border-radius:8px;background:repeating-linear-gradient(45deg,#c9d3e6 0 8px,#dfe6f3 8px 16px)}
+  .empty{border:2px dashed #9aa7bf;border-radius:12px;padding:16px;text-align:center;color:#667;margin-top:30px}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-03: consultar reportes (residente e administrador)</h1>
+<p class="subtitle">Wireframe da lista e do detalhe, para acordo da equipa antes da implementação (Sprint B). Uma só lista para os dois papéis; a API decide o que cada um recebe (<code>GET /reportes?filtro=todos|meus&amp;estado=</code>). Ao residente nunca chega a fração nem o nome do autor, salvo se o autor o mostrou (US-09). Ordem: atualizados mais recentemente primeiro. A lista atualiza ao abrir o separador, ao voltar à app, de 30 em 30 segundos enquanto está aberta, e ao puxar para baixo.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="chips"><span class="chip on">Todos</span><span class="chip">Os meus</span></div>
+        <div class="chips"><span class="chip on">Qualquer estado</span><span class="chip">Aberto</span><span class="chip">Em curso</span><span class="chip">Resolvido</span></div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">Residente - criado há 2 h</span><br><span class="pill aberto">Aberto</span></div>
+        <div class="card"><b>Luz da garagem fundida</b><span class="note">Ana Costa - atualizado ontem</span><br><span class="pill curso">Em curso</span></div>
+        <div class="card"><b>Fuga de água na garagem</b><span class="note">O meu reporte - atualizado há 3 dias</span><br><span class="pill resolvido">Resolvido</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Residente</b>"Residente" quando o autor não mostrou o nome; "O meu reporte" nos próprios. Nunca a fração.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Reporte</div>
+      <div class="body">
+        <b style="font-size:13px">Luz da garagem fundida</b>
+        <span class="pill curso" style="align-self:flex-start">Em curso</span>
+        <div class="photo" role="img" aria-label="Lâmpada fundida no teto da garagem"></div>
+        <div class="note">Ana Costa - criado a 14/11 às 09:10</div>
+        <b>Histórico</b>
+        <div class="hist">
+          <div><b>Em curso</b>15/11 às 18:00<br>Eletricista marcado para segunda.</div>
+          <div><b>Aberto</b>14/11 às 09:10</div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>2. Detalhe</b>Descrição, foto com texto alternativo, datas e histórico de estados com as notas do administrador.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="chips"><span class="chip on">Qualquer estado</span><span class="chip">Aberto</span><span class="chip">Em curso</span><span class="chip">Resolvido</span></div>
+        <div class="card"><b>Elevador parado no 3.º</b><span class="note">Marta Silva, fração C - há 2 h</span><br><span class="pill aberto">Aberto</span></div>
+        <div class="card"><b>Luz da garagem fundida</b><span class="note">Ana Costa, fração A - ontem</span><br><span class="pill curso">Em curso</span></div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Administrador</b>Vê sempre o nome e a fração do autor, para priorizar. Sem o filtro "Os meus".</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="chips"><span class="chip">Todos</span><span class="chip on">Os meus</span></div>
+        <div class="empty">Ainda não reportou nenhum problema.</div>
+      </div>
+    </div>
+    <div class="cap"><b>4a. Vazio</b>Mensagem diferente para "Todos" e para um filtro sem resultados.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reportes</div>
+      <div class="body">
+        <div class="empty">Não foi possível carregar os reportes. Verifique a ligação.</div>
+        <div class="btn">Tentar novamente</div>
+      </div>
+    </div>
+    <div class="cap"><b>4b. Erro ou sem internet</b>Sem cache nesta história; a cache da última lista é da US-18.</div>
+  </div>
+</div>
+</body>
+</html>
