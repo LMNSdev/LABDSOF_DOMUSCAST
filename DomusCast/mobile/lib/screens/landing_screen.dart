@@ -1,14 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
+import '../services/sessao_residente.dart';
 import 'criar_condominio_screen.dart';
 import 'home_screen.dart';
+import 'ler_qr_screen.dart';
+import 'nome_residente_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   final SessaoAdminStore? store;
+  final SessaoResidenteStore? storeResidente;
   final ApiService? api;
 
-  const LandingScreen({super.key, this.store, this.api});
+  /// Links `domuscast://entrar?t=` que abrem a app (US-15).
+  final Stream<Uri>? links;
+
+  const LandingScreen({super.key, this.store, this.storeResidente, this.api, this.links});
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -20,12 +29,15 @@ class _LandingScreenState extends State<LandingScreen>
   late final Animation<double> _fade;
   late final Animation<Offset> _slide;
   late final SessaoAdminStore _store = widget.store ?? SeguraSessaoAdminStore();
+  late final SessaoResidenteStore _storeResidente =
+      widget.storeResidente ?? SeguraSessaoResidenteStore();
   late final ApiService _api = widget.api ?? ApiService();
+  StreamSubscription<Uri>? _links;
 
   @override
   void initState() {
     super.initState();
-    _abrirSessaoAdmin();
+    _abrirSessao();
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 900));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
@@ -36,17 +48,32 @@ class _LandingScreenState extends State<LandingScreen>
 
   @override
   void dispose() {
+    _links?.cancel();
     _ctrl.dispose();
     super.dispose();
   }
 
-  // O administrador que já criou o condomínio entra direto na app (nos Reportes).
-  Future<void> _abrirSessaoAdmin() async {
-    final sessao = await _store.ler();
-    if (sessao == null || !mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => HomeScreen(api: _api, sessao: sessao)),
-    );
+  // Quem já tem sessão entra direto na app (nos Reportes), sem voltar a pedir o nome.
+  // Só sem sessão é que um link domuscast://entrar abre o ecrã do nome.
+  Future<void> _abrirSessao() async {
+    final admin = await _store.ler();
+    final residente = admin == null ? await _storeResidente.ler() : null;
+    if (!mounted) return;
+    if (admin != null || residente != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomeScreen(api: _api, sessao: admin)),
+      );
+      return;
+    }
+    _links = widget.links?.listen(_abrirLink);
+  }
+
+  void _abrirLink(Uri link) {
+    final token = tokenDoLink(link.toString());
+    if (token == null) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => NomeResidenteScreen(api: _api, store: _storeResidente, token: token),
+    ));
   }
 
   void _criarCondominio() {
@@ -57,14 +84,9 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   void _enter() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, a, __) => HomeScreen(api: _api),
-        transitionsBuilder: (_, a, __, child) =>
-            FadeTransition(opacity: a, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => LerQrScreen(api: _api, store: _storeResidente),
+    ));
   }
 
   @override

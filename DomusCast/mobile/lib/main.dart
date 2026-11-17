@@ -1,13 +1,16 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'screens/landing_screen.dart';
 
 void main() {
-  runApp(const DomusCastApp());
+  runApp(DomusCastApp(links: AppLinks().uriLinkStream));
 }
 
 class DomusCastApp extends StatelessWidget {
-  const DomusCastApp({super.key});
+  final Stream<Uri>? links;
+
+  const DomusCastApp({super.key, this.links});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +18,7 @@ class DomusCastApp extends StatelessWidget {
       title: 'DomusCast',
       theme: appTheme,
       debugShowCheckedModeBanner: false,
-      home: const LandingScreen(),
+      home: LandingScreen(links: links),
     );
   }
 }
