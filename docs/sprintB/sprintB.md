@@ -26,7 +26,7 @@ O backlog foi revisto em resposta (versão v0.7 do [Product Backlog](../backlog.
 
 | Ação | Responsável | Como se verifica |
 |---|---|---|
-| Dividir cada user story em tarefas pequenas, uma issue por tarefa no GitHub Projects, cada uma com um só responsável | Pedro Soares (Scrum Master) | Cada US do Sprint B tem tarefas com responsável no quadro do Project |
+| Atribuir cada user story a uma só pessoa, que a implementa de ponta a ponta (frontend, API e persistência, como exige a DoR), com a issue atribuída no GitHub Projects | Pedro Soares (Scrum Master) | Cada US do Sprint B tem um responsável no quadro do Project |
 | Registar na daily o que cada pessoa fez e vai fazer, para tornar a divisão visível e detetar desequilíbrios cedo | Pedro Soares (Scrum Master) | [Registo diário](daily-log.md) com uma linha por pessoa em cada daily |
 | Manter as histórias pequenas: nenhuma entra no sprint acima de 3 story points | Luis Santos (Product Owner) | Coluna SP do [Sprint Backlog](backlog.md) |
 
