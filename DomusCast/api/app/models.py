@@ -1,7 +1,15 @@
 import enum
 from sqlalchemy import (
-    Boolean, Column, DateTime, Enum, ForeignKey,
-    Integer, String, Text, UniqueConstraint, func,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
 )
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -10,6 +18,7 @@ from .database import Base
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
+
 
 class EstadoReporte(str, enum.Enum):
     aberto = "aberto"
@@ -62,7 +71,9 @@ class Condominio(Base):
     id = Column(Integer, primary_key=True)
     nome = Column(String(200), nullable=False)
     n_fracoes = Column(Integer, nullable=False)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     administradores = relationship("Administrador", back_populates="condominio")
     fracoes = relationship("Fracao", back_populates="condominio")
@@ -78,11 +89,17 @@ class Administrador(Base):
     condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
     nome = Column(String(200), nullable=False)
     credencial_hash = Column(String(128), nullable=False, unique=True)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     removido_em = Column(DateTime(timezone=True), nullable=True)
 
     condominio = relationship("Condominio", back_populates="administradores")
-    convites = relationship("ConviteAdmin", back_populates="criado_por_admin", foreign_keys="ConviteAdmin.criado_por")
+    convites = relationship(
+        "ConviteAdmin",
+        back_populates="criado_por_admin",
+        foreign_keys="ConviteAdmin.criado_por",
+    )
 
 
 class ConviteAdmin(Base):
@@ -95,7 +112,9 @@ class ConviteAdmin(Base):
     expira_em = Column(DateTime(timezone=True), nullable=False)
     usado_em = Column(DateTime(timezone=True), nullable=True)
 
-    criado_por_admin = relationship("Administrador", back_populates="convites", foreign_keys=[criado_por])
+    criado_por_admin = relationship(
+        "Administrador", back_populates="convites", foreign_keys=[criado_por]
+    )
 
 
 class Fracao(Base):
@@ -116,7 +135,9 @@ class QrToken(Base):
     id = Column(Integer, primary_key=True)
     fracao_id = Column(Integer, ForeignKey("fracao.id"), nullable=False)
     token_hash = Column(String(128), nullable=False, unique=True)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     revogado_em = Column(DateTime(timezone=True), nullable=True)
 
     fracao = relationship("Fracao", back_populates="qr_tokens")
@@ -136,7 +157,9 @@ class Identidade(Base):
         server_default="residente",
     )
     credencial_hash = Column(String(128), nullable=False, unique=True)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     removida_em = Column(DateTime(timezone=True), nullable=True)
 
     fracao = relationship("Fracao", back_populates="identidades")
@@ -144,7 +167,9 @@ class Identidade(Base):
     seguidores = relationship("ReporteSeguidor", back_populates="identidade")
 
     __table_args__ = (
-        UniqueConstraint("fracao_id", "nome_normalizado", name="uq_identidade_nome_fracao"),
+        UniqueConstraint(
+            "fracao_id", "nome_normalizado", name="uq_identidade_nome_fracao"
+        ),
     )
 
 
@@ -152,10 +177,16 @@ class Reporte(Base):
     __tablename__ = "reporte"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=True)  # NOT NULL a partir de Sprint B
-    autor_id = Column(Integer, ForeignKey("identidade.id"), nullable=True)       # NOT NULL a partir de Sprint B
+    condominio_id = Column(
+        Integer, ForeignKey(CONDOMINIO_FK), nullable=True
+    )  # NOT NULL a partir de Sprint B
+    autor_id = Column(
+        Integer, ForeignKey("identidade.id"), nullable=True
+    )  # NOT NULL a partir de Sprint B
     descricao = Column(Text, nullable=False)
-    foto_url = Column(String(500), nullable=True)        # walking skeleton - substituído por foto_path
+    foto_url = Column(
+        String(500), nullable=True
+    )  # walking skeleton - substituído por foto_path
     foto_path = Column(String(500), nullable=True)
     foto_alt = Column(String(300), nullable=True)
     mostrar_nome = Column(Boolean, nullable=False, server_default="false")
@@ -165,9 +196,16 @@ class Reporte(Base):
         server_default="aberto",
     )
     duplicado_de_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=True)
-    idempotency_key = Column(String(64), unique=True, nullable=True, index=True)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    idempotency_key = Column(String(64), nullable=True, index=True)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    atualizado_em = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
     condominio = relationship("Condominio", back_populates="reportes")
     autor = relationship("Identidade", back_populates="reportes")
@@ -175,6 +213,12 @@ class Reporte(Base):
     historico = relationship("ReporteHistorico", back_populates="reporte")
     seguidores = relationship("ReporteSeguidor", back_populates="reporte")
     avisos = relationship("Aviso", back_populates="reporte")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "autor_id", "idempotency_key", name="uq_reporte_autor_idempotency_key"
+        ),
+    )
 
 
 class ReporteHistorico(Base):
@@ -186,8 +230,10 @@ class ReporteHistorico(Base):
     estado_novo = Column(Enum(EstadoReporte, name="estado_reporte"), nullable=False)
     nota = Column(Text, nullable=True)
     autor_tipo = Column(String(50), nullable=False)  # "administrador" | "sistema"
-    autor_id = Column(Integer, nullable=True)         # id do administrador que fez a mudança
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    autor_id = Column(Integer, nullable=True)  # id do administrador que fez a mudança
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     reporte = relationship("Reporte", back_populates="historico")
 
@@ -212,7 +258,9 @@ class Aviso(Base):
     titulo = Column(String(200), nullable=False)
     texto = Column(Text, nullable=False)
     local = Column(String(200), nullable=True)
-    publicado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    publicado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     arquivado_em = Column(DateTime(timezone=True), nullable=True)
 
     condominio = relationship("Condominio", back_populates="avisos")
@@ -232,7 +280,9 @@ class Reuniao(Base):
         nullable=False,
         server_default="pendente",
     )
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     condominio = relationship("Condominio", back_populates="reunioes")
     atas = relationship("Ata", back_populates="reuniao")
@@ -272,4 +322,6 @@ class Job(Base):
     tentativas = Column(Integer, nullable=False, server_default="0")
     proxima_tentativa_em = Column(DateTime(timezone=True), nullable=True)
     erro = Column(Text, nullable=True)
-    criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    criado_em = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

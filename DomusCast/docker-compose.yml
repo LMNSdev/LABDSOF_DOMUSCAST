@@ -17,13 +17,17 @@ services:
 
   api:
     build: ./api
-    environment:
-      DATABASE_URL: postgresql://condoapp:condoapp@postgres:5432/condoapp
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://condoapp:condoapp@postgres:5432/condoapp
+      MEDIA_ROOT: /app/media
+    volumes:
+      - reportes_media:/app/media
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   pgdata:
+  reportes_media:
