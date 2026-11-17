@@ -10,12 +10,20 @@ class ApiException implements Exception {
   String toString() => 'ApiException($statusCode)';
 }
 
+/// Endereço da API. Definido no build com `--dart-define=API_BASE_URL=...`
+/// (o APK da pipeline aponta para a VM em HTTPS); sem ele, usa o host da
+/// máquina vista a partir do emulador Android.
+const String kApiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://10.0.2.2:8000',
+);
+
 class ApiService {
   final String baseUrl;
   final http.Client _client;
 
   ApiService({
-    this.baseUrl = 'http://10.0.2.2:8000',
+    this.baseUrl = kApiBaseUrl,
     http.Client? client,
   }) : _client = client ?? http.Client();
 
