@@ -5,15 +5,17 @@ Revises:
 Create Date: 2026-10-18
 
 """
-from typing import Sequence, Union
+from typing import Sequence
 
 from alembic import op
 import sqlalchemy as sa
 
 revision: str = "0001"
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+
+AGORA_SQL = "now()"
 
 
 def upgrade() -> None:
@@ -32,13 +34,13 @@ def upgrade() -> None:
         sa.Column(
             "criado_em",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text(AGORA_SQL),
             nullable=False,
         ),
         sa.Column(
             "atualizado_em",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text(AGORA_SQL),
             nullable=False,
         ),
     )

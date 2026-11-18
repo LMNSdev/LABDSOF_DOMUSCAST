@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:domuscast/main.dart';
+import 'package:domuscast/screens/landing_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
 
 void main() {
@@ -10,6 +11,13 @@ void main() {
     // Landing screen must show the brand name and the enter button
     expect(find.text('DomusCast'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
+  });
+
+  testWidgets('textos do sistema e do leitor de ecrã em português', (tester) async {
+    await tester.pumpWidget(const DomusCastApp());
+
+    final ctx = tester.element(find.byType(LandingScreen));
+    expect(MaterialLocalizations.of(ctx).backButtonTooltip, 'Voltar');
   });
 
   testWidgets('ReportesListScreen - AppBar "Reportes" + loading spinner', (tester) async {

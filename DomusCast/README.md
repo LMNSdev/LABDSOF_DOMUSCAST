@@ -35,7 +35,7 @@ flutter pub get
 ### 2 - Criar o emulador Android (Android Studio)
 
 1. Abre o Android Studio
-2. **More Actions → Virtual Device Manager → +**
+2. **More Actions -> Virtual Device Manager -> +**
 3. Escolher um telemóvel 
 4. Clica ▶ para iniciar o emulador
 
@@ -61,6 +61,7 @@ A base de dados é criada e as migrações correm automaticamente.
 | `POST /condominios` | Criar condomínio e frações (devolve a credencial do administrador) |
 | `GET  /condominios/{id}/fracoes` | Listar frações (administrador) |
 | `POST /fracoes/{id}/qr` | Gerar QR code de uma fração (administrador) |
+| `POST /identidades` | Residente entra com o token do QR code e o nome (devolve a credencial do dispositivo) |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
 
 ### App Flutter
@@ -74,8 +75,71 @@ flutter run
 
 > A app aponta para `http://10.0.2.2:8000` (endereço especial do emulador que aponta para `localhost` do PC).
 
+Também podes correr a app pelo Android Studio: abre a pasta `DomusCast\mobile`, seleciona o emulador na barra de dispositivos e clica em **Run** (▶). A primeira configuração precisa de confirmar o Flutter SDK em **Settings > Languages & Frameworks > Flutter**.
+
 ---
 
+## Testar no emulador
+
+### 1. Arrancar tudo
+
+1. Backend: `cd DomusCast; docker compose up --build` (deixa esta janela aberta).
+2. Emulador: Android Studio > **Device Manager** > ▶ no telemóvel criado no setup.
+3. App: noutra janela, `cd DomusCast\mobile; flutter run`.
+
+### 2. Criar dados de teste (Swagger)
+
+Abre http://localhost:8000/docs no browser. Em cada pedido: **Try it out**, preencher, **Execute**.
+
+1. `POST /condominios`: cria o condomínio. Copia o `credencial_admin` da resposta.
+2. Botão **Authorize** (no topo): cola a credencial e confirma. A partir daqui, os pedidos vão como administrador.
+3. `POST /fracoes/{fracao_id}/qr`: usa um `id` das frações da resposta do passo 1. Devolve o `token` e o `link` do QR code.
+4. `POST /identidades` com `{"token": "...", "nome": "..."}`: cria um residente nessa fração. A `credencial` da resposta serve para testar pedidos como residente (no **Authorize**).
+
+Limite: 5 condomínios novos por hora no mesmo PC. Para mais QR codes, repete só o passo 3.
+
+### 3. Comandos úteis
+
+Corre no PowerShell, com o emulador ligado.
+
+**O que é o `adb`:** Android Debug Bridge (`adb`) é o comando que liga o terminal ao emulador. Permite abrir links, limpar a sessão da app, simular internet em baixo e tirar screenshots. A pasta do SDK já está no Android Studio:
+`%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`.
+
+O comando é longo no PowerShell; define uma variável uma vez em cada terminal:
+
+```powershell
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb devices
+```
+
+`& $adb devices` deve mostrar `emulator-5554 device`. A variável `$adb` só vale nessa janela do PowerShell.
+
+| Para quê | Comando |
+|---|---|
+| Abrir um link da app (ex.: o `link` do QR code) | `& $adb shell am start -a android.intent.action.VIEW -d "domuscast://entrar?t=<token>"` |
+| Voltar ao primeiro acesso (apaga as sessões da app) | `& $adb shell pm clear com.condoapp.condoapp` |
+| Simular "sem internet" (para voltar, `disable`) | `& $adb shell cmd connectivity airplane-mode enable` |
+| Tirar uma screenshot para as evidências | `& $adb shell screencap -p /sdcard/ecra.png` e depois `& $adb pull /sdcard/ecra.png <ficheiro>.png` |
+| Ver a base de dados | `docker exec -it domuscast-postgres-1 psql -U condoapp -d condoapp` |
+
+As screenshots vão para `docs/sprintB/screenshots/us-nn/`, com os nomes `01-<ecra>.png`, `02-<ecra>.png` pela ordem do wireframe. Não uses `adb exec-out screencap ... > ficheiro`, porque no PowerShell a imagem fica corrompida.
+
+### 4. Câmara e leitor de ecrã
+
+- **Ler um QR code real:** a câmara do emulador mostra uma sala virtual. Para usar a webcam do PC, arranca o emulador por comando: `emulator -list-avds` mostra o nome, e depois `emulator -avd <nome> -camera-back webcam0` (os dois estão em `%LOCALAPPDATA%\Android\Sdk\emulator`). Mostra o QR code à webcam, inteiro e a 20 a 30 cm (por exemplo, uma fotografia no telemóvel).
+- **TalkBack** (leitor de ecrã do Android, já vem no emulador):
+  1. Para ouvi-lo em português, muda primeiro a língua do emulador:
+     `& $adb shell am start -a android.settings.LOCALE_SETTINGS`
+     Em **Settings > System > Languages**, escolhe **Add a language > Português (Portugal)** e arrasta-o para o topo.
+  2. Ligar pelo comando:
+     `& $adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService`
+     Ou: em Settings > Accessibility > TalkBack, ativa o interruptor.
+  3. Desligar:
+     `& $adb shell settings delete secure enabled_accessibility_services`
+     Ou: em Settings > Accessibility > TalkBack, desliga o interruptor.
+  4. Com o TalkBack ligado, usa o rato na janela do emulador: arrastar para a direita passa ao elemento seguinte e duplo clique ativa. No Android Studio, o terminal não precisa de ser usado.
+
+---
 ## Testes
 
 ### API (sem Docker, usa SQLite)
@@ -177,6 +241,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `POST /condominios` | US-01: cria condomínio, frações (A, B, C…) e primeiro administrador; 1 a 200 frações, 5 criações por hora por IP (429) |
 | `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador (401/403) |
 | `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |
+| `POST /identidades` | US-15: `{token, nome}` cria a identidade do residente e devolve `{id, nome, fracao, credencial}`; nome único por fração (ignora maiúsculas, acentos e espaços), máximo de 10 por fração, 30 tentativas por hora por QR code; erros 404 e 409 no formato `{codigo, mensagem, request_id}` |
 | `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
 | Swagger UI | Documentação interativa automática em `/docs` |

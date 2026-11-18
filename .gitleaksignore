@@ -1,0 +1,5 @@
+# Falsos positivos da regra generic-api-key: na página de evidências da US-15, a palavra API
+# seguida de dois pontos e do nome de um teste pytest foi lida como "chave: valor".
+# O texto foi corrigido no commit seguinte; estas linhas só ignoram esse commit.
+9cb4f1d2cb3f3ea12a6f5b03caa00f0e28640624:docs/sprintB/us-15.md:generic-api-key:34
+9cb4f1d2cb3f3ea12a6f5b03caa00f0e28640624:docs/sprintB/us-15.md:generic-api-key:35

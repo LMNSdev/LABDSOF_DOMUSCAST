@@ -4,15 +4,19 @@ Revision ID: 0002
 Revises: 0001
 Create Date: 2026-10-20
 """
-from typing import Sequence, Union
+from typing import Sequence
 
 from alembic import op
 import sqlalchemy as sa
 
 revision: str = "0002"
-down_revision: Union[str, None] = "0001"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "0001"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+
+CONDOMINIO_FK = "condominio.id"
+REPORTE_FK = "reporte.id"
+AGORA_SQL = "now()"
 
 
 def upgrade() -> None:
@@ -22,17 +26,17 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("nome", sa.String(200), nullable=False),
         sa.Column("n_fracoes", sa.Integer(), nullable=False),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
     )
 
     # --- administrador ---
     op.create_table(
         "administrador",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=False),
+        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=False),
         sa.Column("nome", sa.String(200), nullable=False),
         sa.Column("credencial_hash", sa.String(128), nullable=False, unique=True),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
         sa.Column("removido_em", sa.DateTime(timezone=True), nullable=True),
     )
 
@@ -40,7 +44,7 @@ def upgrade() -> None:
     op.create_table(
         "convite_admin",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=False),
+        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=False),
         sa.Column("codigo_hash", sa.String(128), nullable=False, unique=True),
         sa.Column("criado_por", sa.Integer(), sa.ForeignKey("administrador.id"), nullable=False),
         sa.Column("expira_em", sa.DateTime(timezone=True), nullable=False),
@@ -51,7 +55,7 @@ def upgrade() -> None:
     op.create_table(
         "fracao",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=False),
+        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=False),
         sa.Column("designacao", sa.String(100), nullable=False),
     )
 
@@ -61,7 +65,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("fracao_id", sa.Integer(), sa.ForeignKey("fracao.id"), nullable=False),
         sa.Column("token_hash", sa.String(128), nullable=False, unique=True),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
         sa.Column("revogado_em", sa.DateTime(timezone=True), nullable=True),
     )
 
@@ -79,24 +83,24 @@ def upgrade() -> None:
             server_default="residente",
         ),
         sa.Column("credencial_hash", sa.String(128), nullable=False, unique=True),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
         sa.Column("removida_em", sa.DateTime(timezone=True), nullable=True),
         sa.UniqueConstraint("fracao_id", "nome_normalizado", name="uq_identidade_nome_fracao"),
     )
 
     # --- reporte: colunas novas (condominio_id e autor_id nullable por compat. com walking skeleton) ---
-    op.add_column("reporte", sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=True))
+    op.add_column("reporte", sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=True))
     op.add_column("reporte", sa.Column("autor_id", sa.Integer(), sa.ForeignKey("identidade.id"), nullable=True))
     op.add_column("reporte", sa.Column("foto_path", sa.String(500), nullable=True))
     op.add_column("reporte", sa.Column("foto_alt", sa.String(300), nullable=True))
     op.add_column("reporte", sa.Column("mostrar_nome", sa.Boolean(), nullable=False, server_default="false"))
-    op.add_column("reporte", sa.Column("duplicado_de_id", sa.Integer(), sa.ForeignKey("reporte.id"), nullable=True))
+    op.add_column("reporte", sa.Column("duplicado_de_id", sa.Integer(), sa.ForeignKey(REPORTE_FK), nullable=True))
 
     # --- reporte_historico (só inserção - nunca update/delete) ---
     op.create_table(
         "reporte_historico",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey("reporte.id"), nullable=False),
+        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey(REPORTE_FK), nullable=False),
         sa.Column(
             "estado_anterior",
             sa.Enum("aberto", "em_curso", "resolvido", name="estado_reporte", create_type=False),
@@ -110,13 +114,13 @@ def upgrade() -> None:
         sa.Column("nota", sa.Text(), nullable=True),
         sa.Column("autor_tipo", sa.String(50), nullable=False),
         sa.Column("autor_id", sa.Integer(), nullable=True),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
     )
 
     # --- reporte_seguidor (cria o enum tipo_seguidor) ---
     op.create_table(
         "reporte_seguidor",
-        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey("reporte.id"), primary_key=True),
+        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey(REPORTE_FK), primary_key=True),
         sa.Column("identidade_id", sa.Integer(), sa.ForeignKey("identidade.id"), primary_key=True),
         sa.Column(
             "tipo",
@@ -129,12 +133,12 @@ def upgrade() -> None:
     op.create_table(
         "aviso",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=False),
-        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey("reporte.id"), nullable=True),
+        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=False),
+        sa.Column("reporte_id", sa.Integer(), sa.ForeignKey(REPORTE_FK), nullable=True),
         sa.Column("titulo", sa.String(200), nullable=False),
         sa.Column("texto", sa.Text(), nullable=False),
         sa.Column("local", sa.String(200), nullable=True),
-        sa.Column("publicado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("publicado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
         sa.Column("arquivado_em", sa.DateTime(timezone=True), nullable=True),
     )
 
@@ -142,7 +146,7 @@ def upgrade() -> None:
     op.create_table(
         "reuniao",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey("condominio.id"), nullable=False),
+        sa.Column("condominio_id", sa.Integer(), sa.ForeignKey(CONDOMINIO_FK), nullable=False),
         sa.Column("data_hora", sa.DateTime(timezone=True), nullable=False),
         sa.Column("local", sa.String(300), nullable=True),
         sa.Column("calendario_externo_id", sa.String(200), nullable=True),
@@ -152,7 +156,7 @@ def upgrade() -> None:
             nullable=False,
             server_default="pendente",
         ),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
     )
 
     # --- ata (cria o enum estado_ata) ---
@@ -189,7 +193,7 @@ def upgrade() -> None:
         sa.Column("tentativas", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("proxima_tentativa_em", sa.DateTime(timezone=True), nullable=True),
         sa.Column("erro", sa.Text(), nullable=True),
-        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("criado_em", sa.DateTime(timezone=True), server_default=sa.text(AGORA_SQL), nullable=False),
     )
     op.create_index("ix_job_estado_proxima", "job", ["estado", "proxima_tentativa_em"])
 

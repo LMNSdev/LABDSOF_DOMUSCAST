@@ -634,7 +634,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
 | `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em | Só o hash fica guardado, por isso o QR code só é mostrado quando é gerado (US-01); pode haver vários ativos por fração e revogar marca `revogado_em` (US-20) |
-| `identidade` | id, fracao_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12, US-33); remover apaga `nome` e `nome_normalizado` e preenche `removida_em` (US-23) |
+| `identidade` | id, fracao_id, qr_token_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em | `qr_token_id` é o QR code com que o residente entrou (US-15, US-20); `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12, US-33); remover apaga `nome` e `nome_normalizado` e preenche `removida_em` (US-23) |
 | `reporte` | id, condominio_id, autor_id, idempotency_key, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, oculto_em, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-22); `idempotency_key` única por autor, para reenvios da fila local (US-18); `oculto_em` preenchido quando o administrador oculta o reporte (US-32; deixa de aparecer aos residentes, o histórico mantém-se) |
 | `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-22, US-17) |
@@ -661,7 +661,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 **Termos do negócio e entidades.** Residente e condómino correspondem a uma `identidade` (papel `residente` ou `comissao`); administrador é `administrador`; reporte, aviso, assembleia e ata são `reporte`, `aviso`, `reuniao` e `ata`. Todos os substantivos usados nas histórias e nos [Workflows](#53-user-journey) correspondem a uma entidade ou a um campo.
 
 **Porquê esta modelação.**
-- `qr_token` está separado de `fracao` para o administrador gerar QR codes a pedido e revogá-los, todos ou um a um, sem perder a fração nem as identidades (US-01, US-20). A `identidade` guarda `qr_token_id` (coluna a criar na US-15), para a lista de QR codes mostrar quantos residentes entraram com cada um.
+- `qr_token` está separado de `fracao` para o administrador gerar QR codes a pedido e revogá-los, todos ou um a um, sem perder a fração nem as identidades (US-01, US-20). A `identidade` guarda `qr_token_id` (coluna criada na US-15, migração `0003`), para a lista de QR codes mostrar quantos residentes entraram com cada um.
 - `identidade` está separada de `administrador` porque o residente não tem conta com contactos ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) e o administrador tem credencial e permissões próprias ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)).
 - `reporte_historico` é uma tabela só de inserção para o histórico não se perder quando o reporte muda; é a prova de diligência do administrador (US-05, TM-05).
 - `reporte_seguidor` tem um `tipo` em vez de três tabelas, porque autor, co-reporter e seguidor são a mesma relação com notificações iguais.
@@ -690,7 +690,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `POST /fracoes/{id}/qr/revogar` | admin | US-20: revoga todos os QR codes ativos da fração |
 | `POST /qr/{id}/revogar` | admin | US-20: revoga um QR code específico |
 | `DELETE /identidades/{id}` | admin | US-23: remove identidade |
-| `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve credencial do dispositivo; limite de tentativas por IP e máximo de identidades por fração ([10.5](#105-qr-code-revogação-e-abuso)) |
+| `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve `{id, nome, fracao, credencial}`, a credencial do dispositivo; 30 tentativas por hora por QR code, 20 tentativas com token inválido por hora por IP e máximo de 10 identidades ativas por fração ([10.5](#105-qr-code-revogação-e-abuso)); 409 com `codigo` `nome_duplicado` ou `fracao_cheia` |
 | `PATCH /identidades/me` | residente | US-21: editar nome |
 | `PUT /identidades/{id}/papel` | admin | US-33: `{papel: residente\|comissao}` |
 | `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; aceita `Idempotency-Key` da fila local |

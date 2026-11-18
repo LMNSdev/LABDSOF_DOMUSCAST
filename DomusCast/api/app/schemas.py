@@ -42,6 +42,22 @@ class QrGerado(BaseModel):
     criado_em: datetime
 
 
+# --- US-15: identidade do residente ---
+
+class IdentidadeCreate(BaseModel):
+    token: str = Field(..., min_length=1, max_length=256)
+    nome: NomeObrigatorio
+
+    model_config = {"extra": "forbid"}
+
+
+class IdentidadeCriada(BaseModel):
+    id: int
+    nome: str
+    fracao: str
+    credencial: str
+
+
 class ReporteCreate(BaseModel):
     descricao: str = Field(..., min_length=1, max_length=2000)
     foto_url: Optional[str] = None
@@ -51,7 +67,7 @@ class ReporteCreate(BaseModel):
 class ReporteOut(BaseModel):
     id: int
     descricao: str
-    foto_url: Optional[str]
+    foto_url: Optional[str] = None
     estado: EstadoReporte
     criado_em: datetime
     atualizado_em: datetime
