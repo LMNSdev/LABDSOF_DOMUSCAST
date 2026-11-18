@@ -28,5 +28,10 @@ check "primeira versão faz deploy"           "$(bash $sc "" v0.2.0)"     true
 check "feat/us-01 mexeu na API"              "$(bash $sc v0.1.0 v0.2.0)" true
 check "chore/codeowners não mexeu no servidor" "$(bash $sc v0.2.1 v0.2.2)" false
 
+do=.github/scripts/docs-only.sh
+check "sem versão anterior gera versão"       "$(bash $do "" fcd55a5)"            false
+check "merge só de docs/ não gera versão"     "$(bash $do fcd55a5^1 fcd55a5)"     true
+check "CODEOWNERS (fora de docs/) gera versão" "$(bash $do 1f7c607^1 1f7c607)"    false
+
 echo
 if [ "$falhas" -eq 0 ]; then echo "Todos os testes passaram."; else echo "$falhas teste(s) falharam."; exit 1; fi

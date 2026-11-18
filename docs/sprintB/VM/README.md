@@ -22,7 +22,7 @@ Onde corre o DomusCast fora das nossas máquinas, como foi criado e como se oper
 | Opção | Oferta | Cartão | Decisão |
 |---|---|---|---|
 | **Azure for Students** | US$ 100 por 12 meses, renovável enquanto estudante | Não | **Escolhida**: única sem cartão e sem custo |
-| DigitalOcean (GitHub Student Pack) | Saiu do pack em julho/agosto de 2026 | — | Indisponível |
+| DigitalOcean (GitHub Student Pack) | Saiu do pack em julho/agosto de 2026 | Não se aplica | Indisponível |
 | Oracle Cloud Always Free | 2 OCPU / 12 GB ARM, sem prazo (limite cortado a meio em 2026) | Sim | Plano B: imagens ARM, risco de suspensão da conta |
 | Google Cloud | US$ 300 por 90 dias | Sim | Exige cartão |
 | AWS Free plan | US$ 100–200 por 6 meses | Sim | Exige cartão |
@@ -164,24 +164,24 @@ Os diagramas abaixo são escritos em [Mermaid](https://mermaid.js.org/) e o GitH
 
 ### Visão geral: do merge à VM
 
-Cada merge na `main` passa pelo CI; se ficar verde, o workflow `Release` cria a versão e publica a imagem e o APK. O deploy só corre se o merge mudou o que corre no servidor (`DomusCast/api/` ou `DomusCast/deploy/`): um merge só de documentação, da app ou de configuração do GitHub deixaria o servidor igual.
+Cada merge na `main` passa pelo CI; se ficar verde, o workflow `Release` cria a versão e publica a imagem e o APK. Um merge que só mexe em `docs/` (por exemplo, o registo da daily) não cria versão. O deploy só corre se o merge mudou o que corre no servidor (`DomusCast/api/` ou `DomusCast/deploy/`): um merge só de documentação, da app ou de configuração do GitHub deixaria o servidor igual.
 
 ```mermaid
 flowchart TB
-    pr["PR<br/>feat/* · feature/* · fix/* · chore/* · docs/*"] -->|merge| main[("main")]
+    pr["PR<br/>feat/*, feature/*, fix/*, chore/*, docs/*"] -->|merge| main[("main")]
 
     subgraph gh["GitHub"]
-        main --> ci["CI<br/>lint · testes · SAST · SCA · segredos"]
+        main --> ci["CI<br/>lint, testes, SAST, SCA, segredos"]
         ci -->|verde| tag["Tag vX.Y.Z<br/>+ GitHub Release"]
         tag --> img["Build da imagem da API"]
-        tag --> apk["Build do APK<br/>versão vX.Y.Z · API em HTTPS"]
+        tag --> apk["Build do APK<br/>versão vX.Y.Z, API em HTTPS"]
         apk -->|anexado| ghrel["GitHub Release"]
         img -->|"push vX.Y.Z e sha"| ghcr[("GHCR<br/>imagens públicas")]
         img -->|"só se mudou api/ ou deploy/"| dep["Job deploy<br/>environment: production"]
     end
 
-    subgraph azure["Azure · Belgium Central"]
-        ctrl["Azure Resource Manager<br/>ligar · desalocar"]
+    subgraph azure["Azure, Belgium Central"]
+        ctrl["Azure Resource Manager<br/>ligar e desalocar"]
         vm["VM domuscast-vm<br/>Docker Compose"]
     end
 
@@ -236,7 +236,7 @@ flowchart LR
     app(["App Android"]) -->|"HTTPS 443"| caddy
     le(["Let's Encrypt"]) -.->|"certificado TLS"| caddy
 
-    subgraph vm["VM domuscast-vm · /opt/domuscast · Docker Compose"]
+    subgraph vm["VM domuscast-vm<br/>/opt/domuscast, Docker Compose"]
         caddy["caddy<br/>TLS + reverse proxy"] -->|"HTTP 8000"| api["api<br/>ghcr.io/lmnsdev/...:vX.Y.Z"]
         api -->|"5432, rede interna"| pg[("postgres:16<br/>volume pgdata")]
         env[/".env<br/>segredos"/] -.-> api

@@ -65,6 +65,15 @@ jobs:
           fi
 
           latest=$(git tag -l 'v*' --sort=-v:refname | grep -E "$semver" | head -n1 || true)
+
+          # Só documentação desde a última versão (ex.: a daily) -> sem versão nova,
+          # e por isso também sem imagem, APK nem deploy
+          if [ "$(bash .github/scripts/docs-only.sh "$latest" "$SHA")" = true ]; then
+            echo "Só mudou docs/ desde $latest; não é criada versão nova."
+            echo "### Sem versão nova: desde $latest só mudou documentação (docs/)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           branch=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" \
             --jq '[.[] | select(.merged_at != null)][0].head.ref // ""')
           next=$(bash .github/scripts/next-version.sh "$latest" "$branch")
