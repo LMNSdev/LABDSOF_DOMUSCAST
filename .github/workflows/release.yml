@@ -1,13 +1,17 @@
 name: Release
 
-# Cria automaticamente uma tag de versão (vX.Y.Z) e a respetiva GitHub Release
-# sempre que o CI passa na main (ou seja, depois de cada merge).
-#   feat/*        -> MINOR   |   restantes branches/push direto -> PATCH
+# Sempre que o CI passa na main (ou seja, depois de cada merge):
+#   1. tag   - cria a tag de versão (vX.Y.Z) e a respetiva GitHub Release
+#              feat/* e feature/* -> MINOR | restantes branches/push direto -> PATCH
+#   2. image - publica a imagem da API no GHCR (ghcr.io/lmnsdev/domuscast-api)
+#   3. apk   - gera o APK (a apontar para a VM em HTTPS) e anexa-o à release
+#   4. deploy- implanta a versão na VM de produção (workflow deploy.yml), só se
+#              mudou alguma coisa em DomusCast/api ou DomusCast/deploy
 # O MAJOR (ex.: v1.0.0 no fim do sprint B) é criado à mão; a pipeline continua
-# a partir da tag mais alta que existir.
+# a partir da tag mais alta que existir. Ver docs/sprintB/VM/README.md.
 #
-# Nota: tags/releases criadas com o GITHUB_TOKEN não disparam outros workflows.
-# Um futuro deploy deve correr neste workflow ou via workflow_run deste.
+# Nota: tags/releases criadas com o GITHUB_TOKEN não disparam outros workflows,
+# por isso a imagem, o APK e o deploy correm aqui.
 on:
   workflow_run:
     workflows: [CI]
@@ -34,6 +38,9 @@ jobs:
     permissions:
       contents: write # criar a tag e a release
       pull-requests: read # descobrir o branch do PR do commit
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      deploy: ${{ steps.release.outputs.deploy }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,6 +49,7 @@ jobs:
           persist-credentials: false
 
       - name: Criar tag e release
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
@@ -57,10 +65,118 @@ jobs:
           fi
 
           latest=$(git tag -l 'v*' --sort=-v:refname | grep -E "$semver" | head -n1 || true)
+
+          # Só documentação desde a última versão (ex.: a daily) -> sem versão nova,
+          # e por isso também sem imagem, APK nem deploy
+          if [ "$(bash .github/scripts/docs-only.sh "$latest" "$SHA")" = true ]; then
+            echo "Só mudou docs/ desde $latest; não é criada versão nova."
+            echo "### Sem versão nova: desde $latest só mudou documentação (docs/)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           branch=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" \
             --jq '[.[] | select(.merged_at != null)][0].head.ref // ""')
           next=$(bash .github/scripts/next-version.sh "$latest" "$branch")
 
           echo "Última tag: ${latest:-<nenhuma>} | branch: ${branch:-<push direto>} | nova: $next"
           gh release create "$next" --target "$SHA" --title "$next" --generate-notes
+          echo "version=$next" >> "$GITHUB_OUTPUT"
           echo "### Release $next criada" >> "$GITHUB_STEP_SUMMARY"
+
+          # Deploy só se o servidor mudou (DomusCast/api ou DomusCast/deploy)
+          deploy=$(bash .github/scripts/server-changed.sh "$latest" "$SHA")
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+          if [ "$deploy" = true ]; then
+            echo "Deploy: sim (há alterações no servidor desde ${latest:-o início})" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → Deploy → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # Os jobs seguintes só correm quando este run criou uma versão nova
+  # (num re-run ou num commit que já tinha tag, a versão fica vazia).
+  image:
+    name: Imagem da API (GHCR)
+    needs: tag
+    if: needs.tag.outputs.version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write # publicar no GitHub Container Registry
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Build e push da imagem
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.tag.outputs.version }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          image=ghcr.io/lmnsdev/domuscast-api
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build -t "$image:$VERSION" -t "$image:sha-${SHA:0:7}" DomusCast/api
+          docker push "$image:$VERSION"
+          docker push "$image:sha-${SHA:0:7}"
+          echo "### Imagem \`$image:$VERSION\` publicada" >> "$GITHUB_STEP_SUMMARY"
+
+  apk:
+    name: APK Android
+    needs: tag
+    if: needs.tag.outputs.version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # anexar o APK à GitHub Release
+    defaults:
+      run:
+        working-directory: DomusCast/mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: "3.47.x"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Build do APK
+        env:
+          VERSION: ${{ needs.tag.outputs.version }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          # O build Android (AGP 9 / Gradle 9) usa o JDK 17 pré-instalado no runner
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          flutter build apk --release \
+            --build-name "${VERSION#v}" --build-number "$GITHUB_RUN_NUMBER" \
+            --dart-define=API_BASE_URL="https://$DEPLOY_HOST"
+
+      - name: Anexar o APK à release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          cp build/app/outputs/flutter-apk/app-release.apk "domuscast-$VERSION.apk"
+          gh release upload "$VERSION" "domuscast-$VERSION.apk" --clobber
+          echo "### APK \`domuscast-$VERSION.apk\` anexado à release" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy
+    needs: [tag, image]
+    if: needs.tag.outputs.version != '' && needs.tag.outputs.deploy == 'true'
+    permissions:
+      contents: read
+      id-token: write # login na Azure por OIDC (dentro do deploy.yml)
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: ${{ needs.tag.outputs.version }}
+    secrets: inherit

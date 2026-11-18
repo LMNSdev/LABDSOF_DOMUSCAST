@@ -1,0 +1,139 @@
+name: Deploy
+
+# Implanta uma versão da API na VM de produção (Azure).
+#  - Chamado pelo workflow Release depois de cada nova tag.
+#  - Rollback: Actions → Deploy → Run workflow, com a versão anterior (ex.: v0.3.0).
+# Se a VM estiver desalocada, é ligada só durante o deploy e volta a ser desalocada no fim.
+# Ver docs/sprintB/VM/README.md.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Versão a implantar (vX.Y.Z)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão a implantar, ex.: v0.3.0 (rollback)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy na VM
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://${{ vars.DEPLOY_HOST }}/health
+    # Partilhado com o workflow VM: nunca ligar/desligar a VM a meio de um deploy
+    concurrency:
+      group: production-vm
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # login na Azure por OIDC
+    env:
+      VERSION: ${{ inputs.version }}
+      IMAGE: ghcr.io/lmnsdev/domuscast-api
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      # Antes de tocar na VM: a versão tem de ser válida e a imagem tem de existir
+      - name: Validar a versão
+        run: |
+          set -euo pipefail
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Versão inválida: '$VERSION' (esperado vX.Y.Z, ex.: v0.3.0)"
+            exit 1
+          fi
+          if ! docker manifest inspect "$IMAGE:$VERSION" > /dev/null; then
+            echo "::error::A imagem $IMAGE:$VERSION não existe no GHCR ou não é pública."
+            exit 1
+          fi
+
+      # Ficheiros de deploy da main: servem para qualquer versão da imagem (também em rollback)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Login na Azure (OIDC)
+        run: bash .github/scripts/azure-login.sh
+
+      - name: Ligar a VM se estiver desligada
+        id: vm
+        run: |
+          set -euo pipefail
+          estado=$(bash .github/scripts/vm.sh status)
+          echo "Estado inicial da VM: $estado"
+          case "$estado" in
+            running) ;;
+            deallocated|stopped)
+              echo "was_off=true" >> "$GITHUB_OUTPUT"
+              bash .github/scripts/vm.sh start
+              ;;
+            *) bash .github/scripts/vm.sh start ;;
+          esac
+
+      - name: Preparar SSH e esperar pela VM
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          for _ in $(seq 1 36); do
+            if nc -z -w 5 "$DEPLOY_HOST" 22; then exit 0; fi
+            sleep 5
+          done
+          echo "::error::A VM não abriu a porta 22 em 3 minutos."
+          exit 1
+
+      - name: Copiar ficheiros e implantar
+        run: |
+          set -euo pipefail
+          scp -o BatchMode=yes \
+            DomusCast/deploy/docker-compose.prod.yml DomusCast/deploy/Caddyfile DomusCast/deploy/deploy.sh \
+            "deploy@$DEPLOY_HOST:/opt/domuscast/"
+          ssh -o BatchMode=yes "deploy@$DEPLOY_HOST" "bash /opt/domuscast/deploy.sh '$VERSION'"
+
+      - name: Confirmar /health
+        run: |
+          for _ in $(seq 1 24); do
+            if curl -fsS --max-time 10 "https://$DEPLOY_HOST/health"; then echo; exit 0; fi
+            sleep 5
+          done
+          echo "::error::https://$DEPLOY_HOST/health não respondeu em 2 minutos."
+          exit 1
+
+      # Corre mesmo que um passo anterior falhe, para não deixar a VM ligada a gastar crédito
+      - name: Voltar a desalocar a VM (estava desligada)
+        if: always() && steps.vm.outputs.was_off == 'true'
+        run: |
+          bash .github/scripts/azure-login.sh
+          bash .github/scripts/vm.sh deallocate
+
+      - name: Resumo
+        if: always()
+        env:
+          WAS_OFF: ${{ steps.vm.outputs.was_off }}
+          RESULTADO: ${{ job.status }}
+        run: |
+          {
+            echo "### Deploy $VERSION: $RESULTADO"
+            echo "- Endereço: https://$DEPLOY_HOST/health"
+            if [ "$WAS_OFF" = "true" ]; then
+              echo "- A VM estava desligada: foi ligada para o deploy e voltou a ser desalocada."
+            else
+              echo "- A VM já estava ligada e continua ligada."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -6,7 +6,7 @@
 #   <branch>      branch de origem do PR (vazio num push direto)
 #
 # Regras:
-#   feat/*        -> sobe o MINOR (v0.2.3 -> v0.3.0)
+#   feat/*, feature/* -> sobe o MINOR (v0.2.3 -> v0.3.0)
 #   tudo o resto  -> sobe o PATCH (v0.2.3 -> v0.2.4)
 #   O MAJOR (ex.: v1.0.0 no fim do sprint B) é criado à mão; a pipeline
 #   continua a partir dele.
@@ -30,6 +30,6 @@ minor="${BASH_REMATCH[2]}"
 patch="${BASH_REMATCH[3]}"
 
 case "$branch" in
-  feat/*) echo "v${major}.$((minor + 1)).0" ;;
+  feat/*|feature/*) echo "v${major}.$((minor + 1)).0" ;;
   *)      echo "v${major}.${minor}.$((patch + 1))" ;;
 esac
