@@ -62,6 +62,9 @@ class ReporteCreate(BaseModel):
     descricao: str = Field(..., min_length=1, max_length=2000)
     foto_url: Optional[str] = None
     idempotency_key: Optional[str] = Field(None, max_length=64)
+    mostrar_nome: bool = False
+
+    model_config = {"extra": "forbid"}
 
 
 class ReporteOut(BaseModel):
@@ -71,5 +74,7 @@ class ReporteOut(BaseModel):
     estado: EstadoReporte
     criado_em: datetime
     atualizado_em: datetime
-
-    model_config = {"from_attributes": True}
+    mostrar_nome: bool = False
+    autor_nome: Optional[str] = None
+    fracao: Optional[str] = None
+    meu: bool = False
