@@ -26,12 +26,16 @@ Facilitada por Pedro Soares.
 
 Facilitada por Luis Santos.
 
+"Ontem" resume a atividade de cada pessoa no GitHub (commits, PRs, revisões e issues) de 17/11 até ao início desta daily; "Hoje" indica o que cada pessoa tem atribuído no GitHub. Horas de Lisboa.
+
 | Pessoa | Ontem | Hoje | Bloqueios |
 |---|---|---|---|
-| Luis Santos | Tags de versão automáticas após cada merge (#101, integrado; criou a v0.2.4); ambiente de produção na Azure (VM, acesso do GitHub por OIDC, orçamento) e pipeline de deploy (#103, em revisão); revisão da US-15 (#102) e registo do defect #105 | Integrar o #103 e acompanhar o primeiro deploy (v0.3.0); template de issue para defects (#104) | Nenhum |
-| Pedro Soares | US-15 implementada e integrada (#102): `POST /identidades`, leitura do QR code e ecrã do nome na app, evidências com TalkBack; refinamento e DoR das US-02, US-03, US-09, US-20 e US-23 | A confirmar na daily (proposta: corrigir o defect #105 ou pegar na US-03 ou na US-20, que ficaram para quem acabasse primeiro) | A confirmar na daily |
-| Pedro Costa | A confirmar na daily | US-02 (Reportar avaria), conforme a distribuição do [refinamento](refinamento.md) | A confirmar na daily |
-| Marco Garcia | A confirmar na daily | US-09 (Privacidade do autor), conforme a distribuição do refinamento | A confirmar na daily |
-| Leonardo Costa | A confirmar na daily | US-23 (Remover identidade), conforme a distribuição do refinamento | A confirmar na daily |
+| Luis Santos | 17/11: PR #100 (revisão obrigatória do code owner em todos os PRs), integrado às 02:30; revisão do PR #99 (comentários às 02:38 e 02:43, aprovado às 18:25); PR #101 (tags de versão automáticas), aberto às 18:53 e integrado às 20:34, criou a v0.2.4; VM de produção criada na Azure; PR #103 (pipeline de deploy), aberto às 21:47. 18/11: revisão do PR #102 (00:37); defect #105, PR #104 (template de defects), issue #106 e PR #107 (esta daily) | Atribuído: US-20 (#85). PRs abertos: #103, #104 e #107 | Nenhum reportado |
+| Pedro Soares | 17/11: issue #98 e PR #99 (retrospetiva do Sprint A, capacidade, daily log, refinamento e DoR das US-02, US-03, US-09, US-15, US-20 e US-23, distribuição das US), integrado às 17:36; aprovou o PR #101 às 20:34; PR #102 (US-15), aberto às 20:39. 18/11: PR #102 integrado às 00:31 e issue #79 fechada; comentário no PR #103 às 00:30 (deploy só em versões principais) | Atribuído: defect #105 | Nenhum reportado |
+| Pedro Costa | 17/11: aprovou o PR #99 às 09:44. 18/11: aprovou o PR #102 às 00:29. Sem commits | Atribuído: US-02 (#80) | Nenhum reportado |
+| Marco Garcia | Sem atividade no GitHub desde a daily de 16/11 | Atribuído: US-23 (#86) | Nenhum reportado |
+| Leonardo Costa | Sem atividade no GitHub desde a daily de 16/11 | Nada atribuído no GitHub | Nenhum reportado. A conta não consta dos colaboradores do repositório |
 
-**Nota para a US-23:** o defect #105 depende de uma decisão desta história: ao remover uma identidade, limpar o `nome_normalizado` (a pessoa pode voltar a entrar com o mesmo nome) ou tornar a restrição única só para identidades ativas.
+**Por atribuir:** US-03 (#81) e US-09 (#84).
+
+**Dependência:** o defect #105 (atribuído ao Pedro Soares) depende de uma decisão da US-23 (atribuída ao Marco Garcia): ao remover uma identidade, limpar o `nome_normalizado` ou tornar a restrição única só para identidades ativas.
