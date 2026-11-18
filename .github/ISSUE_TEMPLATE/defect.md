@@ -1,13 +1,13 @@
 ---
-name: Defeito
+name: Defect
 about: Algo não funciona como devia (API, app, pipeline ou documentação)
-title: "[Defeito] <resumo curto do problema>"
+title: "[Defect] <resumo curto do problema>"
 labels: bug
 ---
 
 <!--
-Um defeito é um comportamento errado em algo já implementado.
-Funcionalidades novas ou mudanças de âmbito são User Stories, não defeitos.
+Um defect é um comportamento errado em algo já implementado.
+Funcionalidades novas ou mudanças de âmbito são User Stories, não defects.
 -->
 
 ## Resumo
@@ -43,8 +43,8 @@ Funcionalidades novas ou mudanças de âmbito são User Stories, não defeitos.
 ## Causa provável e correção sugerida
 <!-- Opcional, se já se souber. -->
 
-## Definition of Done do defeito
-- [ ] Teste automático que reproduz o defeito (falha antes da correção, passa depois)
+## Definition of Done do defect
+- [ ] Teste automático que reproduz o defect (falha antes da correção, passa depois)
 - [ ] Correção integrada na `main` por PR com revisão
 - [ ] CI a passar
 - [ ] Documentação atualizada, se o comportamento descrito mudou
