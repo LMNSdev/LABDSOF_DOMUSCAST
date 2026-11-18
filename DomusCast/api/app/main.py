@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
+
 from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -24,7 +26,7 @@ app.include_router(identidades.router, prefix="/identidades", tags=["identidades
 
 
 @app.get("/health", tags=["infra"])
-def health(db: Session = Depends(get_db)):
+def health(db: Annotated[Session, Depends(get_db)]):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ok", "db": "ok"}

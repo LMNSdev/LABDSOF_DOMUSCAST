@@ -51,6 +51,11 @@ class EstadoJob(str, enum.Enum):
 # Models
 # ---------------------------------------------------------------------------
 
+# Foreign keys repetidos nas relações. Constantes evitam strings de coluna divergentes.
+CONDOMINIO_FK = "condominio.id"
+REPORTE_FK = "reporte.id"
+
+
 class Condominio(Base):
     __tablename__ = "condominio"
 
@@ -70,7 +75,7 @@ class Administrador(Base):
     __tablename__ = "administrador"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=False)
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
     nome = Column(String(200), nullable=False)
     credencial_hash = Column(String(128), nullable=False, unique=True)
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -84,7 +89,7 @@ class ConviteAdmin(Base):
     __tablename__ = "convite_admin"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=False)
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
     codigo_hash = Column(String(128), nullable=False, unique=True)
     criado_por = Column(Integer, ForeignKey("administrador.id"), nullable=False)
     expira_em = Column(DateTime(timezone=True), nullable=False)
@@ -97,7 +102,7 @@ class Fracao(Base):
     __tablename__ = "fracao"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=False)
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
     designacao = Column(String(100), nullable=False)
 
     condominio = relationship("Condominio", back_populates="fracoes")
@@ -147,7 +152,7 @@ class Reporte(Base):
     __tablename__ = "reporte"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=True)  # NOT NULL a partir de Sprint B
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=True)  # NOT NULL a partir de Sprint B
     autor_id = Column(Integer, ForeignKey("identidade.id"), nullable=True)       # NOT NULL a partir de Sprint B
     descricao = Column(Text, nullable=False)
     foto_url = Column(String(500), nullable=True)        # walking skeleton - substituído por foto_path
@@ -159,7 +164,7 @@ class Reporte(Base):
         nullable=False,
         server_default="aberto",
     )
-    duplicado_de_id = Column(Integer, ForeignKey("reporte.id"), nullable=True)
+    duplicado_de_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=True)
     idempotency_key = Column(String(64), unique=True, nullable=True, index=True)
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -176,7 +181,7 @@ class ReporteHistorico(Base):
     __tablename__ = "reporte_historico"
 
     id = Column(Integer, primary_key=True)
-    reporte_id = Column(Integer, ForeignKey("reporte.id"), nullable=False)
+    reporte_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=False)
     estado_anterior = Column(Enum(EstadoReporte, name="estado_reporte"), nullable=True)
     estado_novo = Column(Enum(EstadoReporte, name="estado_reporte"), nullable=False)
     nota = Column(Text, nullable=True)
@@ -190,7 +195,7 @@ class ReporteHistorico(Base):
 class ReporteSeguidor(Base):
     __tablename__ = "reporte_seguidor"
 
-    reporte_id = Column(Integer, ForeignKey("reporte.id"), primary_key=True)
+    reporte_id = Column(Integer, ForeignKey(REPORTE_FK), primary_key=True)
     identidade_id = Column(Integer, ForeignKey("identidade.id"), primary_key=True)
     tipo = Column(Enum(TipoSeguidor, name="tipo_seguidor"), nullable=False)
 
@@ -202,8 +207,8 @@ class Aviso(Base):
     __tablename__ = "aviso"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=False)
-    reporte_id = Column(Integer, ForeignKey("reporte.id"), nullable=True)
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
+    reporte_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=True)
     titulo = Column(String(200), nullable=False)
     texto = Column(Text, nullable=False)
     local = Column(String(200), nullable=True)
@@ -218,7 +223,7 @@ class Reuniao(Base):
     __tablename__ = "reuniao"
 
     id = Column(Integer, primary_key=True)
-    condominio_id = Column(Integer, ForeignKey("condominio.id"), nullable=False)
+    condominio_id = Column(Integer, ForeignKey(CONDOMINIO_FK), nullable=False)
     data_hora = Column(DateTime(timezone=True), nullable=False)
     local = Column(String(300), nullable=True)
     calendario_externo_id = Column(String(200), nullable=True)

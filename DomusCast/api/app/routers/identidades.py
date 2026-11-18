@@ -5,6 +5,7 @@ identidade. A credencial devolvida fica no telemóvel; o servidor guarda o hash.
 """
 
 import unicodedata
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
@@ -34,7 +35,7 @@ def normalizar_nome(nome: str) -> str:
 def criar_identidade(
     dados: schemas.IdentidadeCreate,
     request: Request,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ):
     qr = (
         db.query(models.QrToken)

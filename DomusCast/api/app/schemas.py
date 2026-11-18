@@ -67,7 +67,7 @@ class ReporteCreate(BaseModel):
 class ReporteOut(BaseModel):
     id: int
     descricao: str
-    foto_url: Optional[str]
+    foto_url: Optional[str] = None
     estado: EstadoReporte
     criado_em: datetime
     atualizado_em: datetime

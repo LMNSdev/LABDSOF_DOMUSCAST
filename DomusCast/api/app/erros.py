@@ -17,7 +17,8 @@ class ErroApi(Exception):
         self.mensagem = mensagem
 
 
-async def tratar_erro_api(_: Request, erro: ErroApi) -> JSONResponse:
+# FastAPI resolve exception handlers by awaiting this callback.
+async def tratar_erro_api(_: Request, erro: ErroApi) -> JSONResponse:  # NOSONAR
     return JSONResponse(
         status_code=erro.status,
         content={"codigo": erro.codigo, "mensagem": erro.mensagem, "request_id": uuid.uuid4().hex},
