@@ -2,21 +2,15 @@
 
 Registo da daily do Scrum (o que cada pessoa fez, o que vai fazer e bloqueios), uma entrada por dia de trabalho. Complementa o [Sprint Backlog](backlog.md) e serve de evidência do processo.
 
-## Equipa e papéis
+## Equipa
 
-Mapeamento proposto a partir dos papéis definidos em [sprintA.md](../sprintA/sprintA.md#papéis-da-equipa); a equipa confirma ou ajusta.
+Luis Santos, Pedro Soares, Pedro Costa, Marco Garcia e Leonardo Costa.
 
-| Pessoa | Papel |
-|---|---|
-| Pedro Soares | DevOps / Scrum Master |
-| Luis Santos | Product Owner / PM + Business Analyst |
-| Pedro Costa | Frontend Developer |
-| Marco Garcia | Backend Developer |
-| Leonardo Costa | QA |
+Não há papéis fixos por pessoa: todos fazem de tudo (frontend, backend, testes, pipeline e documentação). Os [papéis do Sprint A](../sprintA/sprintA.md#papéis-da-equipa) descrevem responsabilidades que a equipa partilha, não pessoas. A facilitação da daily (Scrum Master) também roda, e cada entrada diz quem facilitou nesse dia.
 
 ## 2026-11-16
 
-Facilitada por Pedro Soares (Scrum Master).
+Facilitada por Pedro Soares.
 
 | Pessoa | Ontem | Hoje | Bloqueios |
 |---|---|---|---|
@@ -30,7 +24,7 @@ Facilitada por Pedro Soares (Scrum Master).
 
 ## 2026-11-18
 
-Facilitada por Luis Santos (Scrum Master nesta daily).
+Facilitada por Luis Santos.
 
 | Pessoa | Ontem | Hoje | Bloqueios |
 |---|---|---|---|
