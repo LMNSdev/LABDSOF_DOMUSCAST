@@ -176,7 +176,7 @@ flowchart TB
         tag --> img["Build da imagem da API"]
         tag --> apk["Build do APK<br/>versão vX.Y.Z, API em HTTPS"]
         apk -->|anexado| ghrel["GitHub Release"]
-        img -->|"push vX.Y.Z e sha"| ghcr[("GHCR<br/>imagens públicas")]
+        img -->|"push vX.Y.Z e sha"| ghcr[("GHCR<br/>pacote privado")]
         img -->|"só se mudou api/ ou deploy/"| dep["Job deploy<br/>environment: production"]
     end
 
@@ -188,7 +188,7 @@ flowchart TB
     dep -->|"OIDC, papel DomusCast VM Operator"| ctrl
     ctrl -.-> vm
     dep -->|"SSH como deploy"| vm
-    vm -->|"docker compose pull"| ghcr
+    vm -->|"docker compose pull<br/>com o GITHUB_TOKEN do job"| ghcr
     ghrel -->|"descarregam o APK"| docentes(["Docentes / equipa"])
 ```
 
@@ -211,8 +211,10 @@ sequenceDiagram
         Note over GH: Guarda que a VM estava desligada
     end
     GH->>VM: SSH: copia docker-compose.prod.yml para /opt/domuscast
+    GH->>VM: SSH: docker login ghcr.io (GITHUB_TOKEN do job, só leitura)
     GH->>VM: SSH: IMAGE_TAG=vX.Y.Z docker compose up -d
     VM->>REG: pull da imagem api:vX.Y.Z
+    GH->>VM: SSH: docker logout ghcr.io
     VM->>VM: Migrações (alembic upgrade head) e arranque da API
     loop até 2 minutos
         GH->>VM: GET https://domuscast.../health
@@ -269,7 +271,7 @@ O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por e
 | Login OIDC e estado da VM | [`.github/scripts/azure-login.sh`](../../../.github/scripts/azure-login.sh), [`.github/scripts/vm.sh`](../../../.github/scripts/vm.sh) |
 | Stack e script na VM | [`DomusCast/deploy/`](../../../DomusCast/deploy/) (`docker-compose.prod.yml`, `Caddyfile`, `deploy.sh`, `bootstrap-vm.sh`) |
 
-1. **Imagem da API.** Depois de o workflow `Release` criar a tag `vX.Y.Z`, a imagem é construída e publicada no GitHub Container Registry com a tag da versão e a do commit. O repositório é público, por isso a VM descarrega a imagem sem token.
+1. **Imagem da API.** Depois de o workflow `Release` criar a tag `vX.Y.Z`, a imagem é construída e publicada no GitHub Container Registry com a tag da versão e a do commit. O pacote é privado (a organização não permite pacotes públicos): o job de deploy faz login no GHCR com o seu `GITHUB_TOKEN` (`packages: read`), no runner e na VM, e faz logout no fim. O token expira quando o job acaba, por isso não fica nenhuma credencial na VM.
 2. **Compose de produção.** `docker-compose.prod.yml` com `postgres` (sem porta exposta), `api` (imagem do GHCR, sem build na VM) e `caddy` à frente, que obtém e renova o certificado HTTPS (Let's Encrypt) para `domuscast.belgiumcentral.cloudapp.azure.com`. Worker, Prometheus e Grafana entram quando existirem.
 3. **Deploy a cada merge que muda o servidor** (`DomusCast/api/` ou `DomusCast/deploy/`, comparando com a versão anterior), no *environment* `production`: ver o estado da VM → ligá-la se estiver desligada → copiar o compose e fazer `pull`/`up` da nova versão por SSH → confirmar que o `/health` responde → voltar a desalocá-la se estava desligada.
 4. **Rollback** por *Run workflow* no GitHub, indicando a versão (ex.: `v0.3.0`). As migrações são aditivas, por isso voltar atrás não exige reverter o esquema.
@@ -301,6 +303,6 @@ O *environment* `production` só aceita jobs que corram na `main` (*deployment b
 
 ### Manutenção
 
-- **Imagem pública no GHCR:** a VM descarrega a imagem sem token. Se o GitHub criar o pacote `domuscast-api` como privado na primeira publicação, torná-lo público uma vez em *Packages → domuscast-api → Package settings → Change visibility*.
+- **Imagem privada no GHCR:** o pacote `domuscast-api` está ligado a este repositório e o deploy descarrega-o com o `GITHUB_TOKEN` do job. Se o pacote for recriado, confirmar em *Packages → domuscast-api → Package settings → Manage Actions access* que o repositório tem acesso. Para descarregar uma imagem à mão na VM, fazer antes `docker login ghcr.io` com um token pessoal com `read:packages` e `docker logout ghcr.io` no fim.
 - **VM recriada:** a VM nova tem chaves de servidor novas; atualizar o secret `DEPLOY_KNOWN_HOSTS` com `ssh-keyscan domuscast.belgiumcentral.cloudapp.azure.com`, e repetir o `bootstrap-vm.sh` (ver [Recriar do zero](#recriar-do-zero)).
 - **Certificado HTTPS:** o Caddy renova-o sozinho e guarda-o no volume `caddy_data`; não apagar este volume, para não esbarrar nos limites do Let's Encrypt.
