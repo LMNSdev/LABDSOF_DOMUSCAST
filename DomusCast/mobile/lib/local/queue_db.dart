@@ -13,16 +13,24 @@ class QueueDb {
     final path = join(await getDatabasesPath(), 'queue.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, _) => db.execute('''
         CREATE TABLE pending_reportes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           descricao TEXT NOT NULL,
           foto_url TEXT,
           idempotency_key TEXT NOT NULL,
+          mostrar_nome INTEGER NOT NULL DEFAULT 0,
           criado_em INTEGER NOT NULL
         )
       '''),
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE pending_reportes ADD COLUMN mostrar_nome INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+      },
     );
   }
 
@@ -30,12 +38,14 @@ class QueueDb {
     required String descricao,
     String? fotoUrl,
     required String idempotencyKey,
+    bool mostrarNome = false,
   }) async {
     final database = await db;
     await database.insert('pending_reportes', {
       'descricao': descricao,
       'foto_url': fotoUrl,
       'idempotency_key': idempotencyKey,
+      'mostrar_nome': mostrarNome ? 1 : 0,
       'criado_em': DateTime.now().millisecondsSinceEpoch,
     });
   }

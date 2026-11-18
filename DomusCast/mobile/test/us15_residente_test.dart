@@ -133,11 +133,16 @@ void main() {
 
     testWidgets('entra, guarda a identidade no telemóvel e abre os Reportes', (tester) async {
       Map<String, dynamic>? enviado;
+      String? authReportes;
       final store = MemoriaSessaoResidenteStore();
-      await _abrirNome(tester, _api((req) {
+      await _abrirNome(tester, ApiService(client: MockClient((req) async {
+        if (req.url.path == '/reportes') {
+          authReportes = req.headers['Authorization'];
+          return _json([], 200);
+        }
         enviado = jsonDecode(req.body) as Map<String, dynamic>;
         return _json(_criada, 201);
-      }), store);
+      })), store);
       await _enviar(tester, 'Marta Silva');
 
       expect(enviado, {'token': 'tok', 'nome': 'Marta Silva'});
@@ -145,6 +150,8 @@ void main() {
       expect(guardada?.credencial, 'cred-1');
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.text('Olá, Marta Silva. Entrou na fração A.'), findsOneWidget);
+      // US-09: os Reportes abrem logo com a credencial nova.
+      expect(authReportes, 'Bearer cred-1');
     });
 
     testWidgets('nome repetido na fração mostra a mensagem no campo', (tester) async {

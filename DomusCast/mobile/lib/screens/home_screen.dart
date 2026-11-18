@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
+import '../services/sessao_residente.dart';
 import 'condominio_screen.dart';
 import 'reportes_list_screen.dart';
 import 'reunioes_screen.dart';
@@ -18,12 +19,14 @@ enum Separador { reportes, reunioes, avisos, condominio }
 class HomeScreen extends StatefulWidget {
   final ApiService api;
   final SessaoAdmin? sessao;
+  final SessaoResidente? sessaoResidente;
   final Separador separadorInicial;
 
   const HomeScreen({
     super.key,
     required this.api,
     this.sessao,
+    this.sessaoResidente,
     this.separadorInicial = Separador.reportes,
   });
 
@@ -44,7 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _atual = _separadores.indexOf(widget.separadorInicial).clamp(0, _separadores.length - 1);
 
   Widget _raiz(Separador s) => switch (s) {
-        Separador.reportes => ReportesListScreen(api: widget.api),
+        Separador.reportes => ReportesListScreen(
+            api: widget.api,
+            credencial: widget.sessao?.credencial ?? widget.sessaoResidente?.credencial,
+            nomeResidente: widget.sessaoResidente?.nome,
+            podeReportar: widget.sessao == null,
+          ),
         Separador.reunioes => const ReunioesScreen(),
         Separador.avisos => const SizedBox.shrink(),
         Separador.condominio => CondominioScreen(api: widget.api, sessao: widget.sessao!),

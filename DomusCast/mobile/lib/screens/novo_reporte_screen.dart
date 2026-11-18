@@ -1,10 +1,18 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../local/queue_db.dart';
 
 class NovoReporteScreen extends StatefulWidget {
-  const NovoReporteScreen({super.key});
+  final String? credencial;
+
+  /// Nome do residente, para explicar o que os vizinhos veem com a opção ligada (US-09).
+  final String? nome;
+  final ApiService? api;
+
+  const NovoReporteScreen({super.key, this.credencial, this.nome, this.api});
 
   @override
   State<NovoReporteScreen> createState() => _NovoReporteScreenState();
@@ -13,7 +21,9 @@ class NovoReporteScreen extends StatefulWidget {
 class _NovoReporteScreenState extends State<NovoReporteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
+  late final ApiService _api = widget.api ?? ApiService();
   bool _submitting = false;
+  bool _mostrarNome = false;
 
   @override
   void dispose() {
@@ -27,6 +37,17 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
+  String _mensagemErro(int status) => switch (status) {
+        401 => 'A sua identidade já não é válida. Leia de novo o QR code da fração.',
+        403 => 'Só os residentes podem reportar avarias.',
+        422 => 'Verifique a descrição do reporte.',
+        _ => 'Não foi possível enviar o reporte. Tente de novo.',
+      };
+
+  String get _notaNome => _mostrarNome
+      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o seu nome'}". A fração continua escondida.'
+      : 'Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.';
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
@@ -35,9 +56,11 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     final idempotencyKey = _generateIdempotencyKey();
 
     try {
-      await ApiService().criarReporte(
+      await _api.criarReporte(
         descricao: descricao,
         idempotencyKey: idempotencyKey,
+        mostrarNome: _mostrarNome,
+        credencial: widget.credencial,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,29 +71,42 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         );
         Navigator.pop(context);
       }
-    } catch (_) {
-      await QueueDb.enqueue(
-        descricao: descricao,
-        idempotencyKey: idempotencyKey,
-      );
+    } on ApiException catch (e) {
+      // Erro da API: reenviar não resolve, por isso não vai para a fila offline.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.wifi_off, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Expanded(child: Text('Sem ligação - reporte guardado para envio posterior')),
-              ],
-            ),
-            backgroundColor: Colors.orange.shade700,
-          ),
+          SnackBar(content: Text(_mensagemErro(e.statusCode))),
         );
-        Navigator.pop(context);
       }
+    } on http.ClientException {
+      await _guardarOffline(descricao, idempotencyKey);
+    } on SocketException {
+      await _guardarOffline(descricao, idempotencyKey);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _guardarOffline(String descricao, String idempotencyKey) async {
+    await QueueDb.enqueue(
+      descricao: descricao,
+      idempotencyKey: idempotencyKey,
+      mostrarNome: _mostrarNome,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white, size: 18),
+            SizedBox(width: 8),
+            Expanded(child: Text('Sem ligação - reporte guardado para envio posterior')),
+          ],
+        ),
+        backgroundColor: Colors.orange.shade700,
+      ),
+    );
+    Navigator.pop(context);
   }
 
   @override
@@ -138,6 +174,15 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                           '${_descricaoController.text.length}/2000',
                           style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      // SwitchListTile já expõe o título e o estado ao leitor de ecrã.
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Mostrar o meu nome neste reporte'),
+                        subtitle: Text(_notaNome),
+                        value: _mostrarNome,
+                        onChanged: (value) => setState(() => _mostrarNome = value),
                       ),
                     ],
                   ),
