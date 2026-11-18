@@ -265,6 +265,7 @@ O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por e
 
 | O quê | Onde |
 |---|---|
+| Verificações antes do merge (PostgreSQL, Docker e Trivy, compose de produção e Caddyfile, APK; regras de branch e commits) | [`.github/workflows/pr-producao.yml`](../../../.github/workflows/pr-producao.yml), [`.github/workflows/pr-regras.yml`](../../../.github/workflows/pr-regras.yml) |
 | Tag, imagem, APK e chamada ao deploy | [`.github/workflows/release.yml`](../../../.github/workflows/release.yml) |
 | Deploy e rollback | [`.github/workflows/deploy.yml`](../../../.github/workflows/deploy.yml) |
 | Ligar/desligar e desalocação noturna | [`.github/workflows/vm.yml`](../../../.github/workflows/vm.yml) |

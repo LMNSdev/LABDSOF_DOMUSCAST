@@ -33,5 +33,27 @@ check "sem versão anterior gera versão"       "$(bash $do "" fcd55a5)"        
 check "merge só de docs/ não gera versão"     "$(bash $do fcd55a5^1 fcd55a5)"     true
 check "CODEOWNERS (fora de docs/) gera versão" "$(bash $do 1f7c607^1 1f7c607)"    false
 
+pr=.github/scripts/pr-rules.sh
+check "branch feature/ aceite"           "$(bash $pr branch feature/us-09-privacidade)" true
+check "branch feat/ aceite"              "$(bash $pr branch feat/deploy-azure)"         true
+check "branch bugfix/ aceite"            "$(bash $pr branch bugfix/12-login)"           true
+check "branch chore/ aceite"             "$(bash $pr branch chore/ci)"                  true
+check "branch ci/ aceite"                "$(bash $pr branch ci/semgrep)"                true
+check "branch fix/ aceite"               "$(bash $pr branch fix/login)"                 true
+check "branch docs/ aceite (dailies)"    "$(bash $pr branch docs/daily-2026-11-18)"     true
+check "branch release/ aceite"           "$(bash $pr branch release/sprint-b)"          true
+check "branch sem prefixo recusado"      "$(bash $pr branch us-09-privacidade)"         false
+check "branch hotfix/ recusado"          "$(bash $pr branch hotfix/x)"                  false
+check "prefixo sem nome recusado"        "$(bash $pr branch feature/)"                  false
+check "commit [#12] - aceite"            "$(bash $pr mensagem '[#12] - Adiciona formulário')"      true
+check "commit com várias issues aceite"  "$(bash $pr mensagem '[#12, #13] - Formulário')"          true
+check "commit #12 - aceite"              "$(bash $pr mensagem '#12 - Formulário')"                 true
+check "commit de infraestrutura aceite"  "$(bash $pr mensagem 'GitHub: deploy só na main')"        true
+check "merge do Git aceite"              "$(bash $pr mensagem "Merge branch 'main' into x")"       true
+check "commit sem issue recusado"        "$(bash $pr mensagem 'Corrige o login')"                  false
+check "área desconhecida recusada"       "$(bash $pr mensagem 'Coisas: várias')"                   false
+check "issue sem descrição recusada"     "$(bash $pr mensagem '[#12] - ')"                         false
+check "issue sem separador recusada"     "$(bash $pr mensagem '[#12] Formulário')"                 false
+
 echo
 if [ "$falhas" -eq 0 ]; then echo "Todos os testes passaram."; else echo "$falhas teste(s) falharam."; exit 1; fi

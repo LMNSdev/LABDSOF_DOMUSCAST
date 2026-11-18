@@ -1,29 +1,25 @@
 #!/bin/sh
-# Valida a mensagem de commit: "<issue_id> - <descrição>"
-# Formatos aceites: "[#12] - texto", "#12 - texto", "12 - texto" ou várias issues, ex.: "[#12, #13] - texto".
+# Valida a mensagem de commit com a mesma regra do CI (.github/scripts/pr-rules.sh):
+#   "[#12] - texto", "#12 - texto", "12 - texto", "[#12, #13] - texto"
+#   ou "Área: texto" para infraestrutura sem issue (GitHub, Docker, Deploy, CI, Docs, Mobile, API).
 
 msg_file="$1"
+regras="$(git rev-parse --show-toplevel)/.github/scripts/pr-rules.sh"
 
 # Primeira linha que não seja vazia nem comentário do Git ("# texto")
 subject=$(grep -Ev '^#([[:space:]]|$)' "$msg_file" | grep -v '^[[:space:]]*$' | head -n 1)
 
-# Merges, reverts e fixups automáticos do Git não são validados
-case "$subject" in
-  "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
-esac
-
-id='#?[0-9]+'
-ids="$id(, ?$id)*"
-
-if printf '%s\n' "$subject" | grep -Eq "^(\[$ids\]|$ids) - [^[:space:]].*"; then
+if [ "$(bash "$regras" mensagem "$subject")" = true ]; then
   exit 0
 fi
 
 cat >&2 <<EOF
-Commit rejeitado: a mensagem tem de seguir "<issue_id> - <descrição>".
+Commit rejeitado: a mensagem tem de seguir "<issue_id> - <descrição>" ou "<Área>: <descrição>".
 
   Exemplo: [#12] - Adiciona formulário de reporte de fuga de água
   Várias issues: [#12, #13] - Adiciona formulário e validação
+  Infraestrutura sem issue: CI: verificações nos PRs para a main
+    (áreas: GitHub, Docker, Deploy, CI, Docs, Mobile, API)
 
 Mensagem recebida: "$subject"
 EOF

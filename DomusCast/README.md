@@ -173,7 +173,26 @@ Ficheiro: `.github/workflows/ci.yml`
 | `sca-dart` | `osv-scanner` sobre `pubspec.lock` (SCA Dart) |
 | `secrets` | `gitleaks` (deteta credenciais commitadas) |
 
-A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA do commit e o Dependabot (`.github/dependabot.yml`) propõe atualizações semanais. A imagem da API corre como utilizador não-root e o PostgreSQL só escuta em `127.0.0.1`.
+A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA do commit e o Dependabot (`.github/dependabot.yml`) propõe atualizações semanais. A imagem da API corre como utilizador não-root, sem o `pip` (só é preciso no build), e o PostgreSQL só escuta em `127.0.0.1`.
+
+### Verificações nos PRs para a `main`
+
+Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `main` passam ainda por dois workflows. Devem estar marcados como obrigatórios nas regras de proteção da `main` (Settings > Branches).
+
+| Workflow | Job | O que faz |
+|---|---|---|
+| `pr-regras.yml` | `regras` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
+| `pr-producao.yml` | `postgres` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
+| | `docker` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
+| | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
+| | `apk` | `flutter build apk --release`, o mesmo comando do release |
+
+Para correr os testes da API contra PostgreSQL localmente (com a base de dados `ci_testes` criada):
+
+```powershell
+$env:TEST_DATABASE_URL = "postgresql://condoapp:condoapp@localhost:5433/ci_testes"
+pytest tests/ -v
+```
 
 ---
 
