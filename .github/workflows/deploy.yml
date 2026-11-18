@@ -105,8 +105,9 @@ jobs:
           exit 1
 
       # A VM descarrega a imagem privada com o GITHUB_TOKEN deste job: o token vai
-      # pelo stdin (não aparece na linha de comandos), expira quando o job acaba e
-      # o logout tira-o da VM mesmo que o deploy falhe.
+      # pelo stdin (não aparece na linha de comandos) e o logout tira-o da VM mesmo
+      # que o deploy falhe. Se o job for cancelado antes do logout, o token fica na
+      # VM até expirar no fim do job (só dá leitura ao repositório e ao pacote).
       - name: Copiar ficheiros e implantar
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
