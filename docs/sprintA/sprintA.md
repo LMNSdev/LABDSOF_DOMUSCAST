@@ -1071,7 +1071,7 @@ flutter run
 | Flutter landing screen | Ecrã inicial de marca (gradiente azul, animação, funcionalidades) com botão "Entrar" que abre a lista de reportes |
 | Flutter list screen | Envia a fila offline pendente, carrega reportes; mostra loading -> lista / erro com "Tentar de novo" |
 | Flutter create screen | Formulário com validação; cai para `QueueDb` (SQLite) se sem internet |
-| `QueueDb` | Fila local persistente; cada item tem `idempotency_key` para envio sem duplicados; a lista envia-os por ordem a cada carregamento/refresh e remove os enviados |
+| `QueueDb` | Fila local persistente; cada item tem `idempotency_key` para envio sem duplicados; a lista envia-os por ordem a cada carregamento/refresh e remove os enviados e os recusados com um 4xx definitivo (401 e 5xx ficam para o próximo refresh) |
 | `docker compose up` | Sobe `api` + `postgres`; health check garante ordem de arranque; migrações no `entrypoint.sh` |
 
 ### Testes automatizados
