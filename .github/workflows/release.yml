@@ -2,10 +2,11 @@ name: Release
 
 # Sempre que o CI passa na main (ou seja, depois de cada merge):
 #   1. tag   - cria a tag de versão (vX.Y.Z) e a respetiva GitHub Release
-#              feat/* -> MINOR | restantes branches/push direto -> PATCH
+#              feat/* e feature/* -> MINOR | restantes branches/push direto -> PATCH
 #   2. image - publica a imagem da API no GHCR (ghcr.io/lmnsdev/domuscast-api)
 #   3. apk   - gera o APK (a apontar para a VM em HTTPS) e anexa-o à release
-#   4. deploy- implanta a versão na VM de produção (workflow deploy.yml)
+#   4. deploy- implanta a versão na VM de produção (workflow deploy.yml), só se
+#              mudou alguma coisa em DomusCast/api ou DomusCast/deploy
 # O MAJOR (ex.: v1.0.0 no fim do sprint B) é criado à mão; a pipeline continua
 # a partir da tag mais alta que existir. Ver docs/sprintB/VM/README.md.
 #
@@ -39,6 +40,7 @@ jobs:
       pull-requests: read # descobrir o branch do PR do commit
     outputs:
       version: ${{ steps.release.outputs.version }}
+      deploy: ${{ steps.release.outputs.deploy }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -71,6 +73,15 @@ jobs:
           gh release create "$next" --target "$SHA" --title "$next" --generate-notes
           echo "version=$next" >> "$GITHUB_OUTPUT"
           echo "### Release $next criada" >> "$GITHUB_STEP_SUMMARY"
+
+          # Deploy só se o servidor mudou (DomusCast/api ou DomusCast/deploy)
+          deploy=$(bash .github/scripts/server-changed.sh "$latest" "$SHA")
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+          if [ "$deploy" = true ]; then
+            echo "Deploy: sim (há alterações no servidor desde ${latest:-o início})" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → Deploy → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # Os jobs seguintes só correm quando este run criou uma versão nova
   # (num re-run ou num commit que já tinha tag, a versão fica vazia).
@@ -152,7 +163,7 @@ jobs:
   deploy:
     name: Deploy
     needs: [tag, image]
-    if: needs.tag.outputs.version != ''
+    if: needs.tag.outputs.version != '' && needs.tag.outputs.deploy == 'true'
     permissions:
       contents: read
       id-token: write # login na Azure por OIDC (dentro do deploy.yml)

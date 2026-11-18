@@ -164,11 +164,11 @@ Os diagramas abaixo são escritos em [Mermaid](https://mermaid.js.org/) e o GitH
 
 ### Visão geral: do merge à VM
 
-Cada merge na `main` passa pelo CI; se ficar verde, o workflow `Release` cria a versão, publica a imagem e o APK, e faz o deploy.
+Cada merge na `main` passa pelo CI; se ficar verde, o workflow `Release` cria a versão e publica a imagem e o APK. O deploy só corre se o merge mudou o que corre no servidor (`DomusCast/api/` ou `DomusCast/deploy/`): um merge só de documentação, da app ou de configuração do GitHub deixaria o servidor igual.
 
 ```mermaid
 flowchart TB
-    pr["PR<br/>feat/* · fix/* · chore/* · docs/*"] -->|merge| main[("main")]
+    pr["PR<br/>feat/* · feature/* · fix/* · chore/* · docs/*"] -->|merge| main[("main")]
 
     subgraph gh["GitHub"]
         main --> ci["CI<br/>lint · testes · SAST · SCA · segredos"]
@@ -177,7 +177,7 @@ flowchart TB
         tag --> apk["Build do APK<br/>versão vX.Y.Z · API em HTTPS"]
         apk -->|anexado| ghrel["GitHub Release"]
         img -->|"push vX.Y.Z e sha"| ghcr[("GHCR<br/>imagens públicas")]
-        img --> dep["Job deploy<br/>environment: production"]
+        img -->|"só se mudou api/ ou deploy/"| dep["Job deploy<br/>environment: production"]
     end
 
     subgraph azure["Azure · Belgium Central"]
@@ -271,7 +271,7 @@ O **rollback** é o mesmo job de deploy com uma versão escolhida à mão (por e
 
 1. **Imagem da API.** Depois de o workflow `Release` criar a tag `vX.Y.Z`, a imagem é construída e publicada no GitHub Container Registry com a tag da versão e a do commit. O repositório é público, por isso a VM descarrega a imagem sem token.
 2. **Compose de produção.** `docker-compose.prod.yml` com `postgres` (sem porta exposta), `api` (imagem do GHCR, sem build na VM) e `caddy` à frente, que obtém e renova o certificado HTTPS (Let's Encrypt) para `domuscast.belgiumcentral.cloudapp.azure.com`. Worker, Prometheus e Grafana entram quando existirem.
-3. **Deploy a cada merge**, no *environment* `production`: ver o estado da VM → ligá-la se estiver desligada → copiar o compose e fazer `pull`/`up` da nova versão por SSH → confirmar que o `/health` responde → voltar a desalocá-la se estava desligada.
+3. **Deploy a cada merge que muda o servidor** (`DomusCast/api/` ou `DomusCast/deploy/`, comparando com a versão anterior), no *environment* `production`: ver o estado da VM → ligá-la se estiver desligada → copiar o compose e fazer `pull`/`up` da nova versão por SSH → confirmar que o `/health` responde → voltar a desalocá-la se estava desligada.
 4. **Rollback** por *Run workflow* no GitHub, indicando a versão (ex.: `v0.3.0`). As migrações são aditivas, por isso voltar atrás não exige reverter o esquema.
 5. **Ligar/desligar pelo GitHub** por *Run workflow*, para quem não tem acesso à subscrição.
 6. **Desalocar todas as noites às 00:00** com um workflow agendado.
@@ -292,7 +292,7 @@ O *environment* `production` só aceita jobs que corram na `main` (*deployment b
 
 ### Como usar
 
-- **Deploy:** automático, a cada merge na `main` com o CI verde. Acompanhar em *Actions → Release*; o resumo do job `Deploy` diz a versão e se a VM foi ligada só para o deploy.
+- **Deploy:** automático, a cada merge na `main` com o CI verde que mude `DomusCast/api/` ou `DomusCast/deploy/`. Acompanhar em *Actions → Release*: o resumo do job `Tag + GitHub Release` diz se houve deploy e porquê, e o do job `Deploy` diz a versão e se a VM foi ligada só para o deploy. Para implantar uma versão sem alterações no servidor, usar *Actions → Deploy → Run workflow*.
 - **Rollback:** *Actions → Deploy → Run workflow*, com a versão anterior (ex.: `v0.3.0`). Só há imagens a partir da primeira versão publicada por esta pipeline (`v0.3.0`); uma versão mal escrita ou sem imagem no GHCR falha logo no primeiro passo, sem ligar a VM.
 - **Ligar/desligar a VM:** *Actions → VM → Run workflow → ligar* (ou *desligar*). Ligar demora cerca de 1 minuto; a API arranca sozinha (`restart: unless-stopped`).
 - **Desalocação noturna:** o mesmo workflow `VM` corre todos os dias às 00:00 **UTC** (00:00 em Lisboa no inverno, 01:00 no verão), porque o cron do GitHub não tem fuso horário.
