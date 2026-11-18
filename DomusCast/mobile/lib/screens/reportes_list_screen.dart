@@ -5,8 +5,15 @@ import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
   final ApiService? api;
+  final String? credencialResidente;
+  final bool podeReportar;
 
-  const ReportesListScreen({super.key, this.api});
+  const ReportesListScreen({
+    super.key,
+    this.api,
+    this.credencialResidente,
+    this.podeReportar = true,
+  });
 
   @override
   State<ReportesListScreen> createState() => _ReportesListScreenState();
@@ -27,12 +34,14 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
   // A idempotency_key evita duplicados em reenvios.
   Future<void> _syncPending() async {
+    final credencial = widget.credencialResidente;
+    if (credencial == null || credencial.isEmpty) return;
     try {
       final pending = await QueueDb.getPending();
       for (final p in pending) {
         await _api.criarReporte(
+          credencial: credencial,
           descricao: p['descricao'] as String,
-          fotoUrl: p['foto_url'] as String?,
           idempotencyKey: p['idempotency_key'] as String,
         );
         await QueueDb.remove(p['id'] as int);
@@ -62,7 +71,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     }
   }
 
-  ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(String estado) {
+  ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(
+      String estado) {
     return switch (estado) {
       'resolvido' => (
           bg: const Color(0xFFE8F5E9),
@@ -126,24 +136,32 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 16),
                         itemCount: _reportes.length,
                         itemBuilder: (context, i) => _buildCard(_reportes[i]),
                       ),
                     ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NovoReporteScreen()),
-          );
-          _load();
-        },
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        icon: const Icon(Icons.add),
-        label: const Text('Reportar avaria'),
-      ),
+      floatingActionButton: widget.podeReportar
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final criado = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NovoReporteScreen(
+                      api: _api,
+                      credencialResidente: widget.credencialResidente,
+                    ),
+                  ),
+                );
+                if (criado == true) _load();
+              },
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              icon: const Icon(Icons.add),
+              label: const Text('Reportar avaria'),
+            )
+          : null,
     );
   }
 
@@ -166,7 +184,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                 Expanded(
                   child: Text(
                     r['descricao'] as String? ?? '',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w500),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -177,7 +196,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: style.bg,
                     borderRadius: BorderRadius.circular(20),
@@ -200,7 +220,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                 ),
                 const Spacer(),
                 if (data.isNotEmpty)
-                  Text(data, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(data,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ],
@@ -242,7 +263,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.check_circle_outline,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'Nenhum reporte ainda',
