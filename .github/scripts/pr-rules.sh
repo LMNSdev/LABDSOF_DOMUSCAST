@@ -5,9 +5,9 @@
 #      pr-rules.sh mensagem <primeira linha do commit ou título do PR>
 #   Imprime "true" se cumprir a regra e "false" caso contrário.
 #
-# Branches: feature/, feat/, bugfix/, chore/ ou ci/ seguido de um nome.
+# Branches: feature/, feat/, bugfix/, fix/, docs/, chore/, ci/ ou release/ seguido de um nome.
 # Mensagens: "[#12] - texto", "#12 - texto", "12 - texto", "[#12, #13] - texto"
-#   (como o .githooks/commit-msg) ou "Área: texto" para infraestrutura sem issue
+#   (o .githooks/commit-msg usa este script) ou "Área: texto" para infraestrutura sem issue
 #   (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Merges, reverts e fixups
 #   automáticos do Git são aceites.
 set -euo pipefail
@@ -17,7 +17,7 @@ texto="${2-}"
 
 case "$regra" in
   branch)
-    if [[ "$texto" =~ ^(feature|feat|bugfix|chore|ci)/[^[:space:]]+$ ]]; then
+    if [[ "$texto" =~ ^(feature|feat|bugfix|fix|docs|chore|ci|release)/[^[:space:]]+$ ]]; then
       echo true
     else
       echo false

@@ -42,7 +42,7 @@ jobs:
           falhas=0
 
           if [ "$(bash "$regras" branch "$BRANCH")" != true ]; then
-            echo "::error::Branch '$BRANCH': tem de começar por feature/, feat/, bugfix/, chore/ ou ci/."
+            echo "::error::Branch '$BRANCH': tem de começar por feature/, feat/, bugfix/, fix/, docs/, chore/, ci/ ou release/."
             falhas=1
           fi
 

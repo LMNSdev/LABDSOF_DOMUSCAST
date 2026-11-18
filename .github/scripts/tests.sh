@@ -39,8 +39,11 @@ check "branch feat/ aceite"              "$(bash $pr branch feat/deploy-azure)" 
 check "branch bugfix/ aceite"            "$(bash $pr branch bugfix/12-login)"           true
 check "branch chore/ aceite"             "$(bash $pr branch chore/ci)"                  true
 check "branch ci/ aceite"                "$(bash $pr branch ci/semgrep)"                true
+check "branch fix/ aceite"               "$(bash $pr branch fix/login)"                 true
+check "branch docs/ aceite (dailies)"    "$(bash $pr branch docs/daily-2026-11-18)"     true
+check "branch release/ aceite"           "$(bash $pr branch release/sprint-b)"          true
 check "branch sem prefixo recusado"      "$(bash $pr branch us-09-privacidade)"         false
-check "branch docs/ recusado"            "$(bash $pr branch docs/daily)"                false
+check "branch hotfix/ recusado"          "$(bash $pr branch hotfix/x)"                  false
 check "prefixo sem nome recusado"        "$(bash $pr branch feature/)"                  false
 check "commit [#12] - aceite"            "$(bash $pr mensagem '[#12] - Adiciona formulário')"      true
 check "commit com várias issues aceite"  "$(bash $pr mensagem '[#12, #13] - Formulário')"          true
