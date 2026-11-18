@@ -3,7 +3,7 @@ name: PR - produção
 # Verificações antes de entrar na main. Cada merge na main cria uma versão e faz
 # o deploy (release.yml), por isso aqui verifica-se o que só falharia depois:
 # migrações em PostgreSQL, a imagem Docker a arrancar, as vulnerabilidades da
-# imagem e o build do APK.
+# imagem, o compose de produção com o Caddyfile e o build do APK.
 on:
   pull_request:
     branches: [main]
@@ -110,6 +110,34 @@ jobs:
         if: always()
         working-directory: DomusCast
         run: docker compose down -v
+
+  deploy:
+    name: Deploy - compose de produção e Caddyfile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: DomusCast/deploy
+    # Valores fictícios: só servem para o compose resolver as variáveis obrigatórias.
+    env:
+      IMAGE_TAG: v0.0.0
+      POSTGRES_PASSWORD: ci-validacao
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Sintaxe do docker-compose.prod.yml
+        run: docker compose -f docker-compose.prod.yml config --quiet
+
+      # Mesma imagem do Caddy que corre na VM, lida do compose de produção.
+      - name: Caddyfile
+        run: |
+          set -euo pipefail
+          caddy=$(docker compose -f docker-compose.prod.yml config --images | grep '^caddy:')
+          docker run --rm -e DOMAIN=domuscast.example \
+            -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" "$caddy" \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
   apk:
     name: Mobile - build do APK
