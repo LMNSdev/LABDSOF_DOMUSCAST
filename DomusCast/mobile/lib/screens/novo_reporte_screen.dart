@@ -1,23 +1,45 @@
+import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import '../services/api_service.dart';
-import '../local/queue_db.dart';
 
 class NovoReporteScreen extends StatefulWidget {
-  const NovoReporteScreen({super.key});
+  final ApiService api;
+  final String? credencialResidente;
+  final Future<XFile?> Function()? selecionarImagem;
+
+  const NovoReporteScreen({
+    super.key,
+    required this.api,
+    this.credencialResidente,
+    this.selecionarImagem,
+  });
 
   @override
   State<NovoReporteScreen> createState() => _NovoReporteScreenState();
 }
 
 class _NovoReporteScreenState extends State<NovoReporteScreen> {
+  static const _maxFotoBytes = 5 * 1024 * 1024;
+
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
+  final _fotoAltController = TextEditingController();
+  Uint8List? _fotoBytes;
+  String? _fotoNome;
+  String? _idempotencyKey;
+  bool _mostrarNome = false;
   bool _submitting = false;
 
   @override
   void dispose() {
     _descricaoController.dispose();
+    _fotoAltController.dispose();
     super.dispose();
   }
 
@@ -27,17 +49,100 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
+  void _changed() {
+    _idempotencyKey = null;
+    setState(() {});
+  }
+
+  void _mostrarMensagem(String texto, {Color? cor}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(texto), backgroundColor: cor),
+    );
+  }
+
+  Future<void> _selecionarFoto() async {
+    try {
+      final foto = await (widget.selecionarImagem ??
+          () => ImagePicker().pickImage(source: ImageSource.gallery))();
+      if (foto == null) return;
+
+      final tamanho = await foto.length();
+      if (tamanho > _maxFotoBytes) {
+        _mostrarMensagem('A foto não pode exceder 5 MB.');
+        return;
+      }
+
+      final extensao = foto.name.split('.').last.toLowerCase();
+      final tipo = foto.mimeType?.toLowerCase();
+      final extensaoValidada = switch (tipo) {
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        _ when extensao == 'jpg' || extensao == 'jpeg' => 'jpg',
+        _ when extensao == 'png' => 'png',
+        _ => null,
+      };
+      if (extensaoValidada == null) {
+        _mostrarMensagem('Escolhe uma imagem JPEG ou PNG.');
+        return;
+      }
+
+      final bytes = await foto.readAsBytes();
+      setState(() {
+        _fotoBytes = bytes;
+        _fotoNome = 'foto.$extensaoValidada';
+        _idempotencyKey = null;
+      });
+    } on FileSystemException {
+      _mostrarMensagem('Não foi possível ler a foto. Escolhe-a novamente.');
+    } on PlatformException {
+      _mostrarMensagem('Não foi possível abrir a galeria.');
+    }
+  }
+
+  void _removerFoto() {
+    setState(() {
+      _fotoBytes = null;
+      _fotoNome = null;
+      _fotoAltController.clear();
+      _idempotencyKey = null;
+    });
+  }
+
+  String _mensagemApi(ApiException erro) {
+    return switch (erro.statusCode) {
+      401 =>
+        'A tua identificação expirou ou não é válida. Volta a identificar-te.',
+      403 => 'Só residentes podem submeter reportes.',
+      422 => erro.mensagem ?? 'Verifica a descrição e os dados da foto.',
+      >= 500 =>
+        'O servidor está temporariamente indisponível. Tenta novamente.',
+      _ => erro.mensagem ?? 'Não foi possível submeter o reporte.',
+    };
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _submitting = true);
 
-    final descricao = _descricaoController.text.trim();
-    final idempotencyKey = _generateIdempotencyKey();
+    final credencial = widget.credencialResidente?.trim();
+    if (credencial == null || credencial.isEmpty) {
+      _mostrarMensagem(
+        'A identificação do residente ainda não está disponível. Tenta novamente depois da US-15.',
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+    _idempotencyKey ??= _generateIdempotencyKey();
 
     try {
-      await ApiService().criarReporte(
-        descricao: descricao,
-        idempotencyKey: idempotencyKey,
+      await widget.api.criarReporte(
+        credencial: credencial,
+        descricao: _descricaoController.text.trim(),
+        fotoBytes: _fotoBytes,
+        fotoNome: _fotoNome,
+        fotoAlt: _fotoBytes == null ? null : _fotoAltController.text.trim(),
+        mostrarNome: _mostrarNome,
+        idempotencyKey: _idempotencyKey!,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -46,27 +151,19 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
-    } catch (_) {
-      await QueueDb.enqueue(
-        descricao: descricao,
-        idempotencyKey: idempotencyKey,
-      );
+    } on ApiException catch (erro) {
+      if (mounted) _mostrarMensagem(_mensagemApi(erro));
+    } on http.ClientException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.wifi_off, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Expanded(child: Text('Sem ligação - reporte guardado para envio posterior')),
-              ],
-            ),
-            backgroundColor: Colors.orange.shade700,
-          ),
-        );
-        Navigator.pop(context);
+        _mostrarMensagem(
+            'Sem ligação ao servidor. O formulário continua disponível para tentar novamente.');
+      }
+    } on FormatException {
+      if (mounted) {
+        _mostrarMensagem(
+            'O servidor devolveu uma resposta inválida. Tenta novamente.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -83,7 +180,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         elevation: 0,
-        title: const Text('Nova avaria', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Nova avaria',
+            style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -95,7 +193,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
               Card(
                 margin: EdgeInsets.zero,
                 elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -103,14 +202,14 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.report_problem_outlined, color: scheme.primary),
+                          Icon(Icons.report_problem_outlined,
+                              color: scheme.primary),
                           const SizedBox(width: 8),
                           Text(
                             'Descrição do problema',
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: scheme.primary,
-                            ),
+                                fontWeight: FontWeight.w600,
+                                color: scheme.primary),
                           ),
                         ],
                       ),
@@ -118,7 +217,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                       TextFormField(
                         controller: _descricaoController,
                         decoration: const InputDecoration(
-                          hintText: 'Ex: Torneira com fuga no 1.º andar, corredor direito...',
+                          hintText:
+                              'Ex: Torneira com fuga no 1.º andar, corredor direito...',
                           border: OutlineInputBorder(),
                           filled: true,
                           fillColor: Color(0xFFFAFAFA),
@@ -127,16 +227,18 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                         maxLines: 5,
                         maxLength: 2000,
                         autofocus: true,
-                        onChanged: (_) => setState(() {}),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'A descrição é obrigatória' : null,
+                        onChanged: (_) => _changed(),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'A descrição é obrigatória'
+                            : null,
                       ),
                       const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           '${_descricaoController.text.length}/2000',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade500),
                         ),
                       ),
                     ],
@@ -144,24 +246,75 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _submitting ? null : _selecionarFoto,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+                label: Text(_fotoBytes == null
+                    ? 'Adicionar foto (opcional)'
+                    : 'Alterar foto'),
+              ),
+              if (_fotoBytes != null) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.memory(
+                    _fotoBytes!,
+                    height: 160,
+                    fit: BoxFit.cover,
+                    semanticLabel: _fotoAltController.text,
+                    errorBuilder: (_, __, ___) => const SizedBox(
+                      height: 100,
+                      child:
+                          Center(child: Text('Pré-visualização indisponível')),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _submitting ? null : _removerFoto,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Remover foto'),
+                  ),
+                ),
+                TextFormField(
+                  controller: _fotoAltController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descreve a foto (para leitores de ecrã)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLength: 300,
+                  onChanged: (_) => _changed(),
+                  validator: (value) => _fotoBytes != null &&
+                          (value == null || value.trim().isEmpty)
+                      ? 'Descreve a foto ou remove-a.'
+                      : null,
+                ),
+              ],
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                title: const Text('Mostrar o meu nome neste reporte'),
+                value: _mostrarNome,
+                onChanged: _submitting
+                    ? null
+                    : (valor) => setState(() {
+                          _mostrarNome = valor;
+                          _idempotencyKey = null;
+                        }),
+              ),
+              const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF8E1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFFFE082)),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'O teu reporte é visível a todos os residentes. Não incluas dados pessoais de terceiros.',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF795548)),
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'O reporte é visível a todos os residentes. Não incluas dados pessoais de terceiros.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF795548)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -171,13 +324,15 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                     ? const SizedBox(
                         height: 18,
                         width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.send_rounded),
                 label: Text(_submitting ? 'A enviar...' : 'Submeter reporte'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ],

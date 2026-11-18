@@ -18,12 +18,14 @@ enum Separador { reportes, reunioes, avisos, condominio }
 class HomeScreen extends StatefulWidget {
   final ApiService api;
   final SessaoAdmin? sessao;
+  final String? credencialResidente;
   final Separador separadorInicial;
 
   const HomeScreen({
     super.key,
     required this.api,
     this.sessao,
+    this.credencialResidente,
     this.separadorInicial = Separador.reportes,
   });
 
@@ -41,13 +43,20 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Map<Separador, GlobalKey<NavigatorState>> _navs = {
     for (final s in _separadores) s: GlobalKey<NavigatorState>(),
   };
-  late int _atual = _separadores.indexOf(widget.separadorInicial).clamp(0, _separadores.length - 1);
+  late int _atual = _separadores
+      .indexOf(widget.separadorInicial)
+      .clamp(0, _separadores.length - 1);
 
   Widget _raiz(Separador s) => switch (s) {
-        Separador.reportes => ReportesListScreen(api: widget.api),
+        Separador.reportes => ReportesListScreen(
+            api: widget.api,
+            credencialResidente: widget.credencialResidente,
+            podeReportar: widget.sessao == null,
+          ),
         Separador.reunioes => const ReunioesScreen(),
         Separador.avisos => const SizedBox.shrink(),
-        Separador.condominio => CondominioScreen(api: widget.api, sessao: widget.sessao!),
+        Separador.condominio =>
+          CondominioScreen(api: widget.api, sessao: widget.sessao!),
       };
 
   NavigationDestination _destino(Separador s) => switch (s) {
@@ -110,7 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
             for (final s in _separadores)
               Navigator(
                 key: _navs[s],
-                onGenerateRoute: (_) => MaterialPageRoute(builder: (_) => _raiz(s)),
+                onGenerateRoute: (_) =>
+                    MaterialPageRoute(builder: (_) => _raiz(s)),
               ),
           ],
         ),

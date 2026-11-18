@@ -1,15 +1,19 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 /// Erro HTTP da API, com o código para a app escolher a mensagem certa.
 /// [codigo] vem do corpo `{codigo, mensagem, request_id}` (8.4), quando existe.
 class ApiException implements Exception {
   final int statusCode;
   final String? codigo;
-  ApiException(this.statusCode, [this.codigo]);
+  final String? mensagem;
+  ApiException(this.statusCode, {this.codigo, this.mensagem});
 
   @override
-  String toString() => 'ApiException($statusCode, $codigo)';
+  String toString() => mensagem ?? 'ApiException($statusCode, $codigo)';
 }
 
 /// Endereço da API. Definido no build com `--dart-define=API_BASE_URL=...`
@@ -21,6 +25,8 @@ const String kApiBaseUrl = String.fromEnvironment(
 );
 
 class ApiService {
+  static const _maxFotoBytes = 5 * 1024 * 1024;
+
   final String baseUrl;
   final http.Client _client;
 
@@ -39,41 +45,89 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> criarReporte({
+    required String credencial,
     required String descricao,
-    String? fotoUrl,
+    Uint8List? fotoBytes,
+    String? fotoNome,
+    String? fotoAlt,
+    bool mostrarNome = false,
     required String idempotencyKey,
   }) async {
-    final response = await _client.post(
-      Uri.parse('$baseUrl/reportes'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'descricao': descricao,
-        if (fotoUrl != null) 'foto_url': fotoUrl,
-        'idempotency_key': idempotencyKey,
-      }),
-    );
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+    MediaType? tipoFoto;
+    if (fotoBytes != null) {
+      if (fotoBytes.length > _maxFotoBytes) {
+        throw ArgumentError('A foto não pode exceder 5 MB.');
+      }
+      if (fotoNome == null || fotoAlt?.trim().isEmpty != false) {
+        throw ArgumentError(
+          'Foto e texto alternativo são obrigatórios em conjunto.',
+        );
+      }
+      final extensao = fotoNome.split('.').last.toLowerCase();
+      tipoFoto = switch (extensao) {
+        'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+        'png' => MediaType('image', 'png'),
+        _ => throw ArgumentError('A foto tem de ser JPEG ou PNG.'),
+      };
     }
-    throw Exception('Erro ${response.statusCode} ao criar reporte');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/reportes'),
+    )
+      ..headers.addAll({
+        ..._auth(credencial),
+        'Idempotency-Key': idempotencyKey,
+      })
+      ..fields.addAll({
+        'descricao': descricao,
+        'mostrar_nome': mostrarNome.toString(),
+        if (fotoAlt != null) 'foto_alt': fotoAlt,
+      });
+
+    if (fotoBytes != null) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'foto',
+          fotoBytes,
+          filename: fotoNome,
+          contentType: tipoFoto,
+        ),
+      );
+    }
+
+    final streamedResponse = await _client.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw _apiException(response);
+    }
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
   }
 
   // --- US-01: condomínio, frações e QR codes -------------------------------
 
-  Map<String, String> _auth(String credencial) => {'Authorization': 'Bearer $credencial'};
+  Map<String, String> _auth(String credencial) =>
+      {'Authorization': 'Bearer $credencial'};
 
   dynamic _corpo(http.Response r, int esperado) {
-    if (r.statusCode != esperado) throw ApiException(r.statusCode, _codigo(r));
+    if (r.statusCode != esperado) throw _apiException(r);
     return jsonDecode(utf8.decode(r.bodyBytes));
   }
 
-  String? _codigo(http.Response r) {
+  ApiException _apiException(http.Response response) {
     try {
-      final corpo = jsonDecode(utf8.decode(r.bodyBytes));
-      return corpo is Map<String, dynamic> ? corpo['codigo'] as String? : null;
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      if (body is Map<String, dynamic>) {
+        return ApiException(
+          response.statusCode,
+          codigo: body['codigo'] as String?,
+          mensagem: body['mensagem'] as String?,
+        );
+      }
     } on FormatException {
-      return null;
+      return ApiException(response.statusCode);
     }
+    return ApiException(response.statusCode);
   }
 
   /// Devolve `{id, nome, n_fracoes, credencial_admin, fracoes}`.
@@ -85,13 +139,15 @@ class ApiService {
     final r = await _client.post(
       Uri.parse('$baseUrl/condominios'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'nome': nome, 'nome_admin': nomeAdmin, 'n_fracoes': nFracoes}),
+      body: jsonEncode(
+          {'nome': nome, 'nome_admin': nomeAdmin, 'n_fracoes': nFracoes}),
     );
     return _corpo(r, 201) as Map<String, dynamic>;
   }
 
   /// Lista `{id, designacao, n_residentes}` das frações do condomínio.
-  Future<List<Map<String, dynamic>>> getFracoes(int condominioId, String credencial) async {
+  Future<List<Map<String, dynamic>>> getFracoes(
+      int condominioId, String credencial) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/condominios/$condominioId/fracoes'),
       headers: _auth(credencial),
