@@ -1,5 +1,6 @@
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme.dart';
 import 'screens/landing_screen.dart';
 
@@ -18,6 +19,10 @@ class DomusCastApp extends StatelessWidget {
       title: 'DomusCast',
       theme: appTheme,
       debugShowCheckedModeBanner: false,
+      // Textos do sistema (ex.: "Voltar") e anúncios do leitor de ecrã em PT-PT.
+      locale: const Locale('pt', 'PT'),
+      supportedLocales: const [Locale('pt', 'PT')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: LandingScreen(links: links),
     );
   }
