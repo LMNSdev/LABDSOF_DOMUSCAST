@@ -26,6 +26,11 @@ services:
     image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
     environment:
       DATABASE_URL: postgresql://condoapp:${POSTGRES_PASSWORD}@postgres:5432/condoapp
+      # A API está atrás do Caddy: sem isto, request.client.host seria o IP do Caddy
+      # e os limites por IP (US-01, US-15) contariam para todos os utilizadores juntos.
+      # Confiar no X-Forwarded-For é seguro porque a API não tem portas publicadas
+      # (só o Caddy lhe chega) e o Caddy substitui o cabeçalho enviado pelo cliente.
+      FORWARDED_ALLOW_IPS: "*"
     depends_on:
       postgres:
         condition: service_healthy
