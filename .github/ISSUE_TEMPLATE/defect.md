@@ -1,50 +1,55 @@
 ---
 name: Defect
-about: Algo não funciona como devia (API, app, pipeline ou documentação)
-title: "[Defect] <resumo curto do problema>"
+about: Algo já implementado não funciona como esperado (app, API, pipeline ou documentação)
+title: "[Defect] "
 labels: bug
 ---
 
 <!--
-Um defect é um comportamento errado em algo já implementado.
-Funcionalidades novas ou mudanças de âmbito são User Stories, não defects.
+Um defect é um comportamento incorreto numa funcionalidade já implementada.
+Funcionalidades novas ou alterações de âmbito devem ser registadas como User Stories.
+Não incluir segredos, credenciais nem dados pessoais na descrição ou nas evidências.
 -->
 
 ## Resumo
-<!-- Uma ou duas frases: o que falha e quem é afetado (residente / administrador / equipa). -->
+<!-- Em uma ou duas frases: o que falha e quem é afetado (residente, administrador ou equipa)? -->
 
-## Onde
-- **Componente:** <!-- API / App Flutter / Base de dados / Pipeline (CI/CD) / Documentação -->
-- **Ficheiro(s):** <!-- ex.: `DomusCast/api/app/routers/identidades.py` -->
-- **User Story / PR de origem:** <!-- ex.: US-15 (#79), PR #102 -->
-- **Versão ou commit:** <!-- ex.: v0.3.0 ou abc1234 -->
+## Contexto
+- **Componente:** <!-- App Flutter / API / Worker ou IA / Base de dados / CI/CD ou Docker / Landing page / Documentação -->
+- **Ecrã, endpoint ou ficheiro:** <!-- Ex.: POST /identidades ou DomusCast/api/app/routers/identidades.py -->
+- **Ambiente:** <!-- Ex.: Android no emulador, VM de produção, docker compose local ou CI -->
+- **User Story / issue / PR relacionada:** <!-- Ex.: US-15, #79 ou PR #102 -->
+- **Versão ou commit:** <!-- Ex.: v0.3.0 ou abc1234 -->
 
 ## Passos para reproduzir
 1.
 2.
 3.
 
-## Resultado esperado
-<!-- O que devia acontecer (citar o critério de aceitação ou o desenho técnico, se existir). -->
-
-## Resultado obtido
-<!-- O que acontece. Incluir o código HTTP, a mensagem de erro ou o ecrã. -->
+## Comportamento
+- **Esperado:** <!-- Citar o critério de aceitação ou o desenho técnico, se existir -->
+- **Obtido:** <!-- Incluir o código HTTP, a mensagem de erro ou o ecrã -->
 
 ## Evidência
-<!-- Teste automático que falha, log, screenshot ou gravação. Um teste que reproduz é a melhor evidência. -->
+<!-- Teste que reproduz o problema, log, screenshot ou gravação. Um teste que falha é a melhor evidência. Ocultar dados pessoais e credenciais. -->
 
-## Severidade
-<!-- Escolher uma e apagar as outras. -->
-- [ ] **Bloqueante:** impede o uso de uma funcionalidade principal ou a entrega; sem alternativa.
-- [ ] **Alta:** funcionalidade errada ou perda/fuga de dados, mas há alternativa.
-- [ ] **Média:** erro em casos menos comuns ou mensagem errada ao utilizador.
-- [ ] **Baixa:** cosmético ou sem impacto no utilizador.
+## Gravidade
+<!-- Escolher uma. A equipa pode revê-la na triagem. -->
+- [ ] **Crítica:** funcionalidade principal indisponível, sem alternativa viável.
+- [ ] **Alta:** comportamento incorreto com impacto significativo, incluindo perda ou exposição de dados.
+- [ ] **Média:** impacto limitado ou existe uma alternativa razoável.
+- [ ] **Baixa:** impacto apenas visual, sem afetar a utilização.
 
-## Causa provável e correção sugerida
-<!-- Opcional, se já se souber. -->
+## Causa provável
+<!-- Opcional. Preencher só se houver evidência; não é preciso sugerir a correção. -->
 
-## Definition of Done do defect
-- [ ] Teste automático que reproduz o defect (falha antes da correção, passa depois)
-- [ ] Correção integrada na `main` por PR com revisão
-- [ ] CI a passar
-- [ ] Documentação atualizada, se o comportamento descrito mudou
+## Critérios de aceitação da correção
+- [ ] O problema foi reproduzido e a causa foi identificada.
+- [ ] Existe um teste de regressão que falha antes da correção e passa depois, ou está justificado porque não é automatizável.
+- [ ] O comportamento corrigido corresponde ao esperado.
+- [ ] A documentação afetada foi atualizada, se aplicável.
+
+<!--
+O issue fecha quando a correção entrar na main por PR revisto (template bugfix),
+com a CI a passar e a Definition of Done desse template cumprida.
+-->
