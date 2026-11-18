@@ -1,5 +1,6 @@
 import pytest
 from app import models, rate_limit
+from app.routers import reportes
 
 
 @pytest.fixture(autouse=True)
@@ -100,6 +101,38 @@ def test_idempotencia(client):
     assert r1.status_code == 201
     assert r2.status_code == 201
     assert r1.json()["id"] == r2.json()["id"]
+
+
+def test_mesma_chave_em_residentes_diferentes_cria_dois_reportes(client):
+    _, credencial_a, credencial_b, _ = criar_duas_sessoes_na_mesma_fracao(client)
+    payload = {"descricao": "Fuga", "idempotency_key": "chave-repetida-001"}
+    r1 = client.post("/reportes", json=payload, headers=auth(credencial_a))
+    r2 = client.post("/reportes", json=payload, headers=auth(credencial_b))
+    assert r1.status_code == 201
+    assert r2.status_code == 201
+    assert r1.json()["id"] != r2.json()["id"]
+    assert r2.json()["meu"] is True
+
+
+def test_pedidos_simultaneos_do_mesmo_autor_devolvem_o_mesmo_reporte(client, monkeypatch):
+    _, credencial, _, _ = criar_sessao(client)
+    payload = {"descricao": "Fuga", "idempotency_key": "chave-corrida-001"}
+    r1 = client.post("/reportes", json=payload, headers=auth(credencial))
+
+    # Simula o segundo pedido a chegar antes de o primeiro estar gravado:
+    # a primeira procura não o encontra e o commit esbarra no unique.
+    real = reportes._por_chave
+    chamadas = []
+
+    def primeira_procura_falha(db, residente, chave):
+        chamadas.append(chave)
+        return None if len(chamadas) == 1 else real(db, residente, chave)
+
+    monkeypatch.setattr(reportes, "_por_chave", primeira_procura_falha)
+    r2 = client.post("/reportes", json=payload, headers=auth(credencial))
+    assert r2.status_code == 201
+    assert r2.json()["id"] == r1.json()["id"]
+    assert len(chamadas) == 2
 
 
 def test_mostrar_nome_desligado_por_defeito(client):

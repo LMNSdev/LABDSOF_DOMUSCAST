@@ -7,6 +7,7 @@ a fração e só recebem o nome quando o autor escolheu mostrá-lo nesse reporte
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
@@ -42,6 +43,17 @@ def _vista(
     )
 
 
+def _por_chave(db: Session, residente: models.Identidade, chave: str) -> models.Reporte | None:
+    return (
+        db.query(models.Reporte)
+        .filter(
+            models.Reporte.idempotency_key == chave,
+            models.Reporte.autor_id == residente.id,
+        )
+        .first()
+    )
+
+
 @router.post("", response_model=schemas.ReporteOut, status_code=201)
 def criar_reporte(
     payload: schemas.ReporteCreate,
@@ -50,14 +62,7 @@ def criar_reporte(
 ):
     """US-02/US-09: o residente cria um reporte e escolhe se mostra o nome (falso por omissão)."""
     if payload.idempotency_key:
-        existente = (
-            db.query(models.Reporte)
-            .filter(
-                models.Reporte.idempotency_key == payload.idempotency_key,
-                models.Reporte.autor_id == residente.id,
-            )
-            .first()
-        )
+        existente = _por_chave(db, residente, payload.idempotency_key)
         if existente:
             return _vista(existente, residente)
 
@@ -70,7 +75,15 @@ def criar_reporte(
         mostrar_nome=payload.mostrar_nome,
     )
     db.add(reporte)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Dois pedidos simultâneos do mesmo autor com a mesma chave: devolve o que ficou gravado.
+        db.rollback()
+        existente = _por_chave(db, residente, payload.idempotency_key) if payload.idempotency_key else None
+        if existente is None:
+            raise
+        return _vista(existente, residente)
     db.refresh(reporte)
     return _vista(reporte, residente)
 

@@ -165,7 +165,7 @@ class Reporte(Base):
         server_default="aberto",
     )
     duplicado_de_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=True)
-    idempotency_key = Column(String(64), unique=True, nullable=True, index=True)
+    idempotency_key = Column(String(64), nullable=True)  # única por autor (US-09)
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -175,6 +175,10 @@ class Reporte(Base):
     historico = relationship("ReporteHistorico", back_populates="reporte")
     seguidores = relationship("ReporteSeguidor", back_populates="reporte")
     avisos = relationship("Aviso", back_populates="reporte")
+
+    __table_args__ = (
+        UniqueConstraint("autor_id", "idempotency_key", name="uq_reporte_autor_idempotency_key"),
+    )
 
 
 class ReporteHistorico(Base):
