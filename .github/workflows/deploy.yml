@@ -37,6 +37,7 @@ jobs:
     permissions:
       contents: read
       id-token: write # login na Azure por OIDC
+      packages: read # descarregar a imagem privada do GHCR (runner e VM)
     env:
       VERSION: ${{ inputs.version }}
       IMAGE: ghcr.io/lmnsdev/domuscast-api
@@ -47,16 +48,21 @@ jobs:
     steps:
       # Antes de tocar na VM: a versão tem de ser válida e a imagem tem de existir
       - name: Validar a versão
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Versão inválida: '$VERSION' (esperado vX.Y.Z, ex.: v0.3.0)"
             exit 1
           fi
+          # O pacote é privado: o runner autentica-se com o GITHUB_TOKEN (só leitura)
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           if ! docker manifest inspect "$IMAGE:$VERSION" > /dev/null; then
-            echo "::error::A imagem $IMAGE:$VERSION não existe no GHCR ou não é pública."
+            echo "::error::A imagem $IMAGE:$VERSION não existe no GHCR."
             exit 1
           fi
+          docker logout ghcr.io
 
       # Ficheiros de deploy da main: servem para qualquer versão da imagem (também em rollback)
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -98,13 +104,20 @@ jobs:
           echo "::error::A VM não abriu a porta 22 em 3 minutos."
           exit 1
 
+      # A VM descarrega a imagem privada com o GITHUB_TOKEN deste job: o token vai
+      # pelo stdin (não aparece na linha de comandos), expira quando o job acaba e
+      # o logout tira-o da VM mesmo que o deploy falhe.
       - name: Copiar ficheiros e implantar
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           scp -o BatchMode=yes \
             DomusCast/deploy/docker-compose.prod.yml DomusCast/deploy/Caddyfile DomusCast/deploy/deploy.sh \
             "deploy@$DEPLOY_HOST:/opt/domuscast/"
-          ssh -o BatchMode=yes "deploy@$DEPLOY_HOST" "bash /opt/domuscast/deploy.sh '$VERSION'"
+          ssh -o BatchMode=yes "deploy@$DEPLOY_HOST" \
+            "docker login ghcr.io -u '$GITHUB_ACTOR' --password-stdin && bash /opt/domuscast/deploy.sh '$VERSION'; rc=\$?; docker logout ghcr.io > /dev/null; exit \$rc" \
+            <<< "$GH_TOKEN"
 
       - name: Confirmar /health
         run: |

@@ -176,6 +176,7 @@ jobs:
     permissions:
       contents: read
       id-token: write # login na Azure por OIDC (dentro do deploy.yml)
+      packages: read # descarregar a imagem privada do GHCR (dentro do deploy.yml)
     uses: ./.github/workflows/deploy.yml
     with:
       version: ${{ needs.tag.outputs.version }}
