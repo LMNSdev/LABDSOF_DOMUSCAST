@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../local/queue_db.dart';
 
@@ -11,8 +9,9 @@ class NovoReporteScreen extends StatefulWidget {
   /// Nome do residente, para explicar o que os vizinhos veem com a opção ligada (US-09).
   final String? nome;
   final ApiService? api;
+  final FilaReportes? fila;
 
-  const NovoReporteScreen({super.key, this.credencial, this.nome, this.api});
+  const NovoReporteScreen({super.key, this.credencial, this.nome, this.api, this.fila});
 
   @override
   State<NovoReporteScreen> createState() => _NovoReporteScreenState();
@@ -22,6 +21,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
   late final ApiService _api = widget.api ?? ApiService();
+  late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
   bool _submitting = false;
   bool _mostrarNome = false;
 
@@ -78,9 +78,9 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
           SnackBar(content: Text(_mensagemErro(e.statusCode))),
         );
       }
-    } on http.ClientException {
-      await _guardarOffline(descricao, idempotencyKey);
-    } on SocketException {
+    } on Exception {
+      // Sem rede ou falha de ligação (ClientException, SocketException, HandshakeException,
+      // TimeoutException...): guarda e reenvia mais tarde, como antes da US-09.
       await _guardarOffline(descricao, idempotencyKey);
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -88,7 +88,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   }
 
   Future<void> _guardarOffline(String descricao, String idempotencyKey) async {
-    await QueueDb.enqueue(
+    await _fila.guardar(
       descricao: descricao,
       idempotencyKey: idempotencyKey,
       mostrarNome: _mostrarNome,

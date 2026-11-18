@@ -1,6 +1,8 @@
 // US-09: privacidade do nome em cada reporte (wireframe docs/sprintB/design/us-09.html).
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:domuscast/local/queue_db.dart';
 import 'package:domuscast/screens/novo_reporte_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
 import 'package:domuscast/services/api_service.dart';
@@ -42,7 +44,12 @@ Future<void> _abrirLista(
 }) async {
   final api = ApiService(client: MockClient((_) async => _json(reportes, 200)));
   await tester.pumpWidget(MaterialApp(
-    home: ReportesListScreen(api: api, credencial: 'cred-1', podeReportar: podeReportar),
+    home: ReportesListScreen(
+      api: api,
+      credencial: 'cred-1',
+      podeReportar: podeReportar,
+      fila: MemoriaFilaReportes(),
+    ),
   ));
   await tester.pumpAndSettle();
 }
@@ -106,9 +113,10 @@ void main() {
 
     testWidgets('credencial inválida (401) mostra a mensagem e não guarda offline', (tester) async {
       final api = ApiService(client: MockClient((_) async => _json({'detail': 'x'}, 401)));
+      final fila = MemoriaFilaReportes();
 
       await tester.pumpWidget(MaterialApp(
-        home: NovoReporteScreen(credencial: 'cred-1', api: api),
+        home: NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
       ));
       await tester.enterText(find.byType(TextFormField), 'Fuga');
       await tester.tap(find.text('Submeter reporte'));
@@ -118,6 +126,41 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Nova avaria'), findsOneWidget);
+      expect(fila.linhas, isEmpty);
+    });
+
+    testWidgets('falha de TLS (HandshakeException) guarda o reporte offline com a opção do nome',
+        (tester) async {
+      final api = ApiService(
+        client: MockClient((_) async => throw const HandshakeException('certificado')),
+      );
+      final fila = MemoriaFilaReportes();
+
+      // Na app o formulário abre por cima da lista; é aí que aparece o aviso depois do pop.
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
+                ),
+              ),
+              child: const Text('Abrir'),
+            ),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('Abrir'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.text('Submeter reporte'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sem ligação - reporte guardado para envio posterior'), findsOneWidget);
+      expect(fila.linhas, hasLength(1));
+      expect(fila.linhas.single['mostrar_nome'], 1);
     });
 
     testWidgets('a opção do nome tem etiqueta para o leitor de ecrã', (tester) async {
@@ -178,6 +221,85 @@ void main() {
       expect(find.textContaining('Marta Silva, fração C - '), findsNWidgets(2));
       expect(find.text('nome visível'), findsOneWidget);
       expect(find.text('Reportar avaria'), findsNothing);
+    });
+
+    testWidgets('falha de TLS ao carregar mostra "Sem ligação ao servidor"', (tester) async {
+      final api = ApiService(
+        client: MockClient((_) async => throw const HandshakeException('certificado')),
+      );
+      await tester.pumpWidget(MaterialApp(
+        home: ReportesListScreen(api: api, credencial: 'cred-1', fila: MemoriaFilaReportes()),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Sem ligação ao servidor'), findsOneWidget);
+    });
+  });
+
+  group('Fila offline', () {
+    Future<MemoriaFilaReportes> filaCom(List<String> chaves) async {
+      final fila = MemoriaFilaReportes();
+      for (final chave in chaves) {
+        await fila.guardar(descricao: 'Reporte $chave', idempotencyKey: chave);
+      }
+      return fila;
+    }
+
+    /// API em que `POST /reportes` responde conforme a chave; a lista vem vazia.
+    ApiService api(List<String> enviados, int Function(String chave) estado) =>
+        ApiService(client: MockClient((req) async {
+          if (req.method == 'GET') return _json([], 200);
+          final chave = (jsonDecode(req.body) as Map<String, dynamic>)['idempotency_key'] as String;
+          enviados.add(chave);
+          return _json(_reporte(descricao: 'x', meu: true), estado(chave));
+        }));
+
+    testWidgets('o administrador não envia a fila (daria 403)', (tester) async {
+      final enviados = <String>[];
+      final fila = await filaCom(['k1']);
+      await tester.pumpWidget(MaterialApp(
+        home: ReportesListScreen(
+          api: api(enviados, (_) => 201),
+          credencial: 'cred-admin',
+          podeReportar: false,
+          fila: fila,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(enviados, isEmpty);
+      expect(fila.linhas, hasLength(1));
+    });
+
+    testWidgets('um 4xx definitivo sai da fila e não bloqueia os seguintes', (tester) async {
+      final enviados = <String>[];
+      final fila = await filaCom(['k1', 'k2']);
+      await tester.pumpWidget(MaterialApp(
+        home: ReportesListScreen(
+          api: api(enviados, (chave) => chave == 'k1' ? 422 : 201),
+          credencial: 'cred-1',
+          fila: fila,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(enviados, ['k1', 'k2']);
+      expect(fila.linhas, isEmpty);
+    });
+
+    testWidgets('401 e 5xx mantêm a fila para tentar mais tarde', (tester) async {
+      for (final estado in [401, 503]) {
+        final enviados = <String>[];
+        final fila = await filaCom(['k1', 'k2']);
+        await tester.pumpWidget(MaterialApp(
+          key: UniqueKey(),
+          home: ReportesListScreen(
+            api: api(enviados, (_) => estado),
+            credencial: 'cred-1',
+            fila: fila,
+          ),
+        ));
+        await tester.pumpAndSettle();
+        expect(enviados, ['k1'], reason: 'estado $estado');
+        expect(fila.linhas, hasLength(2), reason: 'estado $estado');
+      }
     });
   });
 }

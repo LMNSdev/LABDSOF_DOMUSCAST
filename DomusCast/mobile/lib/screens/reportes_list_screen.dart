@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import 'novo_reporte_screen.dart';
@@ -13,8 +10,10 @@ class ReportesListScreen extends StatefulWidget {
   /// Nome do residente, passado ao formulário (US-09). Nulo para o administrador.
   final String? nomeResidente;
 
-  /// O administrador não cria reportes (10.2), por isso não vê "Reportar avaria".
+  /// O administrador não cria reportes (10.2), por isso não vê "Reportar avaria"
+  /// nem envia a fila offline (daria 403).
   final bool podeReportar;
+  final FilaReportes? fila;
 
   const ReportesListScreen({
     super.key,
@@ -22,6 +21,7 @@ class ReportesListScreen extends StatefulWidget {
     this.credencial,
     this.nomeResidente,
     this.podeReportar = true,
+    this.fila,
   });
 
   @override
@@ -30,6 +30,7 @@ class ReportesListScreen extends StatefulWidget {
 
 class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
+  late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
   String? _error;
@@ -40,23 +41,28 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     _load();
   }
 
-  // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
-  // A idempotency_key evita duplicados em reenvios.
+  // Envia por ordem os reportes guardados offline; a idempotency_key evita duplicados.
   Future<void> _syncPending() async {
+    if (!widget.podeReportar) return;
     try {
-      final pending = await QueueDb.getPending();
-      for (final p in pending) {
-        await _api.criarReporte(
-          descricao: p['descricao'] as String,
-          fotoUrl: p['foto_url'] as String?,
-          idempotencyKey: p['idempotency_key'] as String,
-          mostrarNome: (p['mostrar_nome'] as int? ?? 0) == 1,
-          credencial: widget.credencial,
-        );
-        await QueueDb.remove(p['id'] as int);
+      for (final p in await _fila.pendentes()) {
+        try {
+          await _api.criarReporte(
+            descricao: p['descricao'] as String,
+            fotoUrl: p['foto_url'] as String?,
+            idempotencyKey: p['idempotency_key'] as String,
+            mostrarNome: (p['mostrar_nome'] as int? ?? 0) == 1,
+            credencial: widget.credencial,
+          );
+        } on ApiException catch (e) {
+          // 401 (credencial) e 5xx (servidor) podem resolver-se: tenta no próximo refresh.
+          if (e.statusCode == 401 || e.statusCode >= 500) return;
+          // Outro 4xx: reenviar não resolve; sai da fila para não bloquear os seguintes.
+        }
+        await _fila.remover(p['id'] as int);
       }
     } catch (_) {
-      // Sem ligação ou fila indisponível: tenta de novo no próximo refresh.
+      // Sem ligação ou fila indisponível (o sqflite lança StateError): tenta no próximo refresh.
     }
   }
 
@@ -79,9 +85,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             : 'Não foi possível carregar os reportes.';
         _loading = false;
       });
-    } on http.ClientException {
-      _semLigacao();
-    } on SocketException {
+    } on Exception {
+      // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
       _semLigacao();
     }
   }
@@ -171,6 +176,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                       credencial: widget.credencial,
                       nome: widget.nomeResidente,
                       api: _api,
+                      fila: _fila,
                     ),
                   ),
                 );

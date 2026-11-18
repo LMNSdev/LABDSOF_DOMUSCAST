@@ -60,3 +60,68 @@ class QueueDb {
     await database.delete('pending_reportes', where: 'id = ?', whereArgs: [id]);
   }
 }
+
+/// Reportes por enviar. Os ecrãs recebem a fila no construtor, para os testes
+/// usarem a [MemoriaFilaReportes] em vez do SQLite do telemóvel.
+abstract class FilaReportes {
+  Future<void> guardar({
+    required String descricao,
+    String? fotoUrl,
+    required String idempotencyKey,
+    bool mostrarNome = false,
+  });
+
+  /// Linhas com `id`, `descricao`, `foto_url`, `idempotency_key` e `mostrar_nome` (0 ou 1).
+  Future<List<Map<String, dynamic>>> pendentes();
+
+  Future<void> remover(int id);
+}
+
+class SqliteFilaReportes implements FilaReportes {
+  @override
+  Future<void> guardar({
+    required String descricao,
+    String? fotoUrl,
+    required String idempotencyKey,
+    bool mostrarNome = false,
+  }) =>
+      QueueDb.enqueue(
+        descricao: descricao,
+        fotoUrl: fotoUrl,
+        idempotencyKey: idempotencyKey,
+        mostrarNome: mostrarNome,
+      );
+
+  @override
+  Future<List<Map<String, dynamic>>> pendentes() => QueueDb.getPending();
+
+  @override
+  Future<void> remover(int id) => QueueDb.remove(id);
+}
+
+/// Usada nos testes.
+class MemoriaFilaReportes implements FilaReportes {
+  final List<Map<String, dynamic>> linhas = [];
+  int _proximoId = 1;
+
+  @override
+  Future<void> guardar({
+    required String descricao,
+    String? fotoUrl,
+    required String idempotencyKey,
+    bool mostrarNome = false,
+  }) async =>
+      linhas.add({
+        'id': _proximoId++,
+        'descricao': descricao,
+        'foto_url': fotoUrl,
+        'idempotency_key': idempotencyKey,
+        'mostrar_nome': mostrarNome ? 1 : 0,
+      });
+
+  @override
+  Future<List<Map<String, dynamic>>> pendentes() async => List.of(linhas);
+
+  @override
+  Future<void> remover(int id) async => linhas.removeWhere((l) => l['id'] == id);
+}
