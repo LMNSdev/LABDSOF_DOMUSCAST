@@ -181,9 +181,10 @@ Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `ma
 
 | Workflow | Job | O que faz |
 |---|---|---|
-| `pr-regras.yml` | `regras` | Branch `feature/`, `feat/`, `bugfix/`, `chore/` ou `ci/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh`. Não corre nos PRs do Dependabot |
+| `pr-regras.yml` | `regras` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
 | `pr-producao.yml` | `postgres` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
 | | `docker` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
+| | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
 | | `apk` | `flutter build apk --release`, o mesmo comando do release |
 
 Para correr os testes da API contra PostgreSQL localmente (com a base de dados `ci_testes` criada):
