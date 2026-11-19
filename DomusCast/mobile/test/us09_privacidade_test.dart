@@ -163,6 +163,19 @@ void main() {
       expect(fila.linhas.single['mostrar_nome'], 1);
     });
 
+    testWidgets('servidor indisponível (5xx) guarda o reporte offline', (tester) async {
+      final api = ApiService(client: MockClient((_) async => _json({'detail': 'x'}, 503)));
+      final fila = MemoriaFilaReportes();
+
+      await tester.pumpWidget(MaterialApp(
+        home: NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
+      ));
+      await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.tap(find.text('Submeter reporte'));
+      await tester.pumpAndSettle();
+      expect(fila.linhas, hasLength(1));
+    });
+
     testWidgets('a opção do nome tem etiqueta para o leitor de ecrã', (tester) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(const MaterialApp(home: NovoReporteScreen(credencial: 'cred-1')));

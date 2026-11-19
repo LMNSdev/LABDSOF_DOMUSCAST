@@ -72,7 +72,15 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         Navigator.pop(context);
       }
     } on ApiException catch (e) {
-      // Erro da API: reenviar não resolve, por isso não vai para a fila offline.
+      // Servidor em baixo: como sem rede, guarda e reenvia mais tarde (ADR-006).
+      if (e.statusCode >= 500) {
+        await _guardarOffline(
+          descricao,
+          idempotencyKey,
+          mensagem: 'Servidor indisponível - reporte guardado para envio posterior',
+        );
+        return;
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_mensagemErro(e.statusCode))),
@@ -87,7 +95,11 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     }
   }
 
-  Future<void> _guardarOffline(String descricao, String idempotencyKey) async {
+  Future<void> _guardarOffline(
+    String descricao,
+    String idempotencyKey, {
+    String mensagem = 'Sem ligação - reporte guardado para envio posterior',
+  }) async {
     await _fila.guardar(
       descricao: descricao,
       idempotencyKey: idempotencyKey,
@@ -96,11 +108,11 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.wifi_off, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text('Sem ligação - reporte guardado para envio posterior')),
+            const Icon(Icons.wifi_off, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(mensagem)),
           ],
         ),
         backgroundColor: Colors.orange.shade700,
