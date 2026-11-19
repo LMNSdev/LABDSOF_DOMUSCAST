@@ -56,8 +56,8 @@ A base de dados é criada e as migrações correm automaticamente.
 | Endpoint | Descrição |
 |---|---|
 | `GET  /health` | Estado da API e da base de dados |
-| `POST /reportes` | Criar reporte |
-| `GET  /reportes` | Listar reportes |
+| `POST /reportes` | Criar reporte com `mostrar_nome` (falso por omissão); requer credencial de residente |
+| `GET  /reportes` | Listar reportes conforme o papel; residentes nunca recebem fração e só recebem nome se `mostrar_nome=true`; `meu` indica os reportes do próprio |
 | `POST /condominios` | Criar condomínio e frações (devolve a credencial do administrador) |
 | `GET  /condominios/{id}/fracoes` | Listar frações (administrador) |
 | `POST /fracoes/{id}/qr` | Gerar QR code de uma fração (administrador) |
@@ -255,8 +255,8 @@ docs/                              ← Documentação do projeto (Sprint A, back
 
 | Funcionalidade | Detalhe |
 |---|---|
-| `POST /reportes` | Cria reporte; idempotente via `idempotency_key` |
-| `GET /reportes` | Lista todos os reportes por ordem de criação descendente |
+| `POST /reportes` | US-02/US-09: cria reporte; campo `mostrar_nome` controla a visibilidade do nome; idempotente via `idempotency_key`; campos de contacto são recusados |
+| `GET /reportes` | US-09: lista os reportes do condomínio conforme o papel; residente não recebe fração, recebe o nome só se o autor o mostrar e `meu` nos seus reportes; requer credencial (401) |
 | `POST /condominios` | US-01: cria condomínio, frações (A, B, C…) e primeiro administrador; 1 a 200 frações, 5 criações por hora por IP (429) |
 | `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador (401/403) |
 | `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |

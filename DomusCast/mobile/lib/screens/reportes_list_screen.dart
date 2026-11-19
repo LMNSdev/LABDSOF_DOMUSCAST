@@ -5,8 +5,24 @@ import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
   final ApiService? api;
+  final String? credencial;
 
-  const ReportesListScreen({super.key, this.api});
+  /// Nome do residente, passado ao formulário (US-09). Nulo para o administrador.
+  final String? nomeResidente;
+
+  /// O administrador não cria reportes (10.2), por isso não vê "Reportar avaria"
+  /// nem envia a fila offline (daria 403).
+  final bool podeReportar;
+  final FilaReportes? fila;
+
+  const ReportesListScreen({
+    super.key,
+    this.api,
+    this.credencial,
+    this.nomeResidente,
+    this.podeReportar = true,
+    this.fila,
+  });
 
   @override
   State<ReportesListScreen> createState() => _ReportesListScreenState();
@@ -14,6 +30,7 @@ class ReportesListScreen extends StatefulWidget {
 
 class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
+  late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
   String? _error;
@@ -24,21 +41,28 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     _load();
   }
 
-  // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
-  // A idempotency_key evita duplicados em reenvios.
+  // Envia por ordem os reportes guardados offline; a idempotency_key evita duplicados.
   Future<void> _syncPending() async {
+    if (!widget.podeReportar) return;
     try {
-      final pending = await QueueDb.getPending();
-      for (final p in pending) {
-        await _api.criarReporte(
-          descricao: p['descricao'] as String,
-          fotoUrl: p['foto_url'] as String?,
-          idempotencyKey: p['idempotency_key'] as String,
-        );
-        await QueueDb.remove(p['id'] as int);
+      for (final p in await _fila.pendentes()) {
+        try {
+          await _api.criarReporte(
+            descricao: p['descricao'] as String,
+            fotoUrl: p['foto_url'] as String?,
+            idempotencyKey: p['idempotency_key'] as String,
+            mostrarNome: (p['mostrar_nome'] as int? ?? 0) == 1,
+            credencial: widget.credencial,
+          );
+        } on ApiException catch (e) {
+          // 401 (credencial) e 5xx (servidor) podem resolver-se: tenta no próximo refresh.
+          if (e.statusCode == 401 || e.statusCode >= 500) return;
+          // Outro 4xx: reenviar não resolve; sai da fila para não bloquear os seguintes.
+        }
+        await _fila.remover(p['id'] as int);
       }
     } catch (_) {
-      // Sem ligação ou fila indisponível: tenta de novo no próximo refresh.
+      // Sem ligação ou fila indisponível (o sqflite lança StateError): tenta no próximo refresh.
     }
   }
 
@@ -49,18 +73,28 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     });
     await _syncPending();
     try {
-      final reportes = await _api.getReportes();
+      final reportes = await _api.getReportes(credencial: widget.credencial);
       setState(() {
         _reportes = reportes;
         _loading = false;
       });
-    } catch (_) {
+    } on ApiException catch (e) {
       setState(() {
+        _error = e.statusCode == 401
+            ? 'A sua identidade já não é válida.'
+            : 'Não foi possível carregar os reportes.';
+        _loading = false;
+      });
+    } on Exception {
+      // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
+      _semLigacao();
+    }
+  }
+
+  void _semLigacao() => setState(() {
         _error = 'Sem ligação ao servidor';
         _loading = false;
       });
-    }
-  }
 
   ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(String estado) {
     return switch (estado) {
@@ -131,26 +165,52 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                         itemBuilder: (context, i) => _buildCard(_reportes[i]),
                       ),
                     ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NovoReporteScreen()),
-          );
-          _load();
-        },
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        icon: const Icon(Icons.add),
-        label: const Text('Reportar avaria'),
-      ),
+      floatingActionButton: !widget.podeReportar
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NovoReporteScreen(
+                      credencial: widget.credencial,
+                      nome: widget.nomeResidente,
+                      api: _api,
+                      fila: _fila,
+                    ),
+                  ),
+                );
+                _load();
+              },
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              icon: const Icon(Icons.add),
+              label: const Text('Reportar avaria'),
+            ),
     );
+  }
+
+  /// US-09: o texto do autor depende do papel de quem vê (a API já filtra os dados).
+  String _autorTexto(Map<String, dynamic> r, String data) {
+    final mostrarNome = r['mostrar_nome'] as bool? ?? false;
+    if (r['meu'] == true) {
+      return mostrarNome
+          ? 'O meu reporte - nome visível aos vizinhos'
+          : 'O meu reporte - nome oculto aos vizinhos';
+    }
+    final autorNome = r['autor_nome'] as String?;
+    final fracao = r['fracao'] as String?;
+    final autor = autorNome != null && fracao != null
+        ? '$autorNome, fração $fracao'
+        : (autorNome ?? 'Residente');
+    return data.isEmpty ? autor : '$autor - $data';
   }
 
   Widget _buildCard(Map<String, dynamic> r) {
     final estado = r['estado'] as String? ?? 'aberto';
     final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
+    final nomeVisivelAoAdmin = r['fracao'] != null && r['mostrar_nome'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -176,6 +236,31 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             const SizedBox(height: 10),
             Row(
               children: [
+                Expanded(
+                  child: Text(
+                    _autorTexto(r, data),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (nomeVisivelAoAdmin) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'nome visível',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -198,9 +283,6 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                     ],
                   ),
                 ),
-                const Spacer(),
-                if (data.isNotEmpty)
-                  Text(data, style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ],
@@ -253,11 +335,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Toca em "Reportar avaria" para submeter o primeiro.',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
+            if (widget.podeReportar)
+              Text(
+                'Toca em "Reportar avaria" para submeter o primeiro.',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
