@@ -63,7 +63,7 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
     );
     final png = await painter.toImageData(800, format: ui.ImageByteFormat.png);
     final texto = 'Acesso ao condomínio ${widget.sessao.nomeCondominio}, fração '
-        '${widget.designacao}. Abre este link no telemóvel com a app DomusCast '
+        '${widget.designacao}. Abra este link no telemóvel com a app DomusCast '
         'instalada: $link';
     await SharePlus.instance.share(ShareParams(
       text: texto,

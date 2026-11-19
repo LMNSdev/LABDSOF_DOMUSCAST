@@ -1,3 +1,9 @@
+"""US-02/US-09: reportes de avarias com as regras de visibilidade do autor (10.2).
+
+O administrador vê sempre o nome e a fração do autor. Os residentes nunca recebem
+a fração e só recebem o nome quando o autor escolheu mostrá-lo nesse reporte.
+"""
+
 import io
 import os
 import warnings
@@ -6,6 +12,7 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -16,7 +23,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .. import models, schemas
 from ..database import get_db
-from ..security import identidade_atual, utilizador_atual
+from ..security import residente_atual, utilizador_atual
 
 router = APIRouter()
 
@@ -29,34 +36,57 @@ def _erro_validacao(mensagem: str) -> HTTPException:
     return HTTPException(status_code=422, detail=mensagem)
 
 
+def _indisponivel() -> HTTPException:
+    return HTTPException(
+        status_code=503,
+        detail="A base de dados está temporariamente indisponível.",
+        headers={"Retry-After": "5"},
+    )
+
+
 def _vista(
-    reporte: models.Reporte,
-    quem: models.Administrador | models.Identidade,
-) -> dict:
-    administrador = isinstance(quem, models.Administrador)
-    return {
-        "id": reporte.id,
-        "descricao": reporte.descricao,
-        "foto_url": reporte.foto_url,
-        "estado": reporte.estado,
-        "criado_em": reporte.criado_em,
-        "atualizado_em": reporte.atualizado_em,
-        "mostrar_nome": reporte.mostrar_nome,
-        "autor_nome": (
-            reporte.autor.nome
-            if reporte.autor is not None
-            and (administrador or reporte.mostrar_nome)
-            else None
-        ),
-        "fracao": (
-            reporte.autor.fracao.designacao
-            if administrador and reporte.autor is not None
-            else None
-        ),
-        "meu": (
-            isinstance(quem, models.Identidade) and reporte.autor_id == quem.id
-        ),
-    }
+    reporte: models.Reporte, quem: models.Administrador | models.Identidade
+) -> schemas.ReporteOut:
+    # Uma identidade removida (US-23) deixa de ser mostrada como autora.
+    autor = reporte.autor if reporte.autor is not None and reporte.autor.removida_em is None else None
+    if isinstance(quem, models.Administrador):
+        autor_nome = autor.nome if autor else None
+        fracao = autor.fracao.designacao if autor else None
+        meu = False
+    else:
+        autor_nome = autor.nome if autor and reporte.mostrar_nome else None
+        fracao = None
+        meu = reporte.autor_id == quem.id
+    return schemas.ReporteOut(
+        id=reporte.id,
+        descricao=reporte.descricao,
+        foto_url=reporte.foto_url,
+        estado=reporte.estado,
+        criado_em=reporte.criado_em,
+        atualizado_em=reporte.atualizado_em,
+        mostrar_nome=reporte.mostrar_nome,
+        autor_nome=autor_nome,
+        fracao=fracao,
+        meu=meu,
+    )
+
+
+def _por_chave(db: Session, residente: models.Identidade, chave: str) -> models.Reporte | None:
+    return (
+        db.query(models.Reporte)
+        .filter(
+            models.Reporte.idempotency_key == chave,
+            models.Reporte.autor_id == residente.id,
+        )
+        .first()
+    )
+
+
+def _procurar(db: Session, residente: models.Identidade, chave: str) -> models.Reporte | None:
+    try:
+        return _por_chave(db, residente, chave)
+    except OperationalError as exc:
+        raise _indisponivel() from exc
 
 
 async def _ler_formulario(
@@ -130,17 +160,19 @@ def _normalizar_foto(conteudo: bytes) -> tuple[bytes, str]:
         raise _erro_validacao("A foto não é uma imagem válida.") from exc
 
 
-async def _guardar_foto(foto: UploadFile | None) -> tuple[str | None, Path | None]:
+async def _ler_foto(foto: UploadFile | None) -> bytes | None:
     if foto is None:
-        return None, None
-
+        return None
     try:
         conteudo = await foto.read(MAX_FOTO_BYTES + 1)
     finally:
         await foto.close()
-
     if len(conteudo) > MAX_FOTO_BYTES:
         raise _erro_validacao("A foto não pode exceder 5 MB.")
+    return conteudo
+
+
+def _guardar_foto(conteudo: bytes) -> tuple[str, Path]:
     conteudo_normalizado, extensao = _normalizar_foto(conteudo)
 
     nome = f"{uuid4().hex}.{extensao}"
@@ -154,6 +186,52 @@ async def _guardar_foto(foto: UploadFile | None) -> tuple[str | None, Path | Non
     finally:
         temporario.unlink(missing_ok=True)
     return caminho_relativo.as_posix(), caminho
+
+
+def _apagar(caminho: Path | None) -> None:
+    if caminho is not None:
+        caminho.unlink(missing_ok=True)
+
+
+def _criar(
+    db: Session,
+    residente: models.Identidade,
+    payload: schemas.ReporteCreate,
+    foto: bytes | None,
+    chave: str,
+) -> tuple[models.Reporte, bool]:
+    """Grava o reporte e devolve `(reporte, criado)`.
+
+    Corre fora do event loop, porque o Pillow e o SQLAlchemy são síncronos.
+    """
+    foto_path, caminho_foto = _guardar_foto(foto) if foto is not None else (None, None)
+    reporte = models.Reporte(
+        condominio_id=residente.fracao.condominio_id,
+        autor_id=residente.id,
+        descricao=payload.descricao,
+        foto_path=foto_path,
+        foto_alt=payload.foto_alt,
+        mostrar_nome=payload.mostrar_nome,
+        estado=models.EstadoReporte.aberto,
+        idempotency_key=chave,
+    )
+    db.add(reporte)
+    try:
+        db.commit()
+    except IntegrityError:
+        # Dois pedidos simultâneos do mesmo autor com a mesma chave: devolve o que ficou gravado.
+        db.rollback()
+        _apagar(caminho_foto)
+        existente = _procurar(db, residente, chave)
+        if existente is None:
+            raise
+        return existente, False
+    except OperationalError as exc:
+        db.rollback()
+        _apagar(caminho_foto)
+        raise _indisponivel() from exc
+    db.refresh(reporte)
+    return reporte, True
 
 
 @router.post(
@@ -188,80 +266,27 @@ async def _guardar_foto(foto: UploadFile | None) -> tuple[str | None, Path | Non
 async def criar_reporte(
     request: Request,
     response: Response,
-    idempotency_key: str = Header(
-        ..., alias="Idempotency-Key", min_length=1, max_length=64
-    ),
-    identidade: models.Identidade = Depends(identidade_atual),
-    db: Session = Depends(get_db),
+    idempotency_key: Annotated[
+        str, Header(alias="Idempotency-Key", min_length=1, max_length=64)
+    ],
+    residente: Annotated[models.Identidade, Depends(residente_atual)],
+    db: Annotated[Session, Depends(get_db)],
 ):
-    try:
-        existente = (
-            db.query(models.Reporte)
-            .filter(
-                models.Reporte.autor_id == identidade.id,
-                models.Reporte.idempotency_key == idempotency_key,
-            )
-            .first()
+    """US-02/US-09: o residente cria um reporte e escolhe se mostra o nome (falso por omissão).
+
+    201 com o reporte novo; 200 com o mesmo reporte num reenvio com a mesma chave.
+    """
+    reporte = await run_in_threadpool(_procurar, db, residente, idempotency_key)
+    criado = False
+    if reporte is None:
+        payload, foto = await _ler_formulario(request)
+        conteudo = await _ler_foto(foto)
+        reporte, criado = await run_in_threadpool(
+            _criar, db, residente, payload, conteudo, idempotency_key
         )
-    except OperationalError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="A base de dados está temporariamente indisponível.",
-            headers={"Retry-After": "5"},
-        ) from exc
-
-    if existente is not None:
+    if not criado:
         response.status_code = 200
-        return existente
-
-    payload, foto = await _ler_formulario(request)
-    foto_path, caminho_foto = await _guardar_foto(foto)
-
-    reporte = models.Reporte(
-        condominio_id=identidade.fracao.condominio_id,
-        autor_id=identidade.id,
-        descricao=payload.descricao,
-        foto_path=foto_path,
-        foto_alt=payload.foto_alt,
-        mostrar_nome=payload.mostrar_nome,
-        estado=models.EstadoReporte.aberto,
-        idempotency_key=idempotency_key,
-    )
-    db.add(reporte)
-    transacao_confirmada = False
-    try:
-        db.commit()
-        transacao_confirmada = True
-        db.refresh(reporte)
-    except IntegrityError:
-        db.rollback()
-        existente = (
-            db.query(models.Reporte)
-            .filter(
-                models.Reporte.autor_id == identidade.id,
-                models.Reporte.idempotency_key == idempotency_key,
-            )
-            .first()
-        )
-        if existente is None:
-            if caminho_foto is not None:
-                caminho_foto.unlink(missing_ok=True)
-            raise
-        if caminho_foto is not None:
-            caminho_foto.unlink(missing_ok=True)
-        response.status_code = 200
-        return existente
-    except OperationalError as exc:
-        db.rollback()
-        if caminho_foto is not None and not transacao_confirmada:
-            caminho_foto.unlink(missing_ok=True)
-        raise HTTPException(
-            status_code=503,
-            detail="A base de dados está temporariamente indisponível.",
-            headers={"Retry-After": "5"},
-        ) from exc
-
-    return reporte
+    return await run_in_threadpool(_vista, reporte, residente)
 
 
 @router.get("", response_model=list[schemas.ReporteOut])

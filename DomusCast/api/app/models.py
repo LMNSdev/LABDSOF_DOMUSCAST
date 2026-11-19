@@ -196,7 +196,7 @@ class Reporte(Base):
         server_default="aberto",
     )
     duplicado_de_id = Column(Integer, ForeignKey(REPORTE_FK), nullable=True)
-    idempotency_key = Column(String(64), nullable=True, index=True)
+    idempotency_key = Column(String(64), nullable=True)  # única por autor (US-09)
     criado_em = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

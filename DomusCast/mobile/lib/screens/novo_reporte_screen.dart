@@ -11,9 +11,12 @@ import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../widgets/aviso_popup.dart';
 
+/// Aviso do estado 4c do wireframe, mostrado depois de guardar o reporte na fila.
+const kSemLigacaoReporteGuardado =
+    'Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.';
+
 class NovoReporteScreen extends StatefulWidget {
   final ApiService? api;
-  final String? credencialResidente;
   final String? credencial;
   final String? nome;
   final FilaReportes? fila;
@@ -22,7 +25,6 @@ class NovoReporteScreen extends StatefulWidget {
   const NovoReporteScreen({
     super.key,
     this.api,
-    this.credencialResidente,
     this.credencial,
     this.nome,
     this.fila,
@@ -50,7 +52,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
 
   String get _notaNome => _mostrarNome
-      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o teu nome'}". A fração continua escondida.'
+      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o seu nome'}". A fração continua escondida.'
       : 'Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.';
 
   @override
@@ -126,7 +128,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         _ => null,
       };
       if (extensaoValidada == null) {
-        _mostrarMensagem('Escolhe uma imagem JPEG ou PNG.');
+        _mostrarMensagem('Escolha uma imagem JPEG ou PNG.');
         return;
       }
 
@@ -138,7 +140,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         _erroSubmissao = null;
       });
     } on FileSystemException {
-      _mostrarMensagem('Não foi possível ler a foto. Escolhe-a novamente.');
+      _mostrarMensagem('Não foi possível ler a foto. Escolha-a novamente.');
     } on PlatformException {
       _mostrarMensagem('Não foi possível abrir a câmara ou galeria.');
     }
@@ -194,27 +196,23 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     });
   }
 
-  String _mensagemApi(ApiException erro) {
-    return switch (erro.statusCode) {
-      401 =>
-        'A tua identificação expirou ou não é válida. Volta a identificar-te.',
-      403 => 'Só residentes podem submeter reportes.',
-      422 => erro.mensagem ?? 'Verifica a descrição e os dados da foto.',
-      >= 500 =>
-        'O servidor está temporariamente indisponível. Tenta novamente.',
-      _ => erro.mensagem ?? 'Não foi possível submeter o reporte.',
-    };
-  }
+  String _mensagemApi(ApiException erro) => switch (erro.statusCode) {
+        401 =>
+          'A sua identidade já não é válida. Leia de novo o QR code da fração.',
+        403 => 'Só os residentes podem reportar avarias.',
+        422 => erro.mensagem ?? 'Verifique a descrição e os dados da foto.',
+        _ => erro.mensagem ??
+            'Não foi possível enviar o reporte. Tente novamente.',
+      };
 
   Future<void> _submit() async {
     if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
 
-    final credencial =
-        (widget.credencialResidente ?? widget.credencial)?.trim();
+    final credencial = widget.credencial?.trim();
     if (credencial == null || credencial.isEmpty) {
       _mostrarMensagem(
-        'Identifica-te através do QR code da fração antes de submeter um reporte.',
+        'Identifique-se com o QR code da fração antes de reportar.',
       );
       return;
     }
@@ -237,29 +235,26 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
       }
     } on ApiException catch (erro) {
       if (erro.statusCode >= 500) {
-        await _guardarOffline();
+        await _semLigacao();
       } else if (mounted) {
-        final mensagem = erro.statusCode == 401
-            ? 'A sua identidade já não é válida. Leia de novo o QR code da fração.'
-            : _mensagemApi(erro);
         if (erro.statusCode == 401) {
-          _mostrarMensagem(mensagem);
+          _mostrarMensagem(_mensagemApi(erro));
         } else {
-          _mostrarErroSubmissao(mensagem);
+          _mostrarErroSubmissao(_mensagemApi(erro));
         }
       }
     } on http.ClientException {
-      await _guardarOffline();
+      await _semLigacao();
     } on SocketException {
-      await _guardarOffline();
+      await _semLigacao();
     } on HandshakeException {
-      await _guardarOffline();
+      await _semLigacao();
     } on TimeoutException {
-      await _guardarOffline();
+      await _semLigacao();
     } on FormatException {
       if (mounted) {
         _mostrarErroSubmissao(
-          'O servidor devolveu uma resposta inválida. Os dados ficam no formulário; tenta novamente.',
+          'O servidor devolveu uma resposta inválida. Os dados ficam no formulário. Tente novamente.',
         );
       }
     } finally {
@@ -267,11 +262,14 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     }
   }
 
-  Future<void> _guardarOffline() async {
+  // Sem rede ou servidor em baixo (estado 4c do wireframe): sem foto, o reporte vai
+  // para a fila e é reenviado com a mesma chave. A fila ainda não guarda fotos
+  // (US-18), por isso um reporte com foto fica no formulário para nova tentativa.
+  Future<void> _semLigacao() async {
     if (_fotoBytes != null) {
       if (mounted) {
         _mostrarErroSubmissao(
-          'Sem ligação ao servidor. Mantivemos o reporte e a foto no formulário; tenta novamente.',
+          'Sem ligação. O reporte e a foto ficam no formulário. Tente novamente quando a ligação voltar.',
           popupTexto: 'Sem ligação ao servidor',
         );
       }
@@ -283,12 +281,11 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
       idempotencyKey: _idempotencyKey!,
       mostrarNome: _mostrarNome,
     );
-    if (mounted) {
-      _mostrarErroSubmissao(
-        'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
-        popupTexto: 'Sem ligação - reporte guardado para envio posterior',
-      );
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(kSemLigacaoReporteGuardado)),
+    );
+    Navigator.pop(context);
   }
 
   void _mostrarErroSubmissao(String texto, {String? popupTexto}) {
@@ -355,7 +352,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                         autofocus: true,
                         onChanged: (_) => _changed(),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'A descrição é obrigatória'
+                            ? 'Descreva o problema.'
                             : null,
                       ),
                       const SizedBox(height: 4),
@@ -452,14 +449,14 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                 TextFormField(
                   controller: _fotoAltController,
                   decoration: const InputDecoration(
-                    labelText: 'Descreve a foto (para leitores de ecrã)',
+                    labelText: 'Descreva a foto (para leitores de ecrã)',
                     border: OutlineInputBorder(),
                   ),
                   maxLength: 300,
                   onChanged: (_) => _changed(),
                   validator: (value) => _fotoBytes != null &&
                           (value == null || value.trim().isEmpty)
-                      ? 'Descreve a foto ou remove-a.'
+                      ? 'Descreva a foto ou remova-a.'
                       : null,
                 ),
               ],
@@ -486,7 +483,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                   border: Border.all(color: const Color(0xFFFFE082)),
                 ),
                 child: const Text(
-                  'O reporte é visível a todos os residentes. Não incluas dados pessoais de terceiros.',
+                  'O reporte é visível a todos os residentes. Não inclua dados de terceiros.',
                   style: TextStyle(fontSize: 12, color: Color(0xFF795548)),
                 ),
               ),
@@ -515,7 +512,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                 const SizedBox(height: 8),
                 Semantics(
                   liveRegion: true,
-                  child: const Text('A enviar o reporte. Aguarda.'),
+                  child: const Text('A enviar o reporte. Aguarde.'),
                 ),
               ],
               if (_erroSubmissao != null) ...[

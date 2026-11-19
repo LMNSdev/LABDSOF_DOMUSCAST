@@ -31,13 +31,7 @@ class NomeResidenteScreen extends StatefulWidget {
   State<NomeResidenteScreen> createState() => _NomeResidenteScreenState();
 }
 
-enum _Erro {
-  fracaoCheia,
-  qrInvalido,
-  semInternet,
-  demasiadasTentativas,
-  falhou
-}
+enum _Erro { fracaoCheia, qrInvalido, semInternet, demasiadasTentativas, falhou }
 
 class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
   final _nome = TextEditingController();
@@ -62,8 +56,7 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
       _aEnviar = true;
     });
     try {
-      final r =
-          await widget.api.criarIdentidade(token: widget.token, nome: nome);
+      final r = await widget.api.criarIdentidade(token: widget.token, nome: nome);
       final sessao = SessaoResidente(
         credencial: r['credencial'] as String,
         nome: r['nome'] as String,
@@ -73,18 +66,11 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            api: widget.api,
-            credencialResidente: sessao.credencial,
-            fila: widget.fila,
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api, sessaoResidente: sessao, fila: widget.fila)),
         (_) => false,
       );
-      messenger.showSnackBar(SnackBar(
-          content:
-              Text('Olá, ${sessao.nome}. Entrou na fração ${sessao.fracao}.')));
+      messenger.showSnackBar(
+          SnackBar(content: Text('Olá, ${sessao.nome}. Entrou na fração ${sessao.fracao}.')));
     } on ApiException catch (e) {
       setState(() {
         _erro = null;
@@ -129,15 +115,13 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
           ),
         _Erro.qrInvalido => AvisoEntrada(
             titulo: 'QR code inválido',
-            texto:
-                'Este QR code não é válido ou foi revogado. Peça um novo ao administrador.',
+            texto: 'Este QR code não é válido ou foi revogado. Peça um novo ao administrador.',
             botao: 'Ler outro QR code',
             onPressed: _lerOutroQr,
           ),
         _Erro.semInternet => AvisoEntrada(
             titulo: 'Sem ligação à internet',
-            texto:
-                'O primeiro acesso precisa de internet. O nome que escreveu não se perde.',
+            texto: 'O primeiro acesso precisa de internet. O nome que escreveu não se perde.',
             botao: 'Tentar novamente',
             onPressed: _aEnviar ? null : _continuar,
           ),
@@ -150,8 +134,7 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
           ),
         _Erro.falhou => AvisoEntrada(
             titulo: 'Não foi possível entrar',
-            texto:
-                'Ocorreu um erro no servidor. Tente novamente daqui a pouco.',
+            texto: 'Ocorreu um erro no servidor. Tente novamente daqui a pouco.',
             botao: 'Tentar novamente',
             onPressed: _aEnviar ? null : _continuar,
           ),
@@ -161,8 +144,7 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
   Widget build(BuildContext context) {
     final erro = _erro;
     return Scaffold(
-      appBar: AppBar(
-          title: Text(erro == _Erro.qrInvalido ? 'Ler QR code' : 'O seu nome')),
+      appBar: AppBar(title: Text(erro == _Erro.qrInvalido ? 'Ler QR code' : 'O seu nome')),
       body: SafeArea(child: erro != null ? _aviso(erro) : _formulario(context)),
     );
   }
@@ -179,12 +161,10 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Para que serve?', style: texto.titleSmall),
-                const Text(
-                    'Para o administrador saber quem reportou cada problema.'),
+                const Text('Para o administrador saber quem reportou cada problema.'),
                 const SizedBox(height: 12),
                 Text('Quem vê?', style: texto.titleSmall),
-                const Text(
-                    'Só o administrador. Num reporte, pode escolher mostrar o nome aos vizinhos.'),
+                const Text('Só o administrador. Num reporte, pode escolher mostrar o nome aos vizinhos.'),
               ],
             ),
           ),
@@ -213,8 +193,7 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, semanticsLabel: 'A entrar'),
+                  child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: 'A entrar'),
                 )
               : const Text('Continuar'),
         ),

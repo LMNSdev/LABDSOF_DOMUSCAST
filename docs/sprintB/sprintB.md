@@ -1,6 +1,6 @@
 # Sprint B
 
-[Sprint Backlog](backlog.md) - [Refinamento](refinamento.md) - [Registo diário](daily-log.md) - [US-02 (API)](us-02.md)
+[Sprint Backlog](backlog.md) - [Refinamento](refinamento.md) - [Registo diário](daily-log.md) - [US-02](us-02.md)
 
 ## Sprint A retrospective
 

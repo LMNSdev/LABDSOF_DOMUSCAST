@@ -10,16 +10,21 @@ import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
   final ApiService? api;
-  final String? credencialResidente;
   final String? credencial;
+
+  /// Nome do residente, passado ao formulário (US-09). Nulo para o administrador.
+  final String? nomeResidente;
+
+  /// O administrador não cria reportes (10.2), por isso não vê "Reportar avaria"
+  /// nem envia a fila offline (daria 403).
   final bool podeReportar;
   final FilaReportes? fila;
 
   const ReportesListScreen({
     super.key,
     this.api,
-    this.credencialResidente,
     this.credencial,
+    this.nomeResidente,
     this.podeReportar = true,
     this.fila,
   });
@@ -53,7 +58,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   // A idempotency_key evita duplicados em reenvios.
   Future<void> _syncPending() async {
     if (!widget.podeReportar) return;
-    final credencial = widget.credencialResidente ?? widget.credencial;
+    final credencial = widget.credencial;
     if (credencial == null || credencial.isEmpty) return;
     final pending = await _fila.pendentes();
     for (final p in pending) {
@@ -87,9 +92,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     });
     await _syncPending();
     try {
-      final reportes = await _api.getReportes(
-        credencial: widget.credencialResidente ?? widget.credencial,
-      );
+      final reportes = await _api.getReportes(credencial: widget.credencial);
       setState(() {
         _reportes = reportes;
         _loading = false;
@@ -200,8 +203,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                   MaterialPageRoute(
                     builder: (_) => NovoReporteScreen(
                       api: _api,
-                      credencialResidente: widget.credencialResidente,
                       credencial: widget.credencial,
+                      nome: widget.nomeResidente,
                       fila: _fila,
                     ),
                   ),
@@ -281,6 +284,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                   child: Text(
                     _autorTexto(r, data),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -326,10 +330,6 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                     ],
                   ),
                 ),
-                const Spacer(),
-                if (data.isNotEmpty)
-                  Text(data,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ],
@@ -385,7 +385,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             const SizedBox(height: 8),
             if (widget.podeReportar)
               Text(
-                'Toca em "Reportar avaria" para submeter o primeiro.',
+                'Toque em "Reportar avaria" para submeter o primeiro.',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                 textAlign: TextAlign.center,
               ),

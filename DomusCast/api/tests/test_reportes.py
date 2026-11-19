@@ -2,11 +2,19 @@ import io
 from datetime import datetime, timezone
 from uuid import uuid4
 
+import pytest
 from PIL import Image
 
-from app import models
+from app import models, rate_limit
 from app.routers import reportes as reportes_router
 from app.security import hash_token
+
+
+@pytest.fixture(autouse=True)
+def limpar_rate_limit():
+    rate_limit.reset()
+    yield
+    rate_limit.reset()
 
 
 def _criar_residente(db, nome="Residente", token=None):
@@ -172,13 +180,14 @@ def test_foto_acima_de_5_mb_e_rejeitada(client, db):
     assert resposta.status_code == 422
 
 
-def test_campos_de_contacto_sao_rejeitados(client, db):
+@pytest.mark.parametrize("campo", ["telefone", "email", "perfil"])
+def test_campos_de_contacto_sao_rejeitados(client, db, campo):
     _, token = _criar_residente(db)
 
     resposta = client.post(
         "/reportes",
         headers=_headers(token),
-        files={**_form("Fuga"), "telefone": (None, "912345678")},
+        files={**_form("Fuga"), campo: (None, "dado pessoal")},
     )
 
     assert resposta.status_code == 422
@@ -343,3 +352,146 @@ def test_listar_reportes(client, db):
     assert reporte["meu"] is True
     assert reporte["autor_nome"] is None
     assert reporte["fracao"] is None
+
+
+# --- US-09: o que cada papel vê do autor (repostos da main, agora em multipart) ---
+
+
+def test_health(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json()["status"] == "ok"
+
+
+def criar_sessao(client, nome="Marta Silva"):
+    condominio = client.post(
+        "/condominios",
+        json={"nome": "Prédio", "nome_admin": "Ana", "n_fracoes": 1},
+    ).json()
+    fracao = condominio["fracoes"][0]
+    admin = condominio["credencial_admin"]
+    qr = client.post(
+        f"/fracoes/{fracao['id']}/qr",
+        headers={"Authorization": f"Bearer {admin}"},
+    ).json()
+    entrada = client.post(
+        "/identidades",
+        json={"token": qr["token"], "nome": nome},
+    ).json()
+    return admin, entrada["credencial"], fracao, qr["token"]
+
+
+def criar_duas_sessoes_na_mesma_fracao(client):
+    admin, credencial_a, fracao, token_qr = criar_sessao(client, "Marta Silva")
+    credencial_b = client.post(
+        "/identidades",
+        json={"token": token_qr, "nome": "Rui Costa"},
+    ).json()["credencial"]
+    return admin, credencial_a, credencial_b, fracao
+
+
+def auth(credencial):
+    return {"Authorization": f"Bearer {credencial}"}
+
+
+def reportar(client, credencial, descricao, chave=None, **campos):
+    return client.post(
+        "/reportes",
+        headers=_headers(credencial, chave or uuid4().hex),
+        files=_form(descricao, **campos),
+    )
+
+
+def test_criacao_devolve_o_reporte_como_o_autor_o_ve(client):
+    _, credencial, _, _ = criar_sessao(client)
+    dados = reportar(client, credencial, "Torneira com fuga").json()
+    assert dados["meu"] is True
+    assert dados["mostrar_nome"] is False
+    assert dados["autor_nome"] is None
+    assert dados["fracao"] is None
+
+
+def test_pedidos_simultaneos_do_mesmo_autor_devolvem_o_mesmo_reporte(client, monkeypatch):
+    _, credencial, _, _ = criar_sessao(client)
+    r1 = reportar(client, credencial, "Fuga", chave="chave-corrida-001")
+
+    # Simula o segundo pedido a chegar antes de o primeiro estar gravado:
+    # a primeira procura não o encontra e o commit esbarra no unique.
+    real = reportes_router._por_chave
+    chamadas = []
+
+    def primeira_procura_falha(db, residente, chave):
+        chamadas.append(chave)
+        return None if len(chamadas) == 1 else real(db, residente, chave)
+
+    monkeypatch.setattr(reportes_router, "_por_chave", primeira_procura_falha)
+    r2 = reportar(client, credencial, "Fuga", chave="chave-corrida-001")
+    assert r2.status_code == 200
+    assert r2.json()["id"] == r1.json()["id"]
+    assert len(chamadas) == 2
+
+
+def test_residente_sem_mostrar_nome_nao_e_identificado_a_outro_residente(client):
+    _, credencial_a, credencial_b, _ = criar_duas_sessoes_na_mesma_fracao(client)
+    reportar(client, credencial_a, "Fuga na garagem", mostrar_nome="false")
+    resposta = client.get("/reportes", headers=auth(credencial_b))
+    assert resposta.status_code == 200
+    reporte = next(r for r in resposta.json() if r["descricao"] == "Fuga na garagem")
+    assert reporte["autor_nome"] is None
+    assert reporte["fracao"] is None
+    assert reporte["meu"] is False
+
+
+def test_residente_com_mostrar_nome_e_identificado_a_outro_residente(client):
+    _, credencial_a, credencial_b, _ = criar_duas_sessoes_na_mesma_fracao(client)
+    reportar(client, credencial_a, "Escada", mostrar_nome="true")
+    resposta = client.get("/reportes", headers=auth(credencial_b))
+    reporte = next(r for r in resposta.json() if r["descricao"] == "Escada")
+    assert reporte["autor_nome"] == "Marta Silva"
+    assert reporte["fracao"] is None
+
+
+def test_administrador_ve_nome_e_fracao(client):
+    admin, credencial, fracao, _ = criar_sessao(client)
+    reportar(client, credencial, "Elevador", mostrar_nome="false")
+    resposta = client.get("/reportes", headers=auth(admin))
+    reporte = next(r for r in resposta.json() if r["descricao"] == "Elevador")
+    assert reporte["autor_nome"] == "Marta Silva"
+    assert reporte["fracao"] == fracao["designacao"]
+    assert reporte["meu"] is False
+
+
+def test_autor_removido_deixa_de_ser_identificado(client, db):
+    admin, credencial_a, credencial_b, _ = criar_duas_sessoes_na_mesma_fracao(client)
+    criado = reportar(client, credencial_a, "Garagem", mostrar_nome="true").json()
+    autora = db.get(models.Reporte, criado["id"]).autor
+    autora.removida_em = datetime.now(timezone.utc)
+    db.commit()
+
+    for credencial in (admin, credencial_b):
+        reporte = next(
+            r for r in client.get("/reportes", headers=auth(credencial)).json()
+            if r["id"] == criado["id"]
+        )
+        assert reporte["autor_nome"] is None
+        assert reporte["fracao"] is None
+
+
+def test_residente_de_outro_condominio_nao_ve_os_reportes(client):
+    _, credencial_a, _, _ = criar_sessao(client)
+    _, credencial_b, _, _ = criar_sessao(client, nome="Rui Costa")
+    reportar(client, credencial_a, "Fuga")
+    assert client.get("/reportes", headers=auth(credencial_b)).json() == []
+
+
+def test_sem_credencial_nao_lista_reportes(client):
+    assert client.get("/reportes").status_code == 401
+
+
+def test_credencial_invalida_nao_lista_reportes(client):
+    assert client.get("/reportes", headers=auth("credencial-que-nao-existe")).status_code == 401
+
+
+def test_identidade_nao_tem_campos_de_contacto():
+    colunas = {c.name for c in models.Identidade.__table__.columns}
+    assert colunas.isdisjoint({"telefone", "email", "perfil", "contacto"})

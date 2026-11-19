@@ -91,40 +91,6 @@ def admin_atual(
     return admin
 
 
-def identidade_atual(
-    cred: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    db: Session = Depends(get_db),
-) -> models.Identidade:
-    """Identidade ativa do dispositivo; administradores não podem criar reportes."""
-    if cred is None:
-        raise HTTPException(status_code=401, detail="Credencial em falta.")
-
-    credencial_hash = hash_token(cred.credentials)
-    administrador = (
-        db.query(models.Administrador)
-        .filter(models.Administrador.credencial_hash == credencial_hash)
-        .first()
-    )
-    if administrador is not None:
-        if administrador.removido_em is not None:
-            raise HTTPException(status_code=401, detail="Credencial inválida.")
-        raise HTTPException(
-            status_code=403, detail="Só residentes podem criar reportes."
-        )
-
-    identidade = (
-        db.query(models.Identidade)
-        .filter(
-            models.Identidade.credencial_hash == credencial_hash,
-        )
-        .first()
-    )
-    if identidade is not None and identidade.removida_em is None:
-        return identidade
-
-    raise HTTPException(status_code=401, detail="Credencial inválida.")
-
-
 def exigir_admin_do_condominio(admin: models.Administrador, condominio_id: int) -> None:
     if admin.condominio_id != condominio_id:
         raise HTTPException(status_code=403, detail="Sem acesso a este condomínio.")

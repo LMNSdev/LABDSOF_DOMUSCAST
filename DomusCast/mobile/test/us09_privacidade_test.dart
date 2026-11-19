@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:domuscast/local/queue_db.dart';
+import 'package:domuscast/screens/home_screen.dart';
 import 'package:domuscast/screens/novo_reporte_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
 import 'package:domuscast/services/api_service.dart';
+import 'package:domuscast/services/sessao_residente.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -187,8 +189,11 @@ void main() {
       await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
-      expect(find.text('Sem ligação - reporte guardado para envio posterior'),
+      expect(
+          find.text(
+              'Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.'),
           findsOneWidget);
+      expect(find.text('Nova avaria'), findsNothing);
       expect(fila.linhas, hasLength(1));
       expect(fila.linhas.single['mostrar_nome'], 1);
     });
@@ -207,6 +212,30 @@ void main() {
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
       expect(fila.linhas, hasLength(1));
+    });
+
+    testWidgets('aberto a partir do HomeScreen, o formulário usa o nome do residente',
+        (tester) async {
+      final api = ApiService(client: MockClient((_) async => _json([], 200)));
+      await tester.pumpWidget(MaterialApp(
+        home: HomeScreen(
+          api: api,
+          sessaoResidente: const SessaoResidente(
+              credencial: 'cred-1', nome: 'Marta Silva', fracao: 'A'),
+          fila: MemoriaFilaReportes(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reportar avaria'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(SwitchListTile));
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pump();
+      expect(
+        find.text(
+            'Ligado: os vizinhos veem "Marta Silva". A fração continua escondida.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a opção do nome tem etiqueta para o leitor de ecrã',
