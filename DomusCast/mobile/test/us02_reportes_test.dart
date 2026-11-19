@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:domuscast/screens/novo_reporte_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
+import 'package:domuscast/local/queue_db.dart';
 import 'package:domuscast/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -178,6 +179,7 @@ void main() {
         home: ReportesListScreen(
           api: api,
           credencialResidente: 'credencial-residente',
+          fila: MemoriaFilaReportes(),
         ),
       ),
     );
@@ -320,6 +322,7 @@ void main() {
                   builder: (_) => NovoReporteScreen(
                     api: api,
                     credencialResidente: 'credencial-residente',
+                    fila: MemoriaFilaReportes(),
                   ),
                 ),
               ),
@@ -350,10 +353,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(
-        of: find.byKey(const Key('aviso-popup')),
-        matching: find.textContaining('Os dados ficam no formulário'),
-      ),
+      find.textContaining('Os dados ficam no formulário'),
       findsOneWidget,
     );
     expect(find.text('Tentar novamente'), findsOneWidget);

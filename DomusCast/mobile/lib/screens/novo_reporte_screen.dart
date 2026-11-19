@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -6,18 +7,25 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../widgets/aviso_popup.dart';
 
 class NovoReporteScreen extends StatefulWidget {
-  final ApiService api;
+  final ApiService? api;
   final String? credencialResidente;
+  final String? credencial;
+  final String? nome;
+  final FilaReportes? fila;
   final Future<XFile?> Function(ImageSource source)? escolherImagem;
 
   const NovoReporteScreen({
     super.key,
-    required this.api,
+    this.api,
     this.credencialResidente,
+    this.credencial,
+    this.nome,
+    this.fila,
     this.escolherImagem,
   });
 
@@ -38,7 +46,12 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   String? _erroSubmissao;
   bool _mostrarNome = false;
   bool _submitting = false;
-  bool _mostrarNome = false;
+  late final ApiService _api = widget.api ?? ApiService();
+  late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
+
+  String get _notaNome => _mostrarNome
+      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o teu nome'}". A fração continua escondida.'
+      : 'Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.';
 
   @override
   void dispose() {
@@ -197,7 +210,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
 
-    final credencial = widget.credencialResidente?.trim();
+    final credencial =
+        (widget.credencialResidente ?? widget.credencial)?.trim();
     if (credencial == null || credencial.isEmpty) {
       _mostrarMensagem(
         'Identifica-te através do QR code da fração antes de submeter um reporte.',
@@ -209,7 +223,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     _idempotencyKey ??= _generateIdempotencyKey();
 
     try {
-      await widget.api.criarReporte(
+      await _api.criarReporte(
         credencial: credencial,
         descricao: _descricaoController.text.trim(),
         fotoBytes: _fotoBytes,
@@ -222,37 +236,64 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         Navigator.pop(context, true);
       }
     } on ApiException catch (erro) {
-      if (mounted) _mostrarErroSubmissao(_mensagemApi(erro));
+      if (erro.statusCode >= 500) {
+        await _guardarOffline();
+      } else if (mounted) {
+        final mensagem = erro.statusCode == 401
+            ? 'A sua identidade já não é válida. Leia de novo o QR code da fração.'
+            : _mensagemApi(erro);
+        if (erro.statusCode == 401) {
+          _mostrarMensagem(mensagem);
+        } else {
+          _mostrarErroSubmissao(mensagem);
+        }
+      }
     } on http.ClientException {
-      if (mounted) {
-        _mostrarErroSubmissao(
-          'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
-        );
-      }
+      await _guardarOffline();
     } on SocketException {
-      if (mounted) {
-        _mostrarErroSubmissao(
-          'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
-        );
-      }
+      await _guardarOffline();
+    } on HandshakeException {
+      await _guardarOffline();
+    } on TimeoutException {
+      await _guardarOffline();
     } on FormatException {
       if (mounted) {
         _mostrarErroSubmissao(
           'O servidor devolveu uma resposta inválida. Os dados ficam no formulário; tenta novamente.',
         );
       }
-    } on Exception {
-      // Sem rede ou falha de ligação (ClientException, SocketException, HandshakeException,
-      // TimeoutException...): guarda e reenvia mais tarde, como antes da US-09.
-      await _guardarOffline(descricao, idempotencyKey);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
-  void _mostrarErroSubmissao(String texto) {
+  Future<void> _guardarOffline() async {
+    if (_fotoBytes != null) {
+      if (mounted) {
+        _mostrarErroSubmissao(
+          'Sem ligação ao servidor. Mantivemos o reporte e a foto no formulário; tenta novamente.',
+          popupTexto: 'Sem ligação ao servidor',
+        );
+      }
+      return;
+    }
+
+    await _fila.guardar(
+      descricao: _descricaoController.text.trim(),
+      idempotencyKey: _idempotencyKey!,
+      mostrarNome: _mostrarNome,
+    );
+    if (mounted) {
+      _mostrarErroSubmissao(
+        'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
+        popupTexto: 'Sem ligação - reporte guardado para envio posterior',
+      );
+    }
+  }
+
+  void _mostrarErroSubmissao(String texto, {String? popupTexto}) {
     setState(() => _erroSubmissao = texto);
-    _mostrarMensagem(texto);
+    _mostrarMensagem(popupTexto ?? texto);
   }
 
   @override
@@ -327,14 +368,6 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // SwitchListTile já expõe o título e o estado ao leitor de ecrã.
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Mostrar o meu nome neste reporte'),
-                        subtitle: Text(_notaNome),
-                        value: _mostrarNome,
-                        onChanged: (value) => setState(() => _mostrarNome = value),
-                      ),
                     ],
                   ),
                 ),
@@ -432,8 +465,9 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
               ],
               const SizedBox(height: 8),
               SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                contentPadding: EdgeInsets.zero,
                 title: const Text('Mostrar o meu nome neste reporte'),
+                subtitle: Text(_notaNome),
                 value: _mostrarNome,
                 onChanged: _submitting
                     ? null

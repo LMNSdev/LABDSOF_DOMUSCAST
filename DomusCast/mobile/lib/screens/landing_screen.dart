@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
 import '../services/sessao_residente.dart';
@@ -13,11 +14,19 @@ class LandingScreen extends StatefulWidget {
   final SessaoAdminStore? store;
   final SessaoResidenteStore? storeResidente;
   final ApiService? api;
+  final FilaReportes? fila;
 
   /// Links `domuscast://entrar?t=` que abrem a app (US-15).
   final Stream<Uri>? links;
 
-  const LandingScreen({super.key, this.store, this.storeResidente, this.api, this.links});
+  const LandingScreen({
+    super.key,
+    this.store,
+    this.storeResidente,
+    this.api,
+    this.fila,
+    this.links,
+  });
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -66,6 +75,7 @@ class _LandingScreenState extends State<LandingScreen>
             api: _api,
             sessao: admin,
             credencialResidente: residente?.credencial,
+            fila: widget.fila,
           ),
         ),
       );
@@ -78,7 +88,12 @@ class _LandingScreenState extends State<LandingScreen>
     final token = tokenDoLink(link.toString());
     if (token == null) return;
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => NomeResidenteScreen(api: _api, store: _storeResidente, token: token),
+      builder: (_) => NomeResidenteScreen(
+        api: _api,
+        store: _storeResidente,
+        token: token,
+        fila: widget.fila,
+      ),
     ));
   }
 

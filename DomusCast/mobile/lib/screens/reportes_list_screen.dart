@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../widgets/aviso_popup.dart';
@@ -7,13 +11,17 @@ import 'novo_reporte_screen.dart';
 class ReportesListScreen extends StatefulWidget {
   final ApiService? api;
   final String? credencialResidente;
+  final String? credencial;
   final bool podeReportar;
+  final FilaReportes? fila;
 
   const ReportesListScreen({
     super.key,
     this.api,
     this.credencialResidente,
+    this.credencial,
     this.podeReportar = true,
+    this.fila,
   });
 
   @override
@@ -22,6 +30,7 @@ class ReportesListScreen extends StatefulWidget {
 
 class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
+  late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
   final _avisoPopup = AvisoPopupController();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
@@ -43,20 +52,31 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
   // A idempotency_key evita duplicados em reenvios.
   Future<void> _syncPending() async {
-    final credencial = widget.credencialResidente;
+    if (!widget.podeReportar) return;
+    final credencial = widget.credencialResidente ?? widget.credencial;
     if (credencial == null || credencial.isEmpty) return;
-    try {
-      final pending = await QueueDb.getPending();
-      for (final p in pending) {
+    final pending = await _fila.pendentes();
+    for (final p in pending) {
+      try {
         await _api.criarReporte(
           credencial: credencial,
           descricao: p['descricao'] as String,
           idempotencyKey: p['idempotency_key'] as String,
+          mostrarNome: p['mostrar_nome'] == 1,
         );
-        await QueueDb.remove(p['id'] as int);
+        await _fila.remover(p['id'] as int);
+      } on ApiException catch (erro) {
+        if (erro.statusCode == 401 || erro.statusCode >= 500) return;
+        await _fila.remover(p['id'] as int);
+      } on http.ClientException {
+        return;
+      } on SocketException {
+        return;
+      } on HandshakeException {
+        return;
+      } on TimeoutException {
+        return;
       }
-    } catch (_) {
-      // Sem ligação ou fila indisponível (o sqflite lança StateError): tenta no próximo refresh.
     }
   }
 
@@ -67,7 +87,9 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     });
     await _syncPending();
     try {
-      final reportes = await _api.getReportes(credencial: widget.credencial);
+      final reportes = await _api.getReportes(
+        credencial: widget.credencialResidente ?? widget.credencial,
+      );
       setState(() {
         _reportes = reportes;
         _loading = false;
@@ -83,6 +105,14 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
       // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
       _semLigacao();
     }
+  }
+
+  void _semLigacao() {
+    if (!mounted) return;
+    setState(() {
+      _error = 'Sem ligação ao servidor';
+      _loading = false;
+    });
   }
 
   ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(
@@ -171,6 +201,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                     builder: (_) => NovoReporteScreen(
                       api: _api,
                       credencialResidente: widget.credencialResidente,
+                      credencial: widget.credencial,
+                      fila: _fila,
                     ),
                   ),
                 );
@@ -255,7 +287,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                 if (nomeVisivelAoAdmin) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(6),

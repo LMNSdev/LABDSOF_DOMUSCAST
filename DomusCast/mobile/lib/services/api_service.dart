@@ -54,8 +54,6 @@ class ApiService {
     String? fotoAlt,
     bool mostrarNome = false,
     required String idempotencyKey,
-    bool mostrarNome = false,
-    String? credencial,
   }) async {
     MediaType? tipoFoto;
     if (fotoBytes != null) {
