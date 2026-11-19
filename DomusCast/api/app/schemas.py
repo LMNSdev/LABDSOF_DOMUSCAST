@@ -94,5 +94,7 @@ class ReporteOut(BaseModel):
     estado: EstadoReporte
     criado_em: datetime
     atualizado_em: datetime
-
-    model_config = {"from_attributes": True}
+    mostrar_nome: bool = False
+    autor_nome: Optional[str] = None
+    fracao: Optional[str] = None
+    meu: bool = False

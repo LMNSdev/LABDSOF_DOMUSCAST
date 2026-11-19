@@ -56,7 +56,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         await QueueDb.remove(p['id'] as int);
       }
     } catch (_) {
-      // Sem ligação ou fila indisponível: tenta de novo no próximo refresh.
+      // Sem ligação ou fila indisponível (o sqflite lança StateError): tenta no próximo refresh.
     }
   }
 
@@ -67,16 +67,21 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     });
     await _syncPending();
     try {
-      final reportes = await _api.getReportes();
+      final reportes = await _api.getReportes(credencial: widget.credencial);
       setState(() {
         _reportes = reportes;
         _loading = false;
       });
-    } catch (_) {
+    } on ApiException catch (e) {
       setState(() {
-        _error = 'Sem ligação ao servidor';
+        _error = e.statusCode == 401
+            ? 'A sua identidade já não é válida.'
+            : 'Não foi possível carregar os reportes.';
         _loading = false;
       });
+    } on Exception {
+      // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
+      _semLigacao();
     }
   }
 
@@ -193,10 +198,27 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     );
   }
 
+  /// US-09: o texto do autor depende do papel de quem vê (a API já filtra os dados).
+  String _autorTexto(Map<String, dynamic> r, String data) {
+    final mostrarNome = r['mostrar_nome'] as bool? ?? false;
+    if (r['meu'] == true) {
+      return mostrarNome
+          ? 'O meu reporte - nome visível aos vizinhos'
+          : 'O meu reporte - nome oculto aos vizinhos';
+    }
+    final autorNome = r['autor_nome'] as String?;
+    final fracao = r['fracao'] as String?;
+    final autor = autorNome != null && fracao != null
+        ? '$autorNome, fração $fracao'
+        : (autorNome ?? 'Residente');
+    return data.isEmpty ? autor : '$autor - $data';
+  }
+
   Widget _buildCard(Map<String, dynamic> r) {
     final estado = r['estado'] as String? ?? 'aberto';
     final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
+    final nomeVisivelAoAdmin = r['fracao'] != null && r['mostrar_nome'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -223,6 +245,31 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             const SizedBox(height: 10),
             Row(
               children: [
+                Expanded(
+                  child: Text(
+                    _autorTexto(r, data),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (nomeVisivelAoAdmin) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'nome visível',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -303,11 +350,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Toca em "Reportar avaria" para submeter o primeiro.',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
+            if (widget.podeReportar)
+              Text(
+                'Toca em "Reportar avaria" para submeter o primeiro.',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),

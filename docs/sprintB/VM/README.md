@@ -42,7 +42,7 @@ Onde corre o DomusCast fora das nossas máquinas, como foi criado e como se oper
 | IP público estático + nome DNS | `domuscast` | Endereço fixo, necessário para o certificado HTTPS e para o APK |
 | Network security group | `domuscast-vmNSG` | Regras `default-allow-ssh` (22) e `open-port-80_443` |
 | Managed identity | `domuscast-github-deploy` | Identidade que o GitHub Actions usa para ligar/desligar a VM |
-| Federated credential | `github-production` | Associa a identidade ao *environment* `production` deste repositório (OIDC, sem passwords) |
+| Federated credential | `github-production-ids` (e `github-production`, a original) | Associa a identidade ao *environment* `production` deste repositório (OIDC, sem passwords) |
 | Papel personalizado | `DomusCast VM Operator` | Só ler o estado, ligar e desalocar a VM; atribuído apenas sobre `domuscast-vm` |
 | Orçamento | `domuscast-mensal` | US$ 25/mês; email ao dono da subscrição aos 80% gastos e quando a previsão passa os 100% |
 
@@ -61,7 +61,9 @@ Na VM, o script [`DomusCast/deploy/bootstrap-vm.sh`](../../../DomusCast/deploy/b
 
 - **GitHub → Azure por OIDC.** O workflow pede um token de curta duração ao GitHub e troca-o por acesso à Azure; não há nenhuma credencial da Azure guardada no repositório. Só jobs que corram no *environment* `production` deste repositório são aceites.
 
-  ![Credencial federada github-production da identidade domuscast-github-deploy, com emissor token.actions.githubusercontent.com e sujeito repo:LMNSdev/LABDSOF_DOMUSCAST](images/06-credencial-oidc.png)
+  O repositório usa o sujeito OIDC com IDs fixos (`use_immutable_subject`), por isso o token chega à Azure como `repo:LMNSdev@346597250/LABDSOF_DOMUSCAST@1455899229:environment:production` e é a credencial `github-production-ids` que o aceita. Os IDs não mudam se a organização ou o repositório mudarem de nome, e um repositório novo com o mesmo nome não é aceite. A captura mostra a credencial original, `github-production`, com o sujeito sem IDs (`repo:LMNSdev/LABDSOF_DOMUSCAST:environment:production`), que o GitHub já não envia.
+
+  ![Credencial federada github-production da identidade domuscast-github-deploy, com emissor token.actions.githubusercontent.com e sujeito repo:LMNSdev/LABDSOF_DOMUSCAST, sem IDs](images/06-credencial-oidc.png)
 
 - **Menor privilégio.** A identidade do GitHub só consegue ler o estado, ligar e desalocar esta VM. Não cria, apaga nem altera recursos, e não entra na VM (isso é feito com a chave SSH do utilizador `deploy`, que também não tem `sudo`).
 
@@ -126,10 +128,13 @@ ssh -i ~/.ssh/domuscast_azure azureuser@domuscast.$LOC.cloudapp.azure.com \
   "sudo bash -s -- '$(cat ~/.ssh/domuscast_deploy.pub)'" < DomusCast/deploy/bootstrap-vm.sh
 
 # 4. Identidade para o GitHub Actions (OIDC) com permissão mínima sobre a VM
+# O sujeito tem os IDs da organização e do repositório (use_immutable_subject);
+# ver o prefixo atual com: gh api repos/$REPO/actions/oidc/customization/sub
+OIDC_SUB="repo:LMNSdev@346597250/LABDSOF_DOMUSCAST@1455899229"
 az identity create -g $RG -n domuscast-github-deploy -l $LOC
 az identity federated-credential create -g $RG --identity-name domuscast-github-deploy \
-  -n github-production --issuer https://token.actions.githubusercontent.com \
-  --subject "repo:$REPO:environment:production" --audiences api://AzureADTokenExchange
+  -n github-production-ids --issuer https://token.actions.githubusercontent.com \
+  --subject "$OIDC_SUB:environment:production" --audiences api://AzureADTokenExchange
 SUB=$(az account show --query id -o tsv)
 cat > role.json <<EOF
 {
@@ -305,5 +310,6 @@ O *environment* `production` só aceita jobs que corram na `main` (*deployment b
 ### Manutenção
 
 - **Imagem privada no GHCR:** o pacote `domuscast-api` está ligado a este repositório e o deploy descarrega-o com o `GITHUB_TOKEN` do job. Se o pacote for recriado, confirmar em *Packages → domuscast-api → Package settings → Manage Actions access* que o repositório tem acesso. Para descarregar uma imagem à mão na VM, fazer antes `docker login ghcr.io` com um token pessoal com `read:packages` e `docker logout ghcr.io` no fim.
+- **Login OIDC recusado** (`AADSTS700213: No matching federated identity record`): o sujeito que o GitHub envia aparece no erro e tem de ser igual ao de uma credencial federada da identidade `domuscast-github-deploy`. Comparar com `gh api repos/LMNSdev/LABDSOF_DOMUSCAST/actions/oidc/customization/sub` e `az identity federated-credential list -g domuscast-rg --identity-name domuscast-github-deploy`.
 - **VM recriada:** a VM nova tem chaves de servidor novas; atualizar o secret `DEPLOY_KNOWN_HOSTS` com `ssh-keyscan domuscast.belgiumcentral.cloudapp.azure.com`, e repetir o `bootstrap-vm.sh` (ver [Recriar do zero](#recriar-do-zero)).
 - **Certificado HTTPS:** o Caddy renova-o sozinho e guarda-o no volume `caddy_data`; não apagar este volume, para não esbarrar nos limites do Let's Encrypt.

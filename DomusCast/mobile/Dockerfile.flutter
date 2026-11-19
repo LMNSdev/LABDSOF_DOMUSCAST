@@ -1,0 +1,17 @@
+# Flutter SDK em container, para máquinas onde não é possível correr o Flutter
+# localmente. Versão alinhada com o CI (.github/workflows/ci.yml).
+FROM debian:bookworm-slim
+
+ARG FLUTTER_VERSION=3.47.9
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git unzip xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH=/opt/flutter/bin:$PATH
+
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git /opt/flutter \
+    && flutter config --no-analytics \
+    && flutter --version
+
+WORKDIR /app

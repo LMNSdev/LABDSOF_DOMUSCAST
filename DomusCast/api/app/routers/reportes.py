@@ -234,5 +234,18 @@ async def criar_reporte(
 
 
 @router.get("", response_model=list[schemas.ReporteOut])
-def listar_reportes(db: Session = Depends(get_db)):
-    return db.query(models.Reporte).order_by(models.Reporte.criado_em.desc()).all()
+def listar_reportes(
+    quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """US-09: reportes do condomínio de quem pede, com o autor visível conforme o papel."""
+    condominio_id = (
+        quem.condominio_id if isinstance(quem, models.Administrador) else quem.fracao.condominio_id
+    )
+    reportes = (
+        db.query(models.Reporte)
+        .filter(models.Reporte.condominio_id == condominio_id)
+        .order_by(models.Reporte.criado_em.desc())
+        .all()
+    )
+    return [_vista(r, quem) for r in reportes]

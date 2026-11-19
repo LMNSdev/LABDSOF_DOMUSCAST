@@ -38,6 +38,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   String? _erroSubmissao;
   bool _mostrarNome = false;
   bool _submitting = false;
+  bool _mostrarNome = false;
 
   @override
   void dispose() {
@@ -240,6 +241,10 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
           'O servidor devolveu uma resposta inválida. Os dados ficam no formulário; tenta novamente.',
         );
       }
+    } on Exception {
+      // Sem rede ou falha de ligação (ClientException, SocketException, HandshakeException,
+      // TimeoutException...): guarda e reenvia mais tarde, como antes da US-09.
+      await _guardarOffline(descricao, idempotencyKey);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -320,6 +325,15 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                           style: TextStyle(
                               fontSize: 12, color: Colors.grey.shade500),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      // SwitchListTile já expõe o título e o estado ao leitor de ecrã.
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Mostrar o meu nome neste reporte'),
+                        subtitle: Text(_notaNome),
+                        value: _mostrarNome,
+                        onChanged: (value) => setState(() => _mostrarNome = value),
                       ),
                     ],
                   ),
