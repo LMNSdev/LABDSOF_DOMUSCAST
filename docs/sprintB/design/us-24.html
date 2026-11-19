@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-24 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf;min-height:50px}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn.out{background:#fff;color:#0F3478;border:1px solid #0F3478}
+.note{font-size:11px;color:#667}
+.status{background:#fff2d6;border-radius:8px;padding:8px}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-24: rever e aprovar ata</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. Só o administrador edita o rascunho. A aprovação publica o texto confirmado e regista o administrador; uma resposta tardia da IA não o substitui.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Rever ata</div><div class="body"><div class="status">Gerado por IA. Pendente de revisão.</div><b>Transcrição</b><div class="card">A assembleia decidiu reparar a entrada...</div><b>Decisão proposta</b><div class="card">Reparar a entrada <div class="note">Excerto: "decidiu reparar a entrada"</div></div><div class="btn">Editar rascunho</div></div></div><div class="cap"><b>1. Rever</b>Mostrar excerto de suporte e origem IA.</div></div>
+<div><div class="phone"><div class="bar">Editar ata</div><div class="body"><b>Texto da ata</b><div class="field">A assembleia decidiu reparar a entrada...</div><div class="note">A alteração fica como rascunho até aprovar.</div><div class="btn">Guardar rascunho</div><div class="btn out">Aprovar ata</div></div></div><div class="cap"><b>2. Editar</b>Guardar e aprovar são ações distintas.</div></div>
+<div><div class="phone"><div class="bar">Publicar ata?</div><div class="body"><b>Confirmar aprovação</b><div class="note">A ata ficará visível aos residentes. Confirme que reviu as decisões e os dados.</div><div class="btn">Aprovar e publicar</div><div class="btn out">Voltar a rever</div></div></div><div class="cap"><b>3. Confirmação</b>Revisão humana antes da publicação.</div></div>
+<div><div class="phone"><div class="bar">Ata aprovada</div><div class="body"><div class="status">Publicada aos residentes.</div><div class="note">Aprovada pelo administrador. Áudio e rascunho eliminados após aprovação.</div><div class="card">Texto aprovado da ata...</div></div></div><div class="cap"><b>4. Publicada</b>Fica apenas o texto aprovado.</div></div>
+</div>
+</body>
+</html>

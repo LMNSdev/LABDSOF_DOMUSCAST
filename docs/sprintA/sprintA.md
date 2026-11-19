@@ -640,7 +640,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-22, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
 | `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-28); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)) |
-| `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, estado, aprovada_em | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10, US-24) |
+| `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, origem, estado, aprovada_em, aprovada_por | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10, US-24). `origem`: `ia` ou `manual` (US-25); `aprovada_por` identifica o administrador que aprovou (US-24) |
 | `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
 
 **Relações e cardinalidades** (o diagrama usa notação pé-de-galinha):
@@ -665,6 +665,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 - `identidade` está separada de `administrador` porque o residente não tem conta com contactos ([ADR-001](#adr-001-identidade-por-qr-code-partilhado-da-fração-e-nome-autodeclarado)) e o administrador tem credencial e permissões próprias ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)).
 - `reporte_historico` é uma tabela só de inserção para o histórico não se perder quando o reporte muda; é a prova de diligência do administrador (US-05, TM-05).
 - `reporte_seguidor` tem um `tipo` em vez de três tabelas, porque autor, co-reporter e seguidor são a mesma relação com notificações iguais.
+- `ata.origem` preserva se a ata foi preparada por IA ou escrita manualmente; `ata.aprovada_por` torna auditável quem autorizou a publicação (US-24, US-25).
 - `nome_normalizado` garante a unicidade do nome por fração sem distinguir maiúsculas, acentos nem espaços (US-15).
 - `ata` guarda `transcricao`, `rascunho` e `texto_aprovado` em colunas separadas para só o texto aprovado ser publicado: um rascunho de IA nunca é apresentado como facto (US-10).
 - `job` é o outbox: é criado na mesma transação que a alteração de domínio, por isso não há trabalho perdido nem duplicado ([ADR-005](#adr-005-postgresql-como-única-base-de-dados-e-como-fila-de-jobs)).

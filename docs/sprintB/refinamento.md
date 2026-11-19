@@ -63,3 +63,86 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Telemóvel removido:** recebe 401 em qualquer pedido; a app apaga a credencial e mostra "O seu acesso foi removido". A pessoa pode voltar a entrar com um QR code válido e o nome fica livre, porque foi apagado.
 
 **Resultado:** DoR cumprida nas US-01, US-15, US-02, US-03, US-09, US-20 e US-23.
+
+## 2026-11-19
+
+**Participantes:** Pedro Costa, Pedro Soares e Luis Santos.
+
+**Objetivo:** refinar as duas Must ainda por preparar e, dentro do mesmo conjunto de sete US da sessão anterior, as cinco Should com maior prioridade no backlog: US-05, US-22, US-13, US-10, US-24, US-25 e US-28. A US-13 desbloqueia as reuniões; US-10, US-24 e US-25 cobrem a ata assistida, a aprovação humana e o fallback manual; US-28 cobre a integração externa exigida para o Sprint B.
+
+**Distribuição end-to-end:** US-05 com Pedro Soares; US-22 com Pedro Costa; US-13 e US-25 com Luis Santos; US-10 e US-28 com Leonardo Costa; US-24 com Marco Garcia. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada.
+
+**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os contratos, limites e wireframes seguintes são propostas preparadas para validação da equipa, não decisões aprovadas. Por isso, as sete linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md).
+
+**Acessibilidade:** para cada US com interface, a validação planeada inclui TalkBack em PT-PT, com teste de gestos, ativação e anúncio de erro.
+
+### US-05: Mudar estado + histórico
+
+[Proposta de wireframe](design/us-05.html) ([PNG](design/us-05.png)), por aprovar.
+
+- **Transições:** proposta de permitir apenas Aberto -> Em curso -> Resolvido, sem regressões nem repetir o estado. Evita reabrir um reporte resolvido sem uma história específica para isso.
+- **Nota auditável:** proposta de nota obrigatória entre 1 e 500 caracteres. O backlog pede uma nota, mas não define se é obrigatória nem o limite; confirmar ambos antes de fechar a DoR.
+- **Persistência e acesso:** cada alteração acrescenta uma linha a `reporte_historico` com estado anterior/novo, nota, administrador e data; não se altera nem apaga histórico. Só administrador pode mudar o estado. O residente consulta a atualização pela US-03.
+- **Falhas:** `409` para transição inválida ou reporte já resolvido, distinguido por `codigo`; `422` para campos inválidos. Erros mantêm `{codigo, mensagem, request_id}`. Sem fila offline: não mostrar sucesso se a API não confirmou.
+- **Validação:** transições permitidas e recusadas, nota nos limites, histórico imutável, 403 para residente, 404 para outro condomínio e erro de base de dados. Na app, validar o anúncio do estado/erro com TalkBack.
+
+### US-22: Marcar reporte como duplicado
+
+[Proposta de wireframe](design/us-22.html) ([PNG](design/us-22.png)), por aprovar.
+
+- **Ligação:** `POST /reportes/{id}/duplicado` recebe `original_id`. Proposta de só aceitar reportes do mesmo condomínio, diferentes entre si, e de não aceitar um original que já seja duplicado. Evita relações entre condomínios, autorreferências e cadeias ambíguas.
+- **Fecho e histórico:** o reporte repetido fica Resolvido, com `duplicado_de_id` e uma entrada no histórico com "Reporte duplicado do #<id>". A lista da US-03 apresenta a ligação.
+- **Co-reporter:** o autor passa a `co_reporter` do original; se já existir uma relação, não se cria uma segunda. Não requer US-17, que trata de seguir reportes.
+- **Respostas:** `200` ao marcar; `403` residente; `404` para reporte inexistente ou de outro condomínio; `409` para relação inválida ou duplicação já efetuada; `422` para pedido inválido. Distinguir conflitos por `codigo`.
+- **Validação:** autor visível em "Os meus reportes", relação única, histórico, reporte/original iguais, original já duplicado, origem já duplicada, autorização, isolamento do condomínio e anúncio de falha com TalkBack.
+
+### US-13: Agendar reunião
+
+[Proposta de wireframe](design/us-13.html) ([PNG](design/us-13.png)), por aprovar.
+
+- **Campos:** proposta de guardar `data_hora` ISO 8601 com fuso Europe/Lisbon, apenas no futuro, e `local` obrigatório com 1 a 200 caracteres. A arquitetura não fixa fuso, horizonte temporal nem limite do local; confirmar estes valores.
+- **Percurso:** administrador cria a reunião; residentes e administrador consultam `GET /reunioes?desde=`. `POST /reunioes` devolve `201`; a lista devolve `200`, incluindo lista vazia. A criação persiste a reunião antes de qualquer sincronização externa.
+- **Dependências:** a publicação assíncrona pertence à US-28. A fila local sem internet pertence à US-18, que fica sequenciada depois e ainda não foi refinada; até lá, a app não deve afirmar que guardou uma reunião offline.
+- **Falhas:** `403` residente ao criar, `422` data/local inválidos, `503` base de dados indisponível. O estado pendente da publicação não significa que a reunião se perdeu.
+- **Validação:** criação e leitura nos dois papéis, data passada/fuso inválido, local vazio/acima do limite, lista vazia, publicação pendente, falha de rede e TalkBack.
+
+### US-10: Transcrição de ata por IA
+
+[Proposta de wireframe](design/us-10.html) ([PNG](design/us-10.png)), por aprovar.
+
+- **Privacidade:** antes do upload, informar que áudio e transcrição são enviados à OpenAI. Áudio, transcrição e rascunho ficam acessíveis só aos administradores; só a ata aprovada é visível aos residentes.
+- **Processamento:** `POST /reunioes/{id}/ata/audio` aceita multipart, guarda o áudio e enfileira um job. Responde `202` com `a_transcrever`; `GET /reunioes/{id}/ata` mostra estado e resultado. O Worker faz até 5 tentativas com backoff de 1, 2, 4, 8 e 16 minutos; ao falhar, usa `falhou_transcricao`. Um reenvio depois de falha reutiliza o job, sem duplicar.
+- **Dados preservados:** áudio permanece guardado mesmo após falha e só é apagado após aprovação; o rascunho nunca é publicado automaticamente e uma resposta tardia não substitui ata aprovada.
+- **Pontos por decidir:** a arquitetura fixa partes de até 25 MB para a API de transcrição, mas não o limite total de upload nem os formatos aceites. `413` e `415` estão previstos no contrato, mas os valores/lista ainda não estão definidos. A DoR fica pendente até confirmação.
+- **Validação:** estados assíncronos, formato/tamanho após decisão, falha após 5 tentativas, áudio preservado, reenvio idempotente, isolamento por papel, anúncio de estados/erros com TalkBack e aviso de privacidade.
+
+### US-24: Rever e aprovar a ata
+
+[Proposta de wireframe](design/us-24.html) ([PNG](design/us-24.png)), por aprovar.
+
+- **Edição e aprovação:** só o administrador edita o rascunho e consulta a transcrição. Aprovar publica o texto confirmado; não há publicação intermédia.
+- **Integridade:** o Worker não atualiza uma ata em estado `aprovada`. `aprovada_por` guarda o administrador que aprovou; o áudio, a transcrição e o rascunho são apagados após a aprovação, ficando `texto_aprovado`.
+- **Modelo de dados:** acrescentada a proposta `ata.aprovada_por` à tabela em [8.3](../sprintA/sprintA.md#83-modelo-de-dados), porque `aprovada_em` sozinho não identifica quem decidiu.
+- **Pontos por decidir:** o limite de caracteres do texto editado não consta da arquitetura nem do backlog; definir antes de aprovar a DoR. `409` distingue ata já aprovada e ata sem rascunho.
+- **Validação:** confirmar que nenhum rascunho é publicado, que o autor da aprovação fica registado, que uma resposta tardia não sobrescreve texto e que residentes recebem apenas ata aprovada. Validar o diálogo de confirmação e TalkBack.
+
+### US-25: Ata manual (fallback não-IA)
+
+[Proposta de wireframe](design/us-25.html) ([PNG](design/us-25.png)), por aprovar.
+
+- **Fallback:** o administrador pode escrever uma ata quando a IA está indisponível ou a transcrição falhou. Não depende da disponibilidade da OpenAI.
+- **Aprovação comum:** reutiliza o fluxo de US-24; guardar um rascunho manual não o publica. Depois de aprovar, a app indica que a ata é manual.
+- **Modelo de dados:** acrescentada a proposta `ata.origem` com `ia` ou `manual` em [8.3](../sprintA/sprintA.md#83-modelo-de-dados), para conservar a origem da ata depois da publicação.
+- **Conflitos:** `409 ata_em_processamento` se ainda houver um processamento ativo e `409 ata_ja_aprovada` se a reunião já tiver uma ata publicada. O limite de texto é o mesmo ponto pendente da US-24.
+- **Validação:** ata manual criada e publicada sem rascunho de IA, origem indicada ao residente, falha de rede sem perda do texto, IA indisponível e rejeição de alteração após aprovação. Validar TalkBack.
+
+### US-28: Publicar reunião no calendário externo
+
+[Proposta de wireframe](design/us-28.html) ([PNG](design/us-28.png)), por aprovar.
+
+- **Outbox e estado:** `POST /reunioes` cria o job `publicar_calendario:{reuniao_id}` na mesma transação da reunião; o Worker atualiza `estado_sync` para `sincronizada` ou `alternativo`. A app lê o estado em `GET /reunioes?desde=`.
+- **Contrato externo:** enviar os campos descritos em 8.6; validar `id`, `start` e datas coerentes. Aplicar timeout de 10 segundos e até 5 tentativas com o backoff do workflow; respeitar `Retry-After` em 429. Após esgotar tentativas, a reunião mantém-se disponível pelo feed iCal e fica `alternativo`.
+- **Dependências e falhas:** testar modos `indisponivel`, `lento`, `incompleto` e `invalido`; resposta incompleta/inválida conta como falha. US-29 (feed iCal) e US-18 (dados/fila local) têm de ser refinadas e sequenciadas antes de validar os respetivos fallbacks. A forma de tratar `400` do simulador e a interação exata de `Retry-After` com o limite de tentativas devem ser confirmadas antes da DoR.
+- **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
+
+**Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar contratos e wireframes, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
