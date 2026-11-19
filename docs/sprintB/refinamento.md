@@ -70,15 +70,15 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 **Objetivo:** refinar as duas Must ainda por preparar e, dentro do mesmo conjunto de sete US da sessão anterior, as cinco Should com maior prioridade no backlog: US-05, US-22, US-13, US-10, US-24, US-25 e US-28. A US-13 desbloqueia as reuniões; US-10, US-24 e US-25 cobrem a ata assistida, a aprovação humana e o fallback manual; US-28 cobre a integração externa exigida para o Sprint B.
 
-**Distribuição end-to-end:** US-05 com Pedro Soares; US-22 com Pedro Costa; US-13 e US-25 com Luis Santos; US-10 e US-28 com Leonardo Costa; US-24 com Marco Garcia. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada.
+**Distribuição end-to-end:** US-13 e US-28 com Pedro Soares; US-05 e US-22 com Pedro Costa; US-25 com Luis Santos; US-10 com Leonardo Costa; US-24 com Marco Garcia. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada. Revista depois da sessão; a distribuição inicial era US-05 com Pedro Soares, US-22 com Pedro Costa, US-13 e US-25 com Luis Santos, US-10 e US-28 com Leonardo Costa e US-24 com Marco Garcia.
 
-**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os contratos, limites e wireframes seguintes são propostas preparadas para validação da equipa, não decisões aprovadas. Por isso, as sete linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md).
+**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os sete wireframes foram revistos e aprovados por Pedro Soares. Os contratos e limites seguintes continuam a ser propostas preparadas para validação da equipa, não decisões aprovadas. Por isso, as sete linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md).
 
 **Acessibilidade:** para cada US com interface, a validação planeada inclui TalkBack em PT-PT, com teste de gestos, ativação e anúncio de erro.
 
 ### US-05: Mudar estado + histórico
 
-[Proposta de wireframe](design/us-05.html) ([PNG](design/us-05.png)), por aprovar.
+[Wireframe](design/us-05.html) ([PNG](design/us-05.png)) aprovado.
 
 - **Transições:** proposta de permitir apenas Aberto -> Em curso -> Resolvido, sem regressões nem repetir o estado. Evita reabrir um reporte resolvido sem uma história específica para isso.
 - **Nota auditável:** proposta de nota obrigatória entre 1 e 500 caracteres. O backlog pede uma nota, mas não define se é obrigatória nem o limite; confirmar ambos antes de fechar a DoR.
@@ -88,7 +88,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-22: Marcar reporte como duplicado
 
-[Proposta de wireframe](design/us-22.html) ([PNG](design/us-22.png)), por aprovar.
+[Wireframe](design/us-22.html) ([PNG](design/us-22.png)) aprovado.
 
 - **Ligação:** `POST /reportes/{id}/duplicado` recebe `original_id`. Proposta de só aceitar reportes do mesmo condomínio, diferentes entre si, e de não aceitar um original que já seja duplicado. Evita relações entre condomínios, autorreferências e cadeias ambíguas.
 - **Fecho e histórico:** o reporte repetido fica Resolvido, com `duplicado_de_id` e uma entrada no histórico com "Reporte duplicado do #<id>". A lista da US-03 apresenta a ligação.
@@ -98,7 +98,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-13: Agendar reunião
 
-[Proposta de wireframe](design/us-13.html) ([PNG](design/us-13.png)), por aprovar.
+[Wireframe](design/us-13.html) ([PNG](design/us-13.png)) aprovado.
 
 - **Campos:** proposta de guardar `data_hora` ISO 8601 com fuso Europe/Lisbon, apenas no futuro, e `local` obrigatório com 1 a 200 caracteres. A arquitetura não fixa fuso, horizonte temporal nem limite do local; confirmar estes valores.
 - **Percurso:** administrador cria a reunião; residentes e administrador consultam `GET /reunioes?desde=`. `POST /reunioes` devolve `201`; a lista devolve `200`, incluindo lista vazia. A criação persiste a reunião antes de qualquer sincronização externa.
@@ -108,7 +108,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-10: Transcrição de ata por IA
 
-[Proposta de wireframe](design/us-10.html) ([PNG](design/us-10.png)), por aprovar.
+[Wireframe](design/us-10.html) ([PNG](design/us-10.png)) aprovado.
 
 - **Privacidade:** antes do upload, informar que áudio e transcrição são enviados à OpenAI. Áudio, transcrição e rascunho ficam acessíveis só aos administradores; só a ata aprovada é visível aos residentes.
 - **Processamento:** `POST /reunioes/{id}/ata/audio` aceita multipart, guarda o áudio e enfileira um job. Responde `202` com `a_transcrever`; `GET /reunioes/{id}/ata` mostra estado e resultado. O Worker faz até 5 tentativas com backoff de 1, 2, 4, 8 e 16 minutos; ao falhar, usa `falhou_transcricao`. Um reenvio depois de falha reutiliza o job, sem duplicar.
@@ -118,7 +118,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-24: Rever e aprovar a ata
 
-[Proposta de wireframe](design/us-24.html) ([PNG](design/us-24.png)), por aprovar.
+[Wireframe](design/us-24.html) ([PNG](design/us-24.png)) aprovado.
 
 - **Edição e aprovação:** só o administrador edita o rascunho e consulta a transcrição. Aprovar publica o texto confirmado; não há publicação intermédia.
 - **Integridade:** o Worker não atualiza uma ata em estado `aprovada`. `aprovada_por` guarda o administrador que aprovou; o áudio, a transcrição e o rascunho são apagados após a aprovação, ficando `texto_aprovado`.
@@ -128,7 +128,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-25: Ata manual (fallback não-IA)
 
-[Proposta de wireframe](design/us-25.html) ([PNG](design/us-25.png)), por aprovar.
+[Wireframe](design/us-25.html) ([PNG](design/us-25.png)) aprovado.
 
 - **Fallback:** o administrador pode escrever uma ata quando a IA está indisponível ou a transcrição falhou. Não depende da disponibilidade da OpenAI.
 - **Aprovação comum:** reutiliza o fluxo de US-24; guardar um rascunho manual não o publica. Depois de aprovar, a app indica que a ata é manual.
@@ -138,11 +138,11 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 ### US-28: Publicar reunião no calendário externo
 
-[Proposta de wireframe](design/us-28.html) ([PNG](design/us-28.png)), por aprovar.
+[Wireframe](design/us-28.html) ([PNG](design/us-28.png)) aprovado.
 
 - **Outbox e estado:** `POST /reunioes` cria o job `publicar_calendario:{reuniao_id}` na mesma transação da reunião; o Worker atualiza `estado_sync` para `sincronizada` ou `alternativo`. A app lê o estado em `GET /reunioes?desde=`.
 - **Contrato externo:** enviar os campos descritos em 8.6; validar `id`, `start` e datas coerentes. Aplicar timeout de 10 segundos e até 5 tentativas com o backoff do workflow; respeitar `Retry-After` em 429. Após esgotar tentativas, a reunião mantém-se disponível pelo feed iCal e fica `alternativo`.
 - **Dependências e falhas:** testar modos `indisponivel`, `lento`, `incompleto` e `invalido`; resposta incompleta/inválida conta como falha. US-29 (feed iCal) e US-18 (dados/fila local) têm de ser refinadas e sequenciadas antes de validar os respetivos fallbacks. A forma de tratar `400` do simulador e a interação exata de `Retry-After` com o limite de tentativas devem ser confirmadas antes da DoR.
 - **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
 
-**Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar contratos e wireframes, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
+**Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar os contratos, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.

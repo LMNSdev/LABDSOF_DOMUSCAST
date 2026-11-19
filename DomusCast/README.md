@@ -187,6 +187,8 @@ Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `ma
 | | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
 | | `apk` | `flutter build apk --release`, o mesmo comando do release |
 
+Num PR que só muda `docs/` (ex.: a daily), o job `alteracoes` usa `.github/scripts/docs-only.sh` e os jobs de `pr-producao.yml` são ignorados, porque esse merge não cria versão nem deploy. Um job ignorado conta como aprovado nas verificações obrigatórias.
+
 Para correr os testes da API contra PostgreSQL localmente (com a base de dados `ci_testes` criada):
 
 ```powershell
