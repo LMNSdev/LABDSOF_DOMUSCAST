@@ -1,0 +1,62 @@
+name: PR - regras
+
+# Regras de equipa nos PRs para a main: nome do branch, título do PR e commits.
+# Fica separado do "PR - produção" para que editar o título não volte a correr
+# (nem cancele) os jobs pesados.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-regras-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  regras:
+    name: Regras - branch, título e commits
+    # Os PRs do Dependabot têm branch e commits próprios ("dependabot/...", "Bump ...").
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # para listar os commits do PR
+          persist-credentials: false
+
+      # Valores do PR passados por env (e não dentro do script) para não haver
+      # injeção de comandos através do título ou do nome do branch.
+      - name: Verificar branch, título e commits
+        env:
+          BRANCH: ${{ github.head_ref }}
+          TITULO: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          regras=.github/scripts/pr-rules.sh
+          falhas=0
+
+          if [ "$(bash "$regras" branch "$BRANCH")" != true ]; then
+            echo "::error::Branch '$BRANCH': tem de começar por feature/, feat/, bugfix/, fix/, docs/, chore/, ci/ ou release/."
+            falhas=1
+          fi
+
+          if [ "$(bash "$regras" mensagem "$TITULO")" != true ]; then
+            echo "::error::Título do PR '$TITULO': use '[#<issue>] - <descrição>' ou '<Área>: <descrição>'."
+            falhas=1
+          fi
+
+          while IFS= read -r mensagem; do
+            if [ "$(bash "$regras" mensagem "$mensagem")" != true ]; then
+              echo "::error::Commit '$mensagem': use '[#<issue>] - <descrição>' ou '<Área>: <descrição>' (GitHub, Docker, Deploy, CI, Docs, Mobile, API)."
+              falhas=1
+            fi
+          done < <(git log --format=%s "$BASE..$HEAD")
+
+          if [ "$falhas" -eq 0 ]; then echo "Branch, título e commits cumprem as regras."; fi
+          exit "$falhas"
