@@ -2,6 +2,7 @@ import io
 import os
 import warnings
 from pathlib import Path
+from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
@@ -15,7 +16,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .. import models, schemas
 from ..database import get_db
-from ..security import identidade_atual
+from ..security import identidade_atual, utilizador_atual
 
 router = APIRouter()
 
@@ -26,6 +27,36 @@ FORM_FIELDS = {"descricao", "foto_alt", "mostrar_nome", "foto"}
 
 def _erro_validacao(mensagem: str) -> HTTPException:
     return HTTPException(status_code=422, detail=mensagem)
+
+
+def _vista(
+    reporte: models.Reporte,
+    quem: models.Administrador | models.Identidade,
+) -> dict:
+    administrador = isinstance(quem, models.Administrador)
+    return {
+        "id": reporte.id,
+        "descricao": reporte.descricao,
+        "foto_url": reporte.foto_url,
+        "estado": reporte.estado,
+        "criado_em": reporte.criado_em,
+        "atualizado_em": reporte.atualizado_em,
+        "mostrar_nome": reporte.mostrar_nome,
+        "autor_nome": (
+            reporte.autor.nome
+            if reporte.autor is not None
+            and (administrador or reporte.mostrar_nome)
+            else None
+        ),
+        "fracao": (
+            reporte.autor.fracao.designacao
+            if administrador and reporte.autor is not None
+            else None
+        ),
+        "meu": (
+            isinstance(quem, models.Identidade) and reporte.autor_id == quem.id
+        ),
+    }
 
 
 async def _ler_formulario(
@@ -235,7 +266,9 @@ async def criar_reporte(
 
 @router.get("", response_model=list[schemas.ReporteOut])
 def listar_reportes(
-    quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
+    quem: Annotated[
+        models.Administrador | models.Identidade, Depends(utilizador_atual)
+    ],
     db: Annotated[Session, Depends(get_db)],
 ):
     """US-09: reportes do condomínio de quem pede, com o autor visível conforme o papel."""

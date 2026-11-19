@@ -331,10 +331,15 @@ def test_listar_reportes(client, db):
     _, token = _criar_residente(db)
     client.post("/reportes", headers=_headers(token), files=_form("Elevador avariado"))
 
-    resposta = client.get("/reportes")
+    resposta = client.get("/reportes", headers=_headers(token))
 
     assert resposta.status_code == 200
     assert isinstance(resposta.json(), list)
-    assert any(
-        reporte["descricao"] == "Elevador avariado" for reporte in resposta.json()
+    reporte = next(
+        reporte
+        for reporte in resposta.json()
+        if reporte["descricao"] == "Elevador avariado"
     )
+    assert reporte["meu"] is True
+    assert reporte["autor_nome"] is None
+    assert reporte["fracao"] is None
