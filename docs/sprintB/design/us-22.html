@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-22 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn.out{background:#fff;color:#0F3478;border:1px solid #0F3478}
+.note{font-size:11px;color:#667}
+.danger{color:#9a301c}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-22: marcar reporte como duplicado</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. O administrador liga o reporte repetido a um original do mesmo condomínio. O autor passa a co-reporter do original e o histórico preserva a decisão.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Reporte #118</div><div class="body"><b>Luz fundida na entrada</b><div class="note">Fração visível só ao administrador</div><div class="btn">Marcar como duplicado</div></div></div><div class="cap"><b>1. Ação no detalhe</b>Apenas o administrador vê a ação.</div></div>
+<div><div class="phone"><div class="bar">Escolher original</div><div class="body"><div class="field">Pesquisar reportes</div><div class="card"><b>#104 - Luz da entrada fundida</b><div class="note">Aberto, criado ontem</div></div><div class="card"><b>#112 - Luz da garagem</b><div class="note">Em curso, criado há 3 h</div></div><div class="btn">Continuar</div></div></div><div class="cap"><b>2. Seleção</b>Não mostrar reportes de outros condomínios nem o próprio.</div></div>
+<div><div class="phone"><div class="bar">Confirmar duplicado</div><div class="body"><b>Reporte #118</b><div class="note">Será fechado como duplicado de:</div><div class="card"><b>#104 - Luz da entrada fundida</b><div class="note">O autor de #118 passa a co-reporter de #104.</div></div><div class="btn">Confirmar</div><div class="btn out">Cancelar</div></div></div><div class="cap"><b>3. Confirmação</b>Explica o efeito antes da ação irreversível.</div></div>
+<div><div class="phone"><div class="bar">Reporte #118</div><div class="body"><b>Reporte duplicado do #104</b><div class="card">Fechado</div><div class="note">O seu reporte aparece agora em "Os meus reportes" ligado ao original.</div></div></div><div class="cap"><b>4. Resultado</b>Residentes veem a ligação, não os outros reporters.</div></div>
+</div>
+</body>
+</html>

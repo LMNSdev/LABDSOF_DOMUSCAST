@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-10 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.note{font-size:11px;color:#667}
+.status{background:#fff2d6;border-radius:8px;padding:8px}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-10: transcrever áudio e criar rascunho</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. O áudio e a transcrição são dados pessoais enviados à OpenAI; a app informa antes do envio. O processamento é assíncrono e o resultado nunca é publicado sem revisão (US-24).</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Ata da assembleia</div><div class="body"><b>25/11/2026</b><div class="card">Selecionar ficheiro de áudio</div><div class="status">O áudio e a transcrição serão enviados à OpenAI para preparar um rascunho. Avise os presentes antes de gravar.</div><div class="btn">Enviar áudio</div></div></div><div class="cap"><b>1. Envio</b>Consentimento informativo e reunião associada.</div></div>
+<div><div class="phone"><div class="bar">Ata da assembleia</div><div class="body"><b>A transcrever</b><div class="status">O processamento pode demorar. Pode sair desta página.</div><div class="note">O rascunho só fica visível aos administradores.</div></div></div><div class="cap"><b>2. Em processamento</b>Estado consultado pela API; não bloquear o ecrã.</div></div>
+<div><div class="phone"><div class="bar">Rever rascunho</div><div class="body"><div class="status">Gerado por IA. Pendente de revisão.</div><b>Transcrição</b><div class="field">A assembleia decidiu reparar a entrada...</div><b>Rascunho</b><div class="field">Decisão: reparar a entrada. Por confirmar.</div><div class="note">Apenas a US-24 permite aprovar e publicar.</div></div></div><div class="cap"><b>3. Resultado pronto</b>Transcrição e rascunho identificados, sem os apresentar como factos.</div></div>
+<div><div class="phone"><div class="bar">Ata da assembleia</div><div class="body"><div class="status">A transcrição falhou após 5 tentativas. O áudio continua guardado.</div><div class="btn">Tentar novamente</div><div class="btn">Escrever ata manual</div><div class="note">A ata manual segue a US-25.</div></div></div><div class="cap"><b>4. Falha</b>Áudio preservado; fallback manual disponível.</div></div>
+</div>
+</body>
+</html>

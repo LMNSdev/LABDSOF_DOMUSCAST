@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-13 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.field small{display:block;color:#667}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.note{font-size:11px;color:#667}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-13: agendar assembleia</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. O administrador guarda data, hora e local. A fila sem ligação pertence à US-18; a sincronização com o calendário externo pertence à US-28.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Nova reunião</div><div class="body"><div class="field"><small>Data</small>25/11/2026</div><div class="field"><small>Hora (Portugal continental)</small>19:00</div><div class="field"><small>Local</small>Sala do condomínio</div><div class="btn">Agendar</div></div></div><div class="cap"><b>1. Formulário</b>Data e hora no fuso Europe/Lisbon, local obrigatório.</div></div>
+<div><div class="phone"><div class="bar">Reuniões</div><div class="body"><div class="card"><b>Assembleia de condóminos</b><div class="note">25/11/2026 às 19:00<br>Sala do condomínio</div><div class="note">Publicação no calendário pendente</div></div><div class="btn">Agendar reunião</div></div></div><div class="cap"><b>2. Lista do administrador</b>A reunião fica guardada mesmo antes da publicação externa.</div></div>
+<div><div class="phone"><div class="bar">Reuniões</div><div class="body"><div class="note">Ainda não há reuniões agendadas.</div><div class="btn">Agendar reunião</div></div></div><div class="cap"><b>3. Estado vazio</b>Entrada clara para criar a primeira reunião.</div></div>
+<div><div class="phone"><div class="bar">Nova reunião</div><div class="body"><div class="field">Não foi possível guardar a reunião. Verifique a ligação.</div><div class="btn">Tentar novamente</div><div class="note">Sem ligação, a fila local é tratada pela US-18.</div></div></div><div class="cap"><b>4. Erro de rede</b>Não afirmar que ficou em fila se a US-18 não estiver disponível.</div></div>
+</div>
+</body>
+</html>
