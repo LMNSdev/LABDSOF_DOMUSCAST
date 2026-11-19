@@ -75,6 +75,39 @@ void main() {
       expect(find.text('Condomínio'), findsNothing);
     });
 
+    testWidgets('sessão residente guardada autentica a criação de um reporte',
+        (tester) async {
+      String? authorization;
+      final api = ApiService(client: MockClient((req) async {
+        if (req.url.path == '/reportes' && req.method == 'GET') {
+          return _json([], 200);
+        }
+        if (req.url.path == '/reportes' && req.method == 'POST') {
+          authorization = req.headers['authorization'];
+          return _json({'id': 42}, 201);
+        }
+        return _json({'detail': 'not found'}, 404);
+      }));
+
+      await tester.pumpWidget(MaterialApp(
+        home: LandingScreen(
+          store: MemoriaSessaoAdminStore(),
+          storeResidente: MemoriaSessaoResidenteStore(_residente),
+          api: api,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Reportar avaria'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'Fuga na garagem');
+      await tester.ensureVisible(find.text('Submeter reporte'));
+      await tester.tap(find.text('Submeter reporte'));
+      await tester.pumpAndSettle();
+
+      expect(authorization, 'Bearer cred-1');
+    });
+
     testWidgets('o link domuscast://entrar abre o ecrã do nome', (tester) async {
       final links = StreamController<Uri>();
       await tester.pumpWidget(_landing(links: links.stream));
@@ -131,13 +164,21 @@ void main() {
       expect(chamadas, 0);
     });
 
-    testWidgets('entra, guarda a identidade no telemóvel e abre os Reportes', (tester) async {
+    testWidgets('entra, guarda a identidade e autentica a criação de reporte',
+        (tester) async {
       Map<String, dynamic>? enviado;
+      String? authorization;
       final store = MemoriaSessaoResidenteStore();
-      await _abrirNome(tester, _api((req) {
-        enviado = jsonDecode(req.body) as Map<String, dynamic>;
-        return _json(_criada, 201);
-      }), store);
+      final api = ApiService(client: MockClient((req) async {
+        if (req.url.path == '/identidades') {
+          enviado = jsonDecode(req.body) as Map<String, dynamic>;
+          return _json(_criada, 201);
+        }
+        if (req.method == 'GET') return _json([], 200);
+        authorization = req.headers['authorization'];
+        return _json({'id': 42}, 201);
+      }));
+      await _abrirNome(tester, api, store);
       await _enviar(tester, 'Marta Silva');
 
       expect(enviado, {'token': 'tok', 'nome': 'Marta Silva'});
@@ -145,6 +186,17 @@ void main() {
       expect(guardada?.credencial, 'cred-1');
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.text('Olá, Marta Silva. Entrou na fração A.'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Reportar avaria'));
+      await tester.tap(find.text('Reportar avaria'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Fuga na garagem');
+      await tester.ensureVisible(find.text('Submeter reporte'));
+      await tester.tap(find.text('Submeter reporte'));
+      await tester.pumpAndSettle();
+      expect(authorization, 'Bearer cred-1');
     });
 
     testWidgets('nome repetido na fração mostra a mensagem no campo', (tester) async {

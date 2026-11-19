@@ -11,13 +11,13 @@ import '../services/api_service.dart';
 class NovoReporteScreen extends StatefulWidget {
   final ApiService api;
   final String? credencialResidente;
-  final Future<XFile?> Function()? selecionarImagem;
+  final Future<XFile?> Function(ImageSource source)? escolherImagem;
 
   const NovoReporteScreen({
     super.key,
     required this.api,
     this.credencialResidente,
-    this.selecionarImagem,
+    this.escolherImagem,
   });
 
   @override
@@ -62,8 +62,31 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
 
   Future<void> _selecionarFoto() async {
     try {
-      final foto = await (widget.selecionarImagem ??
-          () => ImagePicker().pickImage(source: ImageSource.gallery))();
+      final fonte = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Escolher da galeria'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Tirar fotografia'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (fonte == null) return;
+
+      final escolherImagem = widget.escolherImagem ??
+          ((ImageSource source) => ImagePicker().pickImage(source: source));
+      final foto = await escolherImagem(fonte);
       if (foto == null) return;
 
       final tamanho = await foto.length();
@@ -95,7 +118,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     } on FileSystemException {
       _mostrarMensagem('Não foi possível ler a foto. Escolhe-a novamente.');
     } on PlatformException {
-      _mostrarMensagem('Não foi possível abrir a galeria.');
+      _mostrarMensagem('Não foi possível abrir a câmara ou galeria.');
     }
   }
 
@@ -126,7 +149,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     final credencial = widget.credencialResidente?.trim();
     if (credencial == null || credencial.isEmpty) {
       _mostrarMensagem(
-        'A identificação do residente ainda não está disponível. Tenta novamente depois da US-15.',
+        'Identifica-te através do QR code da fração antes de submeter um reporte.',
       );
       return;
     }

@@ -61,7 +61,13 @@ class _LandingScreenState extends State<LandingScreen>
     if (!mounted) return;
     if (admin != null || residente != null) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen(api: _api, sessao: admin)),
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            api: _api,
+            sessao: admin,
+            credencialResidente: residente?.credencial,
+          ),
+        ),
       );
       return;
     }

@@ -63,7 +63,12 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api)),
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            api: widget.api,
+            credencialResidente: sessao.credencial,
+          ),
+        ),
         (_) => false,
       );
       messenger.showSnackBar(

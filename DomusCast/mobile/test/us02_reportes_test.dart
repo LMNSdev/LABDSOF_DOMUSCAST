@@ -143,9 +143,7 @@ void main() {
     await tester.pump();
 
     expect(chamadas, 0);
-    expect(
-        find.textContaining(
-            'identificação do residente ainda não está disponível'),
+    expect(find.textContaining('Identifica-te através do QR code da fração'),
         findsOneWidget);
     expect(find.text('Nova avaria'), findsOneWidget);
   });
@@ -158,7 +156,7 @@ void main() {
       MaterialApp(
         home: NovoReporteScreen(
           api: api,
-          selecionarImagem: () async => XFile.fromData(
+          escolherImagem: (_) async => XFile.fromData(
             Uint8List.fromList([1, 2, 3]),
             name: 'foto.png',
             mimeType: 'image/png',
@@ -168,6 +166,8 @@ void main() {
     );
 
     await tester.tap(find.text('Adicionar foto (opcional)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Escolher da galeria'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Submeter reporte'));
     await tester.pumpAndSettle();
@@ -183,7 +183,7 @@ void main() {
       MaterialApp(
         home: NovoReporteScreen(
           api: ApiService(client: MockClient((_) async => _json({}, 201))),
-          selecionarImagem: () async => XFile.fromData(
+          escolherImagem: (_) async => XFile.fromData(
             Uint8List(5 * 1024 * 1024 + 1),
             name: 'foto.jpg',
             mimeType: 'image/jpeg',
@@ -194,9 +194,41 @@ void main() {
 
     await tester.tap(find.text('Adicionar foto (opcional)'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Escolher da galeria'));
+    await tester.pumpAndSettle();
 
     expect(find.text('A foto não pode exceder 5 MB.'), findsOneWidget);
     expect(find.text('Adicionar foto (opcional)'), findsOneWidget);
+  });
+
+  testWidgets('permite tirar uma fotografia com a câmara', (tester) async {
+    ImageSource? fonteEscolhida;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: NovoReporteScreen(
+          api: ApiService(client: MockClient((_) async => _json({}, 201))),
+          escolherImagem: (fonte) async {
+            fonteEscolhida = fonte;
+            return XFile.fromData(
+              Uint8List.fromList([1, 2, 3]),
+              name: 'camera.jpg',
+              mimeType: 'image/jpeg',
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Adicionar foto (opcional)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Escolher da galeria'), findsOneWidget);
+    expect(find.text('Tirar fotografia'), findsOneWidget);
+
+    await tester.tap(find.text('Tirar fotografia'));
+    await tester.pumpAndSettle();
+
+    expect(fonteEscolhida, ImageSource.camera);
+    expect(find.byType(Image), findsOneWidget);
   });
 
   testWidgets('administrador não vê a ação de criar reporte', (tester) async {
