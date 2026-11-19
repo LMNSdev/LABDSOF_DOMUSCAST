@@ -22,6 +22,7 @@ class ReportesListScreen extends StatefulWidget {
 
 class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
+  final _avisoPopup = AvisoPopupController();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
   bool _avisoVisivel = false;
@@ -31,6 +32,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _avisoPopup.dispose();
+    super.dispose();
   }
 
   // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
@@ -167,7 +174,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                   await _load();
                   if (!context.mounted) return;
                   setState(() => _avisoVisivel = true);
-                  mostrarAvisoPopup(
+                  _avisoPopup.show(
                     context,
                     'Reporte enviado. Estado: Aberto.',
                     cor: const Color(0xFF1C6B2C),

@@ -31,6 +31,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
   final _fotoAltController = TextEditingController();
+  final _avisoPopup = AvisoPopupController();
   Uint8List? _fotoBytes;
   String? _fotoNome;
   String? _idempotencyKey;
@@ -40,6 +41,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
 
   @override
   void dispose() {
+    _avisoPopup.dispose();
     _descricaoController.dispose();
     _fotoAltController.dispose();
     super.dispose();
@@ -58,7 +60,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   }
 
   void _mostrarMensagem(String texto, {Color? cor}) {
-    mostrarAvisoPopup(
+    _avisoPopup.show(
       context,
       texto,
       cor: cor ?? const Color(0xFFB26A00),
