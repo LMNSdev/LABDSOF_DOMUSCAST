@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-05 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.field small{display:block;color:#667}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn.out{background:#fff;color:#0F3478;border:1px solid #0F3478}
+.note{font-size:11px;color:#667}
+.state{display:inline-block;background:#dfe9ff;color:#1546a3;border-radius:12px;padding:3px 8px}
+.history{border-left:2px solid #9aa7bf;padding-left:9px}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-05: mudar estado e consultar histórico</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. O administrador muda o estado do reporte e regista uma nota; o histórico é só de inserção e fica visível no detalhe da US-03.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Reporte #104</div><div class="body"><b>Fuga de água na garagem</b><span class="state">Aberto</span><div class="history"><b>Aberto</b><div class="note">19/11 às 09:20, estado inicial</div></div><div class="btn">Mudar estado</div></div></div><div class="cap"><b>1. Detalhe</b>Ação administrativa junto ao estado e ao histórico.</div></div>
+<div><div class="phone"><div class="bar">Atualizar reporte</div><div class="body"><b>Novo estado</b><div class="field">Em curso</div><b>Nota obrigatória</b><div class="field note">Ex.: técnico contactado</div><div class="note">A nota fica visível no histórico.</div><div class="btn">Guardar alteração</div></div></div><div class="cap"><b>2. Alteração</b>Estados avançam de Aberto para Em curso e Resolvido.</div></div>
+<div><div class="phone"><div class="bar">Reporte #104</div><div class="body"><div class="state">Em curso</div><div class="history"><b>Em curso</b><div class="note">19/11 às 10:15, técnico contactado</div></div><div class="history"><b>Aberto</b><div class="note">19/11 às 09:20</div></div><div class="note">Alteração guardada. O histórico não pode ser editado.</div></div></div><div class="cap"><b>3. Histórico atualizado</b>Autor e hora da alteração ficam registados pela API.</div></div>
+<div><div class="phone"><div class="bar">Atualizar reporte</div><div class="body"><div class="field">Não foi possível guardar a alteração.</div><div class="note">O reporte pode ter sido atualizado noutro dispositivo. Volte a carregar o detalhe antes de tentar novamente.</div><div class="btn">Voltar ao detalhe</div></div></div><div class="cap"><b>4. Conflito ou falha</b>Não repetir às cegas uma alteração que pode já ter sido guardada.</div></div>
+</div>
+</body>
+</html>
