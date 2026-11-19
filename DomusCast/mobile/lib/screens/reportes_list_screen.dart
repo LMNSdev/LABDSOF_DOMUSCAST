@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
+import '../widgets/aviso_popup.dart';
 import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
+  bool _avisoVisivel = false;
   String? _error;
 
   @override
@@ -108,6 +110,21 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final body = _loading
+        ? const Center(child: CircularProgressIndicator())
+        : _error != null
+            ? _buildError()
+            : _reportes.isEmpty
+                ? _buildEmpty()
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                      itemCount: _reportes.length,
+                      itemBuilder: (context, i) => _buildCard(_reportes[i]),
+                    ),
+                  );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -127,21 +144,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? _buildError()
-              : _reportes.isEmpty
-                  ? _buildEmpty()
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 16),
-                        itemCount: _reportes.length,
-                        itemBuilder: (context, i) => _buildCard(_reportes[i]),
-                      ),
-                    ),
+      body: AnimatedPadding(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(top: _avisoVisivel ? 64 : 0),
+        child: body,
+      ),
       floatingActionButton: widget.podeReportar
           ? FloatingActionButton.extended(
               onPressed: () async {
@@ -154,7 +162,20 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                     ),
                   ),
                 );
-                if (criado == true) _load();
+                if (criado == true) {
+                  if (!context.mounted) return;
+                  await _load();
+                  if (!context.mounted) return;
+                  setState(() => _avisoVisivel = true);
+                  mostrarAvisoPopup(
+                    context,
+                    'Reporte enviado. Estado: Aberto.',
+                    cor: const Color(0xFF1C6B2C),
+                    onDismiss: () {
+                      if (mounted) setState(() => _avisoVisivel = false);
+                    },
+                  );
+                }
               },
               backgroundColor: scheme.primary,
               foregroundColor: scheme.onPrimary,

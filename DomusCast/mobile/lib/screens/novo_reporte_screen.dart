@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../services/api_service.dart';
+import '../widgets/aviso_popup.dart';
 
 class NovoReporteScreen extends StatefulWidget {
   final ApiService api;
@@ -33,6 +34,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   Uint8List? _fotoBytes;
   String? _fotoNome;
   String? _idempotencyKey;
+  String? _erroSubmissao;
   bool _mostrarNome = false;
   bool _submitting = false;
 
@@ -51,12 +53,15 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
 
   void _changed() {
     _idempotencyKey = null;
+    _erroSubmissao = null;
     setState(() {});
   }
 
   void _mostrarMensagem(String texto, {Color? cor}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto), backgroundColor: cor),
+    mostrarAvisoPopup(
+      context,
+      texto,
+      cor: cor ?? const Color(0xFFB26A00),
     );
   }
 
@@ -114,6 +119,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         _fotoBytes = bytes;
         _fotoNome = 'foto.$extensaoValidada';
         _idempotencyKey = null;
+        _erroSubmissao = null;
       });
     } on FileSystemException {
       _mostrarMensagem('Não foi possível ler a foto. Escolhe-a novamente.');
@@ -122,12 +128,53 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     }
   }
 
+  Future<void> _verFoto() async {
+    final bytes = _fotoBytes;
+    if (bytes == null) return;
+
+    final descricao = _fotoAltController.text.trim();
+    await showDialog<void>(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            title: const Text('Pré-visualização da foto'),
+            actions: [
+              IconButton(
+                tooltip: 'Fechar pré-visualização',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 5,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.contain,
+                semanticLabel:
+                    descricao.isEmpty ? 'Foto do reporte' : descricao,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _removerFoto() {
     setState(() {
       _fotoBytes = null;
       _fotoNome = null;
       _fotoAltController.clear();
       _idempotencyKey = null;
+      _erroSubmissao = null;
     });
   }
 
@@ -144,6 +191,7 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     final credencial = widget.credencialResidente?.trim();
@@ -168,29 +216,36 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         idempotencyKey: _idempotencyKey!,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reporte enviado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
-        );
         Navigator.pop(context, true);
       }
     } on ApiException catch (erro) {
-      if (mounted) _mostrarMensagem(_mensagemApi(erro));
+      if (mounted) _mostrarErroSubmissao(_mensagemApi(erro));
     } on http.ClientException {
       if (mounted) {
-        _mostrarMensagem(
-            'Sem ligação ao servidor. O formulário continua disponível para tentar novamente.');
+        _mostrarErroSubmissao(
+          'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
+        );
+      }
+    } on SocketException {
+      if (mounted) {
+        _mostrarErroSubmissao(
+          'Sem ligação ao servidor. Os dados ficam no formulário; tenta novamente.',
+        );
       }
     } on FormatException {
       if (mounted) {
-        _mostrarMensagem(
-            'O servidor devolveu uma resposta inválida. Tenta novamente.');
+        _mostrarErroSubmissao(
+          'O servidor devolveu uma resposta inválida. Os dados ficam no formulário; tenta novamente.',
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  void _mostrarErroSubmissao(String texto) {
+    setState(() => _erroSubmissao = texto);
+    _mostrarMensagem(texto);
   }
 
   @override
@@ -278,17 +333,62 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
               ),
               if (_fotoBytes != null) ...[
                 const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.memory(
-                    _fotoBytes!,
-                    height: 160,
-                    fit: BoxFit.cover,
-                    semanticLabel: _fotoAltController.text,
-                    errorBuilder: (_, __, ___) => const SizedBox(
-                      height: 100,
-                      child:
-                          Center(child: Text('Pré-visualização indisponível')),
+                Semantics(
+                  button: true,
+                  label: 'Ampliar foto',
+                  hint: 'Abre a foto em ecrã inteiro. Pode ampliar com gestos.',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      key: const Key('foto-preview'),
+                      onTap: _verFoto,
+                      borderRadius: BorderRadius.circular(10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 180,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ColoredBox(color: Color(0xFFE8EAF0)),
+                              ExcludeSemantics(
+                                child: Center(
+                                  child: Image.memory(
+                                    _fotoBytes!,
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Text(
+                                        'Pré-visualização indisponível',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 8,
+                                bottom: 8,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(6),
+                                    child: Icon(
+                                      Icons.zoom_out_map,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -348,7 +448,10 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                          semanticsLabel: 'A enviar reporte',
+                        ),
                       )
                     : const Icon(Icons.send_rounded),
                 label: Text(_submitting ? 'A enviar...' : 'Submeter reporte'),
@@ -358,6 +461,40 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
+              if (_submitting) ...[
+                const SizedBox(height: 8),
+                Semantics(
+                  liveRegion: true,
+                  child: const Text('A enviar o reporte. Aguarda.'),
+                ),
+              ],
+              if (_erroSubmissao != null) ...[
+                const SizedBox(height: 12),
+                Semantics(
+                  liveRegion: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEE),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_erroSubmissao!),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _submitting ? null : _submit,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Tentar novamente'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
