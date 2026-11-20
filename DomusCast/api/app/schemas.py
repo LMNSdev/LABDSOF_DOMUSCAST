@@ -53,6 +53,10 @@ class QrAtivo(BaseModel):
     n_residentes: int
 
 
+class QrRevogados(BaseModel):
+    revogados: int
+
+
 # --- US-15: identidade do residente ---
 
 class IdentidadeCreate(BaseModel):

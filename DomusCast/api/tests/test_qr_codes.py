@@ -107,3 +107,107 @@ def test_listar_qr_fracao_inexistente_404(client):
     condominio = novo_condominio(client)
     r = client.get("/fracoes/999999/qr", headers=auth(condominio["credencial_admin"]))
     assert r.status_code == 404
+
+
+# --- Revogar ------------------------------------------------------------------
+
+
+def revogar_todos(client, condominio, credencial=None, indice=0):
+    fracao_id = condominio["fracoes"][indice]["id"]
+    credencial = credencial or condominio["credencial_admin"]
+    return client.post(f"/fracoes/{fracao_id}/qr/revogar", headers=auth(credencial))
+
+
+def revogar(client, qr_id, credencial):
+    return client.post(f"/qr/{qr_id}/revogar", headers=auth(credencial))
+
+
+def test_revogar_todos_devolve_numero_e_bloqueia_entradas(client):
+    condominio = novo_condominio(client)
+    tokens = [gerar_qr(client, condominio), gerar_qr(client, condominio)]
+
+    r = revogar_todos(client, condominio)
+    assert r.status_code == 200
+    assert r.json() == {"revogados": 2}
+    for token in tokens:
+        entrada = entrar(client, token, "Marta Silva")
+        assert entrada.status_code == 404
+        assert entrada.json()["codigo"] == "qr_invalido"
+    assert listar(client, condominio).json() == []
+
+
+def test_revogar_todos_sem_ativos_devolve_0(client):
+    condominio = novo_condominio(client)
+    r = revogar_todos(client, condominio)
+    assert r.status_code == 200
+    assert r.json() == {"revogados": 0}
+
+
+def test_revogar_todos_so_afeta_a_fracao(client):
+    condominio = novo_condominio(client, n_fracoes=2)
+    gerar_qr(client, condominio, 0)
+    outro_token = gerar_qr(client, condominio, 1)
+
+    assert revogar_todos(client, condominio, indice=0).json() == {"revogados": 1}
+    assert entrar(client, outro_token, "Rui Costa").status_code == 201
+
+
+def test_revogar_um_so_afeta_esse(client, db):
+    condominio = novo_condominio(client)
+    primeiro = gerar_qr(client, condominio)
+    segundo = gerar_qr(client, condominio)
+
+    r = revogar(client, qr_do_token(db, primeiro).id, condominio["credencial_admin"])
+    assert r.status_code == 200
+    assert r.json() == {"revogados": 1}
+    assert entrar(client, primeiro, "Marta Silva").status_code == 404
+    assert entrar(client, segundo, "Marta Silva").status_code == 201
+
+
+def test_revogar_nao_afeta_identidades(client, db):
+    condominio = novo_condominio(client)
+    token = gerar_qr(client, condominio)
+    credencial = entrar(client, token, "Marta Silva").json()["credencial"]
+
+    assert revogar(client, qr_do_token(db, token).id, condominio["credencial_admin"]).status_code == 200
+    assert client.get("/reportes", headers=auth(credencial)).status_code == 200
+
+
+def test_revogar_duas_vezes_404(client, db):
+    condominio = novo_condominio(client)
+    qr_id = qr_do_token(db, gerar_qr(client, condominio)).id
+    assert revogar(client, qr_id, condominio["credencial_admin"]).status_code == 200
+    assert revogar(client, qr_id, condominio["credencial_admin"]).status_code == 404
+
+
+def test_revogar_qr_inexistente_404(client):
+    condominio = novo_condominio(client)
+    assert revogar(client, 999999, condominio["credencial_admin"]).status_code == 404
+
+
+def test_revogar_residente_403(client, db):
+    condominio = novo_condominio(client)
+    token = gerar_qr(client, condominio)
+    credencial = entrar(client, token, "Marta Silva").json()["credencial"]
+
+    assert revogar(client, qr_do_token(db, token).id, credencial).status_code == 403
+    assert revogar_todos(client, condominio, credencial=credencial).status_code == 403
+    assert entrar(client, token, "Rui Costa").status_code == 201
+
+
+def test_revogar_sem_credencial_401(client, db):
+    condominio = novo_condominio(client)
+    token = gerar_qr(client, condominio)
+    fracao_id = condominio["fracoes"][0]["id"]
+    assert client.post(f"/qr/{qr_do_token(db, token).id}/revogar").status_code == 401
+    assert client.post(f"/fracoes/{fracao_id}/qr/revogar").status_code == 401
+
+
+def test_revogar_outro_condominio_404(client, db):
+    condominio = novo_condominio(client)
+    token = gerar_qr(client, condominio)
+    outro = novo_condominio(client)
+
+    assert revogar(client, qr_do_token(db, token).id, outro["credencial_admin"]).status_code == 404
+    assert revogar_todos(client, condominio, credencial=outro["credencial_admin"]).status_code == 404
+    assert entrar(client, token, "Marta Silva").status_code == 201

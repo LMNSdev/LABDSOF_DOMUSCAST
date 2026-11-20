@@ -4,6 +4,8 @@ O token só é devolvido quando é gerado; a base de dados guarda apenas o hash.
 Gerar um novo QR não revoga os anteriores; revogar é uma ação própria (US-20).
 """
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -78,3 +80,23 @@ def listar_qr(
     return [
         schemas.QrAtivo(id=qr.id, criado_em=qr.criado_em, n_residentes=n) for qr, n in linhas
     ]
+
+
+@router.post("/{fracao_id}/qr/revogar", response_model=schemas.QrRevogados)
+def revogar_todos_qr(
+    fracao_id: int,
+    admin: models.Administrador = Depends(admin_do_pedido),
+    db: Session = Depends(get_db),
+):
+    """Revoga todos os QR codes ativos da fração; as identidades já criadas mantêm-se."""
+    fracao = _fracao_do_admin(db, admin, fracao_id)
+    ativos = (
+        db.query(models.QrToken)
+        .filter(models.QrToken.fracao_id == fracao.id, models.QrToken.revogado_em.is_(None))
+        .all()
+    )
+    agora = datetime.now(timezone.utc)
+    for qr in ativos:
+        qr.revogado_em = agora
+    db.commit()
+    return schemas.QrRevogados(revogados=len(ativos))
