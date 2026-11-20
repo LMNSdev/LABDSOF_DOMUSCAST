@@ -45,6 +45,14 @@ class QrGerado(BaseModel):
     criado_em: datetime
 
 
+class QrAtivo(BaseModel):
+    """US-20: QR code ainda válido, sem o token (o servidor só guarda o hash)."""
+
+    id: int
+    criado_em: datetime
+    n_residentes: int
+
+
 # --- US-15: identidade do residente ---
 
 class IdentidadeCreate(BaseModel):

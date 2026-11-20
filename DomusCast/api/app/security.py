@@ -91,6 +91,15 @@ def admin_atual(
     return admin
 
 
+def admin_do_pedido(
+    utilizador: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
+) -> models.Administrador:
+    """Administrador dono da credencial; 403 se for um residente (10.2)."""
+    if not isinstance(utilizador, models.Administrador):
+        raise HTTPException(status_code=403, detail="Só o administrador pode fazer isto.")
+    return utilizador
+
+
 def exigir_admin_do_condominio(admin: models.Administrador, condominio_id: int) -> None:
     if admin.condominio_id != condominio_id:
         raise HTTPException(status_code=403, detail="Sem acesso a este condomínio.")
