@@ -215,6 +215,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                       credencial: widget.credencial,
                       nome: widget.nomeResidente,
                       fila: _fila,
+                      onAcessoRemovido: widget.onAcessoRemovido,
                     ),
                   ),
                 );

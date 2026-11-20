@@ -285,6 +285,42 @@ void main() {
       expect(await store.ler(), isNull);
     });
 
+    testWidgets('401 ao submeter um reporte também apaga a credencial e mostra o aviso',
+        (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final store = MemoriaSessaoResidenteStore(sessaoMarta);
+      final fila = MemoriaFilaReportes();
+      // A lista carregou antes da remoção; só o envio do reporte recebe 401.
+      final api = ApiService(client: MockClient((req) async {
+        if (req.method == 'GET') return _json([], 200);
+        return _json(
+          {'codigo': 'nao_autenticado', 'mensagem': 'Credencial inválida.', 'request_id': 'r'},
+          401,
+        );
+      }));
+      await tester.pumpWidget(MaterialApp(
+        home: HomeScreen(
+          api: api,
+          sessaoResidente: sessaoMarta,
+          storeResidente: store,
+          fila: fila,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Reportar avaria'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'Fuga na garagem');
+      await tester.tap(find.text('Submeter reporte'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('O seu acesso foi removido'), findsOneWidget);
+      expect(await store.ler(), isNull);
+      expect(await fila.pendentes(), isEmpty);
+    });
+
     testWidgets('ao abrir a app com a identidade removida, a credencial guardada é apagada',
         (tester) async {
       final store = MemoriaSessaoResidenteStore(sessaoMarta);
