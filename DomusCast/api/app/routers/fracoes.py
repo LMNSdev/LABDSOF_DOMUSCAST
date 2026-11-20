@@ -49,6 +49,7 @@ def gerar_qr(
     db.refresh(qr)
 
     return schemas.QrGerado(
+        id=qr.id,
         token=token,
         link=f"domuscast://entrar?t={token}",
         fracao=fracao.designacao,

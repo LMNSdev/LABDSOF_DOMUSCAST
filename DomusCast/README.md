@@ -265,7 +265,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |
 | `GET /fracoes/{id}/qr` | US-20: QR codes ativos com `{id, criado_em, n_residentes}` (residentes que entraram com cada um e ainda têm acesso); 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `POST /fracoes/{id}/qr/revogar` | US-20: revoga todos os QR codes ativos da fração e devolve `{revogados}` (0 se não havia); as identidades já criadas não são afetadas |
-| `POST /qr/{id}/revogar` | US-20: revoga um QR code e devolve `{revogados: 1}`; 404 se já foi revogado, não existe ou é de outro condomínio |
+| `POST /qr/{id}/revogar` | US-20: revoga um QR code e devolve `{revogados: 1}`; 404 se já foi revogado, não existe ou é de outro condomínio. Os dois `revogar` guardam o administrador em `qr_token.revogado_por` (migração `0006`) |
 | `POST /identidades` | US-15: `{token, nome}` cria a identidade do residente e devolve `{id, nome, fracao, credencial}`; nome único por fração (ignora maiúsculas, acentos e espaços), máximo de 10 por fração, 30 tentativas por hora por QR code; erros 404 e 409 no formato `{codigo, mensagem, request_id}` |
 | `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |

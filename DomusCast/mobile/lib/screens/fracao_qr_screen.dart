@@ -39,6 +39,9 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
   /// Muda a cada QR gerado, para a lista dos ativos (US-20) recarregar.
   int _versaoQr = 0;
 
+  /// Id do QR code mostrado no ecrã, para o tirar se for revogado (US-20).
+  int? _qrId;
+
   Future<void> _gerar() async {
     setState(() {
       _aGerar = true;
@@ -49,6 +52,7 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
       if (!mounted) return;
       setState(() {
         _link = qr['link'] as String;
+        _qrId = qr['id'] as int?;
         _versaoQr++;
       });
     } catch (_) {
@@ -177,9 +181,16 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
               sessao: widget.sessao,
               fracaoId: widget.fracaoId,
               designacao: widget.designacao,
-              // O servidor não diz qual dos QR codes está no ecrã: depois de
-              // revogar, tira-se o que está mostrado e volta "Gerar QR code".
-              onRevogado: () => setState(() => _link = null),
+              // Se o QR code mostrado foi revogado (sozinho ou com "Revogar
+              // todos"), sai do ecrã e volta "Gerar QR code".
+              onRevogado: (qrId) {
+                if (qrId == null || qrId == _qrId) {
+                  setState(() {
+                    _link = null;
+                    _qrId = null;
+                  });
+                }
+              },
             ),
           ],
         ),

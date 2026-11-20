@@ -109,6 +109,15 @@ def test_listar_qr_fracao_inexistente_404(client):
     assert r.status_code == 404
 
 
+def test_gerar_devolve_o_id_que_aparece_na_lista(client):
+    condominio = novo_condominio(client)
+    fracao_id = condominio["fracoes"][0]["id"]
+    gerado = client.post(
+        f"/fracoes/{fracao_id}/qr", headers=auth(condominio["credencial_admin"])
+    ).json()
+    assert [item["id"] for item in listar(client, condominio).json()] == [gerado["id"]]
+
+
 # --- Revogar ------------------------------------------------------------------
 
 

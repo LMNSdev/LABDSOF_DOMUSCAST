@@ -39,6 +39,7 @@ class CondominioCriado(BaseModel):
 
 
 class QrGerado(BaseModel):
+    id: int  # US-20: o mesmo id da lista dos ativos, para a app saber qual está no ecrã
     token: str
     link: str
     fracao: str

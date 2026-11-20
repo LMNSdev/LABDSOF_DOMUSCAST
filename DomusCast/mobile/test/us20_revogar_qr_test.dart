@@ -54,6 +54,7 @@ class _Servidor {
             {'id': 9, 'criado_em': '2026-11-18T09:00:00Z', 'n_residentes': 0},
           ];
           return _json({
+            'id': 9,
             'token': 'tok-novo',
             'link': 'domuscast://entrar?t=tok-novo',
             'fracao': 'A',
@@ -79,7 +80,7 @@ List<Map<String, dynamic>> _doisAtivos() => [
       {'id': 2, 'criado_em': '2026-11-17T10:05:00Z', 'n_residentes': 1},
     ];
 
-Widget _secao(ApiService api, {VoidCallback? onRevogado}) => MaterialApp(
+Widget _secao(ApiService api, {void Function(int?)? onRevogado}) => MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
           child: QrCodesAtivos(
@@ -133,8 +134,8 @@ void main() {
 
   testWidgets('2b. confirmar revoga, mostra 1 QR code revogado e recarrega', (tester) async {
     final servidor = _Servidor(_doisAtivos());
-    var revogado = false;
-    await tester.pumpWidget(_secao(servidor.api, onRevogado: () => revogado = true));
+    int? revogado;
+    await tester.pumpWidget(_secao(servidor.api, onRevogado: (id) => revogado = id));
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(TextButton, 'Revogar').first);
@@ -146,7 +147,7 @@ void main() {
     expect(find.text('1 QR code revogado.'), findsOneWidget);
     expect(find.text('3 residentes entraram'), findsNothing);
     expect(find.widgetWithText(TextButton, 'Revogar'), findsOneWidget);
-    expect(revogado, isTrue);
+    expect(revogado, 1);
   });
 
   testWidgets('um QR code sem residentes só avisa que deixa de dar acesso', (tester) async {
@@ -276,6 +277,42 @@ void main() {
       expect(find.byType(QrImageView), findsNothing);
       expect(find.text('Gerar QR code'), findsOneWidget);
       expect(find.text('1 QR code revogado.'), findsOneWidget);
+    });
+
+    testWidgets('revogar na lista o QR mostrado tira-o do ecrã', (tester) async {
+      final servidor = _Servidor([]);
+      await abrir(tester, servidor);
+
+      await tester.tap(find.text('Gerar QR code'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Revogar'));
+      await tester.pumpAndSettle();
+      await tester.tap(_noDialogo('Revogar'));
+      await tester.pumpAndSettle();
+
+      expect(servidor.pedidos, contains('POST /qr/9/revogar'));
+      expect(find.byType(QrImageView), findsNothing);
+      expect(find.text('Gerar QR code'), findsOneWidget);
+    });
+
+    testWidgets('revogar outro QR code mantém no ecrã o que acabou de ser gerado',
+        (tester) async {
+      final servidor = _Servidor([
+        {'id': 1, 'criado_em': '2026-11-16T14:32:00Z', 'n_residentes': 3},
+      ]);
+      await abrir(tester, servidor);
+
+      await tester.tap(find.text('Gerar QR code'));
+      await tester.pumpAndSettle();
+      // O mais antigo (id 1) aparece primeiro na lista.
+      await tester.tap(find.widgetWithText(TextButton, 'Revogar').first);
+      await tester.pumpAndSettle();
+      await tester.tap(_noDialogo('Revogar'));
+      await tester.pumpAndSettle();
+
+      expect(servidor.pedidos, contains('POST /qr/1/revogar'));
+      expect(find.byType(QrImageView), findsOneWidget);
+      expect(find.text('Partilhar'), findsOneWidget);
     });
   });
 }

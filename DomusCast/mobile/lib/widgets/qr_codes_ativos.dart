@@ -14,8 +14,9 @@ class QrCodesAtivos extends StatefulWidget {
   final int fracaoId;
   final String designacao;
 
-  /// Chamado depois de revogar pelo menos um QR code.
-  final VoidCallback? onRevogado;
+  /// Chamado depois de revogar: com o id do QR code, ou `null` quando foram
+  /// revogados todos os da fração.
+  final void Function(int? qrId)? onRevogado;
 
   const QrCodesAtivos({
     super.key,
@@ -115,8 +116,10 @@ class _QrCodesAtivosState extends State<QrCodesAtivos> {
       'Revogar',
     );
     if (!ok) return;
+    final id = qr['id'] as int;
     await _executar(
-      () => widget.api.revogarQr(qr['id'] as int, widget.sessao.credencial),
+      () => widget.api.revogarQr(id, widget.sessao.credencial),
+      qrId: id,
       jaRevogado: 'Este QR code já tinha sido revogado.',
     );
   }
@@ -133,11 +136,15 @@ class _QrCodesAtivosState extends State<QrCodesAtivos> {
   }
 
   /// Revoga, avisa o resultado e recarrega a lista (também depois de um erro).
-  Future<void> _executar(Future<int> Function() pedido, {String? jaRevogado}) async {
+  Future<void> _executar(
+    Future<int> Function() pedido, {
+    int? qrId,
+    String? jaRevogado,
+  }) async {
     try {
       final n = await pedido();
       _mensagem(_revogados(n));
-      if (n > 0) widget.onRevogado?.call();
+      if (n > 0) widget.onRevogado?.call(qrId);
     } on ApiException catch (e) {
       _mensagem(e.statusCode == 404 && jaRevogado != null
           ? jaRevogado
