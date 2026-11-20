@@ -5,6 +5,7 @@ import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
 import '../services/sessao_residente.dart';
+import 'acesso_removido_screen.dart';
 import 'condominio_screen.dart';
 import 'reportes_list_screen.dart';
 import 'reunioes_screen.dart';
@@ -21,6 +22,10 @@ class HomeScreen extends StatefulWidget {
   final ApiService api;
   final SessaoAdmin? sessao;
   final SessaoResidente? sessaoResidente;
+
+  /// Onde está guardada a credencial do residente; apagada se a identidade
+  /// for removida pelo administrador (US-23).
+  final SessaoResidenteStore? storeResidente;
   final FilaReportes? fila;
   final Separador separadorInicial;
 
@@ -29,6 +34,7 @@ class HomeScreen extends StatefulWidget {
     required this.api,
     this.sessao,
     this.sessaoResidente,
+    this.storeResidente,
     this.fila,
     this.separadorInicial = Separador.reportes,
   });
@@ -56,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
             nomeResidente: widget.sessaoResidente?.nome,
             podeReportar: widget.sessao == null,
             fila: widget.fila,
+            onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
           ),
         Separador.reunioes => const ReunioesScreen(),
         Separador.avisos => const SizedBox.shrink(),
@@ -85,6 +92,18 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Condomínio',
           ),
       };
+
+  /// US-23: a API deixou de aceitar a credencial do residente. Apaga-a e mostra
+  /// o aviso em vez da app; a fila offline fica no telemóvel.
+  Future<void> _acessoRemovido() async {
+    final store = widget.storeResidente ?? SeguraSessaoResidenteStore();
+    await store.apagar();
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => AcessoRemovidoScreen(api: widget.api, store: store)),
+      (_) => false,
+    );
+  }
 
   void _escolher(int i) {
     if (i == _atual) {

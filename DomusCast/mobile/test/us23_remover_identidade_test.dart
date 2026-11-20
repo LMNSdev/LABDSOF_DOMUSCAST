@@ -2,10 +2,15 @@
 import 'dart:convert';
 
 import 'package:domuscast/local/queue_db.dart';
+import 'package:domuscast/screens/acesso_removido_screen.dart';
 import 'package:domuscast/screens/fracao_qr_screen.dart';
+import 'package:domuscast/screens/home_screen.dart';
+import 'package:domuscast/screens/landing_screen.dart';
+import 'package:domuscast/screens/ler_qr_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
 import 'package:domuscast/services/api_service.dart';
 import 'package:domuscast/services/sessao_admin.dart';
+import 'package:domuscast/services/sessao_residente.dart';
 import 'package:domuscast/widgets/residentes_fracao.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -245,6 +250,90 @@ void main() {
       ]);
       expect(find.textContaining('Residente removido, fração A'), findsOneWidget);
       expect(find.text('nome visível'), findsNothing);
+    });
+  });
+
+  group('Telemóvel removido', () {
+    const sessaoMarta = SessaoResidente(credencial: 'cred-marta', nome: 'Marta Silva', fracao: 'A');
+
+    /// API que responde 401 a tudo, como depois de a identidade ser removida.
+    ApiService removida() => ApiService(client: MockClient((_) async => _json(
+          {'codigo': 'nao_autenticado', 'mensagem': 'Credencial inválida.', 'request_id': 'r'},
+          401,
+        )));
+
+    testWidgets('5. 401 nos reportes apaga a credencial e mostra O seu acesso foi removido',
+        (tester) async {
+      final store = MemoriaSessaoResidenteStore(sessaoMarta);
+      await tester.pumpWidget(MaterialApp(
+        home: HomeScreen(
+          api: removida(),
+          sessaoResidente: sessaoMarta,
+          storeResidente: store,
+          fila: MemoriaFilaReportes(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('O seu acesso foi removido'), findsOneWidget);
+      expect(
+        find.text('O administrador removeu o acesso deste telemóvel. '
+            'Se ainda vive no prédio, peça-lhe um novo QR code.'),
+        findsOneWidget,
+      );
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(await store.ler(), isNull);
+    });
+
+    testWidgets('ao abrir a app com a identidade removida, a credencial guardada é apagada',
+        (tester) async {
+      final store = MemoriaSessaoResidenteStore(sessaoMarta);
+      await tester.pumpWidget(MaterialApp(
+        home: LandingScreen(
+          store: MemoriaSessaoAdminStore(),
+          storeResidente: store,
+          api: removida(),
+          fila: MemoriaFilaReportes(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('O seu acesso foi removido'), findsOneWidget);
+      expect(await store.ler(), isNull);
+    });
+
+    testWidgets('Ler QR code abre o leitor', (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: AcessoRemovidoScreen(api: removida(), store: MemoriaSessaoResidenteStore()),
+      ));
+      await tester.tap(find.text('Ler QR code'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(LerQrScreen), findsOneWidget);
+    });
+
+    testWidgets('a fila offline mantém os reportes por enviar', (tester) async {
+      final fila = MemoriaFilaReportes();
+      await fila.guardar(descricao: 'Fuga na garagem', idempotencyKey: 'chave-1');
+      await tester.pumpWidget(MaterialApp(
+        home: HomeScreen(
+          api: removida(),
+          sessaoResidente: sessaoMarta,
+          storeResidente: MemoriaSessaoResidenteStore(sessaoMarta),
+          fila: fila,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('O seu acesso foi removido'), findsOneWidget);
+      expect(await fila.pendentes(), hasLength(1));
+    });
+
+    testWidgets('o administrador com 401 não vê o ecrã de residente removido', (tester) async {
+      await tester.pumpWidget(MaterialApp(home: HomeScreen(api: removida(), sessao: _sessao)));
+      await tester.pumpAndSettle();
+      expect(find.text('O seu acesso foi removido'), findsNothing);
+      expect(find.byType(NavigationBar), findsOneWidget);
     });
   });
 }

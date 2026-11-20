@@ -20,6 +20,9 @@ class ReportesListScreen extends StatefulWidget {
   final bool podeReportar;
   final FilaReportes? fila;
 
+  /// US-23: chamado quando a credencial do residente deixou de ser aceite (401).
+  final VoidCallback? onAcessoRemovido;
+
   const ReportesListScreen({
     super.key,
     this.api,
@@ -27,6 +30,7 @@ class ReportesListScreen extends StatefulWidget {
     this.nomeResidente,
     this.podeReportar = true,
     this.fila,
+    this.onAcessoRemovido,
   });
 
   @override
@@ -98,6 +102,11 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         _loading = false;
       });
     } on ApiException catch (e) {
+      final aoRemover = widget.onAcessoRemovido;
+      if (e.statusCode == 401 && widget.podeReportar && aoRemover != null) {
+        aoRemover();
+        return;
+      }
       setState(() {
         _error = e.statusCode == 401
             ? 'A sua identidade já não é válida.'
