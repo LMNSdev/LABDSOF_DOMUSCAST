@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
 import '../services/sessao_residente.dart';
@@ -13,11 +14,12 @@ class LandingScreen extends StatefulWidget {
   final SessaoAdminStore? store;
   final SessaoResidenteStore? storeResidente;
   final ApiService? api;
+  final FilaReportes? fila;
 
   /// Links `domuscast://entrar?t=` que abrem a app (US-15).
   final Stream<Uri>? links;
 
-  const LandingScreen({super.key, this.store, this.storeResidente, this.api, this.links});
+  const LandingScreen({super.key, this.store, this.storeResidente, this.api, this.fila, this.links});
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -62,7 +64,7 @@ class _LandingScreenState extends State<LandingScreen>
     if (admin != null || residente != null) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => HomeScreen(api: _api, sessao: admin, sessaoResidente: residente),
+          builder: (_) => HomeScreen(api: _api, sessao: admin, sessaoResidente: residente, fila: widget.fila),
         ),
       );
       return;
@@ -74,7 +76,7 @@ class _LandingScreenState extends State<LandingScreen>
     final token = tokenDoLink(link.toString());
     if (token == null) return;
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => NomeResidenteScreen(api: _api, store: _storeResidente, token: token),
+      builder: (_) => NomeResidenteScreen(api: _api, store: _storeResidente, token: token, fila: widget.fila),
     ));
   }
 
@@ -244,8 +246,8 @@ class _LandingScreenState extends State<LandingScreen>
 }
 
 const _features = [
-  (Icons.report_problem_outlined, 'Reporta avarias em menos de 1 minuto'),
-  (Icons.history_rounded, 'Acompanha o estado e histórico de cada problema'),
+  (Icons.report_problem_outlined,   'Reporte avarias em menos de 1 minuto'),
+    (Icons.history_rounded, 'Acompanhe o estado e o histórico de cada problema'),
   (Icons.wifi_off_rounded, 'Funciona sem internet - sincroniza quando voltar'),
 ];
 

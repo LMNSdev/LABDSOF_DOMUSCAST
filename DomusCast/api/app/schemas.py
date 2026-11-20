@@ -1,14 +1,17 @@
 from datetime import datetime
 from typing import Annotated, Optional
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 from .models import EstadoReporte
 
 MAX_FRACOES = 200
 
-NomeObrigatorio = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+NomeObrigatorio = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
+]
 
 
 # --- US-01: condomínio, frações e QR codes ---
+
 
 class CondominioCreate(BaseModel):
     nome: NomeObrigatorio
@@ -59,12 +62,29 @@ class IdentidadeCriada(BaseModel):
 
 
 class ReporteCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     descricao: str = Field(..., min_length=1, max_length=2000)
-    foto_url: Optional[str] = None
-    idempotency_key: Optional[str] = Field(None, max_length=64)
+    foto_alt: Optional[str] = Field(None, max_length=300)
     mostrar_nome: bool = False
 
-    model_config = {"extra": "forbid"}
+    @field_validator("foto_alt")
+    @classmethod
+    def normalizar_foto_alt(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("A descrição alternativa não pode estar vazia.")
+        return value
+
+    @field_validator("descricao")
+    @classmethod
+    def descricao_nao_pode_ser_vazia(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("A descrição é obrigatória.")
+        return value
 
 
 class ReporteOut(BaseModel):

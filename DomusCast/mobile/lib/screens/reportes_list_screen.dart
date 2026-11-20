@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
+import '../widgets/aviso_popup.dart';
 import 'novo_reporte_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
@@ -31,8 +36,10 @@ class ReportesListScreen extends StatefulWidget {
 class _ReportesListScreenState extends State<ReportesListScreen> {
   late final ApiService _api = widget.api ?? ApiService();
   late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
+  final _avisoPopup = AvisoPopupController();
   List<Map<String, dynamic>> _reportes = [];
   bool _loading = true;
+  bool _avisoVisivel = false;
   String? _error;
 
   @override
@@ -41,28 +48,40 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     _load();
   }
 
-  // Envia por ordem os reportes guardados offline; a idempotency_key evita duplicados.
+  @override
+  void dispose() {
+    _avisoPopup.dispose();
+    super.dispose();
+  }
+
+  // Envia por ordem os reportes guardados offline; pára no primeiro falhanço.
+  // A idempotency_key evita duplicados em reenvios.
   Future<void> _syncPending() async {
     if (!widget.podeReportar) return;
-    try {
-      for (final p in await _fila.pendentes()) {
-        try {
-          await _api.criarReporte(
-            descricao: p['descricao'] as String,
-            fotoUrl: p['foto_url'] as String?,
-            idempotencyKey: p['idempotency_key'] as String,
-            mostrarNome: (p['mostrar_nome'] as int? ?? 0) == 1,
-            credencial: widget.credencial,
-          );
-        } on ApiException catch (e) {
-          // 401 (credencial) e 5xx (servidor) podem resolver-se: tenta no próximo refresh.
-          if (e.statusCode == 401 || e.statusCode >= 500) return;
-          // Outro 4xx: reenviar não resolve; sai da fila para não bloquear os seguintes.
-        }
+    final credencial = widget.credencial;
+    if (credencial == null || credencial.isEmpty) return;
+    final pending = await _fila.pendentes();
+    for (final p in pending) {
+      try {
+        await _api.criarReporte(
+          credencial: credencial,
+          descricao: p['descricao'] as String,
+          idempotencyKey: p['idempotency_key'] as String,
+          mostrarNome: p['mostrar_nome'] == 1,
+        );
         await _fila.remover(p['id'] as int);
+      } on ApiException catch (erro) {
+        if (erro.statusCode == 401 || erro.statusCode >= 500) return;
+        await _fila.remover(p['id'] as int);
+      } on http.ClientException {
+        return;
+      } on SocketException {
+        return;
+      } on HandshakeException {
+        return;
+      } on TimeoutException {
+        return;
       }
-    } catch (_) {
-      // Sem ligação ou fila indisponível (o sqflite lança StateError): tenta no próximo refresh.
     }
   }
 
@@ -91,12 +110,16 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     }
   }
 
-  void _semLigacao() => setState(() {
-        _error = 'Sem ligação ao servidor';
-        _loading = false;
-      });
+  void _semLigacao() {
+    if (!mounted) return;
+    setState(() {
+      _error = 'Sem ligação ao servidor';
+      _loading = false;
+    });
+  }
 
-  ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(String estado) {
+  ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(
+      String estado) {
     return switch (estado) {
       'resolvido' => (
           bg: const Color(0xFFE8F5E9),
@@ -132,6 +155,21 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final body = _loading
+        ? const Center(child: CircularProgressIndicator())
+        : _error != null
+            ? _buildError()
+            : _reportes.isEmpty
+                ? _buildEmpty()
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                      itemCount: _reportes.length,
+                      itemBuilder: (context, i) => _buildCard(_reportes[i]),
+                    ),
+                  );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -151,42 +189,47 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? _buildError()
-              : _reportes.isEmpty
-                  ? _buildEmpty()
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        itemCount: _reportes.length,
-                        itemBuilder: (context, i) => _buildCard(_reportes[i]),
-                      ),
-                    ),
-      floatingActionButton: !widget.podeReportar
-          ? null
-          : FloatingActionButton.extended(
+      body: AnimatedPadding(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(top: _avisoVisivel ? 64 : 0),
+        child: body,
+      ),
+      floatingActionButton: widget.podeReportar
+          ? FloatingActionButton.extended(
               onPressed: () async {
-                await Navigator.push(
+                final criado = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
                     builder: (_) => NovoReporteScreen(
+                      api: _api,
                       credencial: widget.credencial,
                       nome: widget.nomeResidente,
-                      api: _api,
                       fila: _fila,
                     ),
                   ),
                 );
-                _load();
+                if (criado == true) {
+                  if (!context.mounted) return;
+                  await _load();
+                  if (!context.mounted) return;
+                  setState(() => _avisoVisivel = true);
+                  _avisoPopup.show(
+                    context,
+                    'Reporte enviado. Estado: Aberto.',
+                    cor: const Color(0xFF1C6B2C),
+                    onDismiss: () {
+                      if (mounted) setState(() => _avisoVisivel = false);
+                    },
+                  );
+                }
               },
               backgroundColor: scheme.primary,
               foregroundColor: scheme.onPrimary,
               icon: const Icon(Icons.add),
               label: const Text('Reportar avaria'),
-            ),
+            )
+          : null,
     );
   }
 
@@ -226,7 +269,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                 Expanded(
                   child: Text(
                     r['descricao'] as String? ?? '',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w500),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -240,13 +284,15 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                   child: Text(
                     _autorTexto(r, data),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (nomeVisivelAoAdmin) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(6),
@@ -262,7 +308,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                 ],
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: style.bg,
                     borderRadius: BorderRadius.circular(20),
@@ -324,7 +371,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.check_circle_outline,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'Nenhum reporte ainda',
@@ -337,7 +385,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
             const SizedBox(height: 8),
             if (widget.podeReportar)
               Text(
-                'Toca em "Reportar avaria" para submeter o primeiro.',
+                'Toque em "Reportar avaria" para submeter o primeiro.',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                 textAlign: TextAlign.center,
               ),

@@ -1,33 +1,65 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import '../local/queue_db.dart';
+import '../services/api_service.dart';
+import '../widgets/aviso_popup.dart';
+
+/// Aviso do estado 4c do wireframe, mostrado depois de guardar o reporte na fila.
+const kSemLigacaoReporteGuardado =
+    'Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.';
 
 class NovoReporteScreen extends StatefulWidget {
-  final String? credencial;
-
-  /// Nome do residente, para explicar o que os vizinhos veem com a opção ligada (US-09).
-  final String? nome;
   final ApiService? api;
+  final String? credencial;
+  final String? nome;
   final FilaReportes? fila;
+  final Future<XFile?> Function(ImageSource source)? escolherImagem;
 
-  const NovoReporteScreen({super.key, this.credencial, this.nome, this.api, this.fila});
+  const NovoReporteScreen({
+    super.key,
+    this.api,
+    this.credencial,
+    this.nome,
+    this.fila,
+    this.escolherImagem,
+  });
 
   @override
   State<NovoReporteScreen> createState() => _NovoReporteScreenState();
 }
 
 class _NovoReporteScreenState extends State<NovoReporteScreen> {
+  static const _maxFotoBytes = 5 * 1024 * 1024;
+
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
+  final _fotoAltController = TextEditingController();
+  final _avisoPopup = AvisoPopupController();
+  Uint8List? _fotoBytes;
+  String? _fotoNome;
+  String? _idempotencyKey;
+  String? _erroSubmissao;
+  bool _mostrarNome = false;
+  bool _submitting = false;
   late final ApiService _api = widget.api ?? ApiService();
   late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
-  bool _submitting = false;
-  bool _mostrarNome = false;
+
+  String get _notaNome => _mostrarNome
+      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o seu nome'}". A fração continua escondida.'
+      : 'Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.';
 
   @override
   void dispose() {
+    _avisoPopup.dispose();
     _descricaoController.dispose();
+    _fotoAltController.dispose();
     super.dispose();
   }
 
@@ -37,88 +69,228 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
-  String _mensagemErro(int status) => switch (status) {
-        401 => 'A sua identidade já não é válida. Leia de novo o QR code da fração.',
+  void _changed() {
+    _idempotencyKey = null;
+    _erroSubmissao = null;
+    setState(() {});
+  }
+
+  void _mostrarMensagem(String texto, {Color? cor}) {
+    _avisoPopup.show(
+      context,
+      texto,
+      cor: cor ?? const Color(0xFFB26A00),
+    );
+  }
+
+  Future<void> _selecionarFoto() async {
+    try {
+      final fonte = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Escolher da galeria'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Tirar fotografia'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (fonte == null) return;
+
+      final escolherImagem = widget.escolherImagem ??
+          ((ImageSource source) => ImagePicker().pickImage(source: source));
+      final foto = await escolherImagem(fonte);
+      if (foto == null) return;
+
+      final tamanho = await foto.length();
+      if (tamanho > _maxFotoBytes) {
+        _mostrarMensagem('A foto não pode exceder 5 MB.');
+        return;
+      }
+
+      final extensao = foto.name.split('.').last.toLowerCase();
+      final tipo = foto.mimeType?.toLowerCase();
+      final extensaoValidada = switch (tipo) {
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        _ when extensao == 'jpg' || extensao == 'jpeg' => 'jpg',
+        _ when extensao == 'png' => 'png',
+        _ => null,
+      };
+      if (extensaoValidada == null) {
+        _mostrarMensagem('Escolha uma imagem JPEG ou PNG.');
+        return;
+      }
+
+      final bytes = await foto.readAsBytes();
+      setState(() {
+        _fotoBytes = bytes;
+        _fotoNome = 'foto.$extensaoValidada';
+        _idempotencyKey = null;
+        _erroSubmissao = null;
+      });
+    } on FileSystemException {
+      _mostrarMensagem('Não foi possível ler a foto. Escolha-a novamente.');
+    } on PlatformException {
+      _mostrarMensagem('Não foi possível abrir a câmara ou galeria.');
+    }
+  }
+
+  Future<void> _verFoto() async {
+    final bytes = _fotoBytes;
+    if (bytes == null) return;
+
+    final descricao = _fotoAltController.text.trim();
+    await showDialog<void>(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            title: const Text('Pré-visualização da foto'),
+            actions: [
+              IconButton(
+                tooltip: 'Fechar pré-visualização',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 5,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.contain,
+                semanticLabel:
+                    descricao.isEmpty ? 'Foto do reporte' : descricao,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _removerFoto() {
+    setState(() {
+      _fotoBytes = null;
+      _fotoNome = null;
+      _fotoAltController.clear();
+      _idempotencyKey = null;
+      _erroSubmissao = null;
+    });
+  }
+
+  String _mensagemApi(ApiException erro) => switch (erro.statusCode) {
+        401 =>
+          'A sua identidade já não é válida. Leia de novo o QR code da fração.',
         403 => 'Só os residentes podem reportar avarias.',
-        422 => 'Verifique a descrição do reporte.',
-        _ => 'Não foi possível enviar o reporte. Tente de novo.',
+        422 => erro.mensagem ?? 'Verifique a descrição e os dados da foto.',
+        _ => erro.mensagem ??
+            'Não foi possível enviar o reporte. Tente novamente.',
       };
 
-  String get _notaNome => _mostrarNome
-      ? 'Ligado: os vizinhos veem "${widget.nome ?? 'o seu nome'}". A fração continua escondida.'
-      : 'Desligado: os vizinhos veem "Residente". O administrador vê sempre o seu nome e fração.';
-
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _submitting = true);
 
-    final descricao = _descricaoController.text.trim();
-    final idempotencyKey = _generateIdempotencyKey();
+    final credencial = widget.credencial?.trim();
+    if (credencial == null || credencial.isEmpty) {
+      _mostrarMensagem(
+        'Identifique-se com o QR code da fração antes de reportar.',
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+    _idempotencyKey ??= _generateIdempotencyKey();
 
     try {
       await _api.criarReporte(
-        descricao: descricao,
-        idempotencyKey: idempotencyKey,
+        credencial: credencial,
+        descricao: _descricaoController.text.trim(),
+        fotoBytes: _fotoBytes,
+        fotoNome: _fotoNome,
+        fotoAlt: _fotoBytes == null ? null : _fotoAltController.text.trim(),
         mostrarNome: _mostrarNome,
-        credencial: widget.credencial,
+        idempotencyKey: _idempotencyKey!,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reporte enviado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
-    } on ApiException catch (e) {
-      // Servidor em baixo: como sem rede, guarda e reenvia mais tarde (ADR-006).
-      if (e.statusCode >= 500) {
-        await _guardarOffline(
-          descricao,
-          idempotencyKey,
-          mensagem: 'Servidor indisponível - reporte guardado para envio posterior',
-        );
-        return;
+    } on ApiException catch (erro) {
+      if (erro.statusCode >= 500) {
+        await _semLigacao();
+      } else if (mounted) {
+        if (erro.statusCode == 401) {
+          _mostrarMensagem(_mensagemApi(erro));
+        } else {
+          _mostrarErroSubmissao(_mensagemApi(erro));
+        }
       }
+    } on http.ClientException {
+      await _semLigacao();
+    } on SocketException {
+      await _semLigacao();
+    } on HandshakeException {
+      await _semLigacao();
+    } on TimeoutException {
+      await _semLigacao();
+    } on FormatException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_mensagemErro(e.statusCode))),
+        _mostrarErroSubmissao(
+          'O servidor devolveu uma resposta inválida. Os dados ficam no formulário. Tente novamente.',
         );
       }
-    } on Exception {
-      // Sem rede ou falha de ligação (ClientException, SocketException, HandshakeException,
-      // TimeoutException...): guarda e reenvia mais tarde, como antes da US-09.
-      await _guardarOffline(descricao, idempotencyKey);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
-  Future<void> _guardarOffline(
-    String descricao,
-    String idempotencyKey, {
-    String mensagem = 'Sem ligação - reporte guardado para envio posterior',
-  }) async {
+  // Sem rede ou servidor em baixo (estado 4c do wireframe): sem foto, o reporte vai
+  // para a fila e é reenviado com a mesma chave. A fila ainda não guarda fotos
+  // (US-18), por isso um reporte com foto fica no formulário para nova tentativa.
+  Future<void> _semLigacao() async {
+    if (_fotoBytes != null) {
+      if (mounted) {
+        _mostrarErroSubmissao(
+          'Sem ligação. O reporte e a foto ficam no formulário. Tente novamente quando a ligação voltar.',
+          popupTexto: 'Sem ligação ao servidor',
+        );
+      }
+      return;
+    }
+
     await _fila.guardar(
-      descricao: descricao,
-      idempotencyKey: idempotencyKey,
+      descricao: _descricaoController.text.trim(),
+      idempotencyKey: _idempotencyKey!,
       mostrarNome: _mostrarNome,
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.wifi_off, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Expanded(child: Text(mensagem)),
-          ],
-        ),
-        backgroundColor: Colors.orange.shade700,
-      ),
+      const SnackBar(content: Text(kSemLigacaoReporteGuardado)),
     );
     Navigator.pop(context);
+  }
+
+  void _mostrarErroSubmissao(String texto, {String? popupTexto}) {
+    setState(() => _erroSubmissao = texto);
+    _mostrarMensagem(popupTexto ?? texto);
   }
 
   @override
@@ -131,7 +303,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         elevation: 0,
-        title: const Text('Nova avaria', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Nova avaria',
+            style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -143,7 +316,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
               Card(
                 margin: EdgeInsets.zero,
                 elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -151,14 +325,14 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.report_problem_outlined, color: scheme.primary),
+                          Icon(Icons.report_problem_outlined,
+                              color: scheme.primary),
                           const SizedBox(width: 8),
                           Text(
                             'Descrição do problema',
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: scheme.primary,
-                            ),
+                                fontWeight: FontWeight.w600,
+                                color: scheme.primary),
                           ),
                         ],
                       ),
@@ -166,7 +340,8 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                       TextFormField(
                         controller: _descricaoController,
                         decoration: const InputDecoration(
-                          hintText: 'Ex: Torneira com fuga no 1.º andar, corredor direito...',
+                          hintText:
+                              'Ex: Torneira com fuga no 1.º andar, corredor direito...',
                           border: OutlineInputBorder(),
                           filled: true,
                           fillColor: Color(0xFFFAFAFA),
@@ -175,50 +350,141 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                         maxLines: 5,
                         maxLength: 2000,
                         autofocus: true,
-                        onChanged: (_) => setState(() {}),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'A descrição é obrigatória' : null,
+                        onChanged: (_) => _changed(),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Descreva o problema.'
+                            : null,
                       ),
                       const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           '${_descricaoController.text.length}/2000',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade500),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // SwitchListTile já expõe o título e o estado ao leitor de ecrã.
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Mostrar o meu nome neste reporte'),
-                        subtitle: Text(_notaNome),
-                        value: _mostrarNome,
-                        onChanged: (value) => setState(() => _mostrarNome = value),
-                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _submitting ? null : _selecionarFoto,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+                label: Text(_fotoBytes == null
+                    ? 'Adicionar foto (opcional)'
+                    : 'Alterar foto'),
+              ),
+              if (_fotoBytes != null) ...[
+                const SizedBox(height: 8),
+                Semantics(
+                  button: true,
+                  label: 'Ampliar foto',
+                  hint: 'Abre a foto em ecrã inteiro. Pode ampliar com gestos.',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      key: const Key('foto-preview'),
+                      onTap: _verFoto,
+                      borderRadius: BorderRadius.circular(10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 180,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ColoredBox(color: Color(0xFFE8EAF0)),
+                              ExcludeSemantics(
+                                child: Center(
+                                  child: Image.memory(
+                                    _fotoBytes!,
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Text(
+                                        'Pré-visualização indisponível',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 8,
+                                bottom: 8,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(6),
+                                    child: Icon(
+                                      Icons.zoom_out_map,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _submitting ? null : _removerFoto,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Remover foto'),
+                  ),
+                ),
+                TextFormField(
+                  controller: _fotoAltController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descreva a foto (para leitores de ecrã)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLength: 300,
+                  onChanged: (_) => _changed(),
+                  validator: (value) => _fotoBytes != null &&
+                          (value == null || value.trim().isEmpty)
+                      ? 'Descreva a foto ou remova-a.'
+                      : null,
+                ),
+              ],
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mostrar o meu nome neste reporte'),
+                subtitle: Text(_notaNome),
+                value: _mostrarNome,
+                onChanged: _submitting
+                    ? null
+                    : (valor) => setState(() {
+                          _mostrarNome = valor;
+                          _idempotencyKey = null;
+                        }),
+              ),
+              const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF8E1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFFFE082)),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'O teu reporte é visível a todos os residentes. Não incluas dados pessoais de terceiros.',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF795548)),
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'O reporte é visível a todos os residentes. Não inclua dados de terceiros.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF795548)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -228,15 +494,54 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
                     ? const SizedBox(
                         height: 18,
                         width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                          semanticsLabel: 'A enviar reporte',
+                        ),
                       )
                     : const Icon(Icons.send_rounded),
                 label: Text(_submitting ? 'A enviar...' : 'Submeter reporte'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
+              if (_submitting) ...[
+                const SizedBox(height: 8),
+                Semantics(
+                  liveRegion: true,
+                  child: const Text('A enviar o reporte. Aguarde.'),
+                ),
+              ],
+              if (_erroSubmissao != null) ...[
+                const SizedBox(height: 12),
+                Semantics(
+                  liveRegion: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEE),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_erroSubmissao!),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _submitting ? null : _submit,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Tentar novamente'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

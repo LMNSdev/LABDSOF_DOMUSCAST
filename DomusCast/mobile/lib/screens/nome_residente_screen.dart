@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../services/sessao_residente.dart';
 import 'home_screen.dart';
@@ -16,12 +17,14 @@ class NomeResidenteScreen extends StatefulWidget {
   final ApiService api;
   final SessaoResidenteStore store;
   final String token;
+  final FilaReportes? fila;
 
   const NomeResidenteScreen({
     super.key,
     required this.api,
     required this.store,
     required this.token,
+    this.fila,
   });
 
   @override
@@ -63,7 +66,7 @@ class _NomeResidenteScreenState extends State<NomeResidenteScreen> {
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api, sessaoResidente: sessao)),
+        MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api, sessaoResidente: sessao, fila: widget.fila)),
         (_) => false,
       );
       messenger.showSnackBar(

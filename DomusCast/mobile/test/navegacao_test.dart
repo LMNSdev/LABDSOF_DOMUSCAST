@@ -42,6 +42,20 @@ void main() {
     expect(bar.selectedIndex, 0);
   });
 
+  testWidgets('administrador carrega os Reportes com a sua credencial', (tester) async {
+    String? authorization;
+    final api = ApiService(client: MockClient((req) async {
+      if (req.url.path == '/reportes') authorization = req.headers['authorization'];
+      return http.Response('[]', 200,
+          headers: {'content-type': 'application/json; charset=utf-8'});
+    }));
+    await tester.pumpWidget(MaterialApp(home: HomeScreen(api: api, sessao: _sessao)));
+    await tester.pumpAndSettle();
+
+    expect(authorization, 'Bearer cred-123');
+    expect(find.text('A sua identidade já não é válida.'), findsNothing);
+  });
+
   testWidgets('residente não tem o separador Condomínio', (tester) async {
     await tester.pumpWidget(MaterialApp(home: HomeScreen(api: _api())));
     await tester.pumpAndSettle();

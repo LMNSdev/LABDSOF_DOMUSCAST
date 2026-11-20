@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
 import '../services/sessao_residente.dart';
@@ -20,6 +21,7 @@ class HomeScreen extends StatefulWidget {
   final ApiService api;
   final SessaoAdmin? sessao;
   final SessaoResidente? sessaoResidente;
+  final FilaReportes? fila;
   final Separador separadorInicial;
 
   const HomeScreen({
@@ -27,6 +29,7 @@ class HomeScreen extends StatefulWidget {
     required this.api,
     this.sessao,
     this.sessaoResidente,
+    this.fila,
     this.separadorInicial = Separador.reportes,
   });
 
@@ -52,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
             credencial: widget.sessao?.credencial ?? widget.sessaoResidente?.credencial,
             nomeResidente: widget.sessaoResidente?.nome,
             podeReportar: widget.sessao == null,
+            fila: widget.fila,
           ),
         Separador.reunioes => const ReunioesScreen(),
         Separador.avisos => const SizedBox.shrink(),

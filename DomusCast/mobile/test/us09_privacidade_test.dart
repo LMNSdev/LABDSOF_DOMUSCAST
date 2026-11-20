@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:domuscast/local/queue_db.dart';
+import 'package:domuscast/screens/home_screen.dart';
 import 'package:domuscast/screens/novo_reporte_screen.dart';
 import 'package:domuscast/screens/reportes_list_screen.dart';
 import 'package:domuscast/services/api_service.dart';
+import 'package:domuscast/services/sessao_residente.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +18,17 @@ http.Response _json(Object body, int status) => http.Response(
       status,
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
+
+Map<String, dynamic> _multipartFields(http.Request request) {
+  final fields = <String, dynamic>{};
+  for (final match
+      in RegExp(r'name="([^"]+)"\r\n\r\n([^\r]*)').allMatches(request.body)) {
+    final name = match.group(1)!;
+    final value = match.group(2)!;
+    fields[name] = name == 'mostrar_nome' ? value == 'true' : value;
+  }
+  return fields;
+}
 
 Map<String, dynamic> _reporte({
   required String descricao,
@@ -59,7 +72,8 @@ const _desligado =
 
 void main() {
   group('Formulário', () {
-    testWidgets('1. opção do nome começa desligada e explica o efeito', (tester) async {
+    testWidgets('1. opção do nome começa desligada e explica o efeito',
+        (tester) async {
       await tester.pumpWidget(const MaterialApp(
         home: NovoReporteScreen(credencial: 'cred-1', nome: 'Marta Silva'),
       ));
@@ -70,24 +84,30 @@ void main() {
       expect(find.text(_desligado), findsOneWidget);
     });
 
-    testWidgets('2. ligar a opção mostra o nome e envia mostrar_nome verdadeiro', (tester) async {
+    testWidgets(
+        '2. ligar a opção mostra o nome e envia mostrar_nome verdadeiro',
+        (tester) async {
       Map<String, dynamic>? enviado;
       final api = ApiService(client: MockClient((req) async {
-        enviado = jsonDecode(req.body) as Map<String, dynamic>;
-        return _json(_reporte(descricao: 'Fuga', mostrarNome: true, meu: true), 201);
+        enviado = _multipartFields(req);
+        return _json(
+            _reporte(descricao: 'Fuga', mostrarNome: true, meu: true), 201);
       }));
 
       await tester.pumpWidget(MaterialApp(
-        home: NovoReporteScreen(credencial: 'cred-1', nome: 'Marta Silva', api: api),
+        home: NovoReporteScreen(
+            credencial: 'cred-1', nome: 'Marta Silva', api: api),
       ));
       await tester.tap(find.byType(SwitchListTile));
       await tester.pump();
       expect(
-        find.text('Ligado: os vizinhos veem "Marta Silva". A fração continua escondida.'),
+        find.text(
+            'Ligado: os vizinhos veem "Marta Silva". A fração continua escondida.'),
         findsOneWidget,
       );
 
       await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
       expect(enviado?['mostrar_nome'], isTrue);
@@ -98,41 +118,50 @@ void main() {
     testWidgets('sem ligar a opção envia mostrar_nome falso', (tester) async {
       Map<String, dynamic>? enviado;
       final api = ApiService(client: MockClient((req) async {
-        enviado = jsonDecode(req.body) as Map<String, dynamic>;
+        enviado = _multipartFields(req);
         return _json(_reporte(descricao: 'Fuga', meu: true), 201);
       }));
 
       await tester.pumpWidget(MaterialApp(
-        home: NovoReporteScreen(credencial: 'cred-1', nome: 'Marta Silva', api: api),
+        home: NovoReporteScreen(
+            credencial: 'cred-1', nome: 'Marta Silva', api: api),
       ));
       await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
       expect(enviado?['mostrar_nome'], isFalse);
     });
 
-    testWidgets('credencial inválida (401) mostra a mensagem e não guarda offline', (tester) async {
-      final api = ApiService(client: MockClient((_) async => _json({'detail': 'x'}, 401)));
+    testWidgets(
+        'credencial inválida (401) mostra a mensagem e não guarda offline',
+        (tester) async {
+      final api = ApiService(
+          client: MockClient((_) async => _json({'detail': 'x'}, 401)));
       final fila = MemoriaFilaReportes();
 
       await tester.pumpWidget(MaterialApp(
         home: NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
       ));
       await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
       expect(
-        find.text('A sua identidade já não é válida. Leia de novo o QR code da fração.'),
+        find.text(
+            'A sua identidade já não é válida. Leia de novo o QR code da fração.'),
         findsOneWidget,
       );
       expect(find.text('Nova avaria'), findsOneWidget);
       expect(fila.linhas, isEmpty);
     });
 
-    testWidgets('falha de TLS (HandshakeException) guarda o reporte offline com a opção do nome',
+    testWidgets(
+        'falha de TLS (HandshakeException) guarda o reporte offline com a opção do nome',
         (tester) async {
       final api = ApiService(
-        client: MockClient((_) async => throw const HandshakeException('certificado')),
+        client: MockClient(
+            (_) async => throw const HandshakeException('certificado')),
       );
       final fila = MemoriaFilaReportes();
 
@@ -144,7 +173,8 @@ void main() {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
+                  builder: (_) => NovoReporteScreen(
+                      credencial: 'cred-1', api: api, fila: fila),
                 ),
               ),
               child: const Text('Abrir'),
@@ -156,29 +186,63 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField), 'Fuga');
       await tester.tap(find.byType(SwitchListTile));
+      await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
-      expect(find.text('Sem ligação - reporte guardado para envio posterior'), findsOneWidget);
+      expect(
+          find.text(
+              'Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.'),
+          findsOneWidget);
+      expect(find.text('Nova avaria'), findsNothing);
       expect(fila.linhas, hasLength(1));
       expect(fila.linhas.single['mostrar_nome'], 1);
     });
 
-    testWidgets('servidor indisponível (5xx) guarda o reporte offline', (tester) async {
-      final api = ApiService(client: MockClient((_) async => _json({'detail': 'x'}, 503)));
+    testWidgets('servidor indisponível (5xx) guarda o reporte offline',
+        (tester) async {
+      final api = ApiService(
+          client: MockClient((_) async => _json({'detail': 'x'}, 503)));
       final fila = MemoriaFilaReportes();
 
       await tester.pumpWidget(MaterialApp(
         home: NovoReporteScreen(credencial: 'cred-1', api: api, fila: fila),
       ));
       await tester.enterText(find.byType(TextFormField), 'Fuga');
+      await tester.ensureVisible(find.text('Submeter reporte'));
       await tester.tap(find.text('Submeter reporte'));
       await tester.pumpAndSettle();
       expect(fila.linhas, hasLength(1));
     });
 
-    testWidgets('a opção do nome tem etiqueta para o leitor de ecrã', (tester) async {
+    testWidgets('aberto a partir do HomeScreen, o formulário usa o nome do residente',
+        (tester) async {
+      final api = ApiService(client: MockClient((_) async => _json([], 200)));
+      await tester.pumpWidget(MaterialApp(
+        home: HomeScreen(
+          api: api,
+          sessaoResidente: const SessaoResidente(
+              credencial: 'cred-1', nome: 'Marta Silva', fracao: 'A'),
+          fila: MemoriaFilaReportes(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reportar avaria'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(SwitchListTile));
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pump();
+      expect(
+        find.text(
+            'Ligado: os vizinhos veem "Marta Silva". A fração continua escondida.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a opção do nome tem etiqueta para o leitor de ecrã',
+        (tester) async {
       final semantics = tester.ensureSemantics();
-      await tester.pumpWidget(const MaterialApp(home: NovoReporteScreen(credencial: 'cred-1')));
+      await tester.pumpWidget(
+          const MaterialApp(home: NovoReporteScreen(credencial: 'cred-1')));
       expect(
         find.bySemanticsLabel(RegExp('Mostrar o meu nome neste reporte')),
         findsOneWidget,
@@ -188,11 +252,15 @@ void main() {
   });
 
   group('Lista', () {
-    testWidgets('3. outro residente vê "Residente" ou o nome mostrado, nunca a fração',
+    testWidgets(
+        '3. outro residente vê "Residente" ou o nome mostrado, nunca a fração',
         (tester) async {
       await _abrirLista(tester, [
         _reporte(descricao: 'Fuga de água na garagem'),
-        _reporte(descricao: 'Luz da escada fundida', mostrarNome: true, autorNome: 'Marta Silva'),
+        _reporte(
+            descricao: 'Luz da escada fundida',
+            mostrarNome: true,
+            autorNome: 'Marta Silva'),
       ]);
 
       expect(find.textContaining('Residente - '), findsOneWidget);
@@ -200,7 +268,8 @@ void main() {
       expect(find.textContaining('fração'), findsNothing);
     });
 
-    testWidgets('4. o autor vê "O meu reporte" e se o nome está visível', (tester) async {
+    testWidgets('4. o autor vê "O meu reporte" e se o nome está visível',
+        (tester) async {
       await _abrirLista(tester, [
         _reporte(descricao: 'Fuga de água na garagem', meu: true),
         _reporte(
@@ -211,16 +280,22 @@ void main() {
         ),
       ]);
 
-      expect(find.text('O meu reporte - nome oculto aos vizinhos'), findsOneWidget);
-      expect(find.text('O meu reporte - nome visível aos vizinhos'), findsOneWidget);
+      expect(find.text('O meu reporte - nome oculto aos vizinhos'),
+          findsOneWidget);
+      expect(find.text('O meu reporte - nome visível aos vizinhos'),
+          findsOneWidget);
     });
 
-    testWidgets('5. o administrador vê nome e fração, e a etiqueta "nome visível"',
+    testWidgets(
+        '5. o administrador vê nome e fração, e a etiqueta "nome visível"',
         (tester) async {
       await _abrirLista(
         tester,
         [
-          _reporte(descricao: 'Fuga de água na garagem', autorNome: 'Marta Silva', fracao: 'C'),
+          _reporte(
+              descricao: 'Fuga de água na garagem',
+              autorNome: 'Marta Silva',
+              fracao: 'C'),
           _reporte(
             descricao: 'Luz da escada fundida',
             mostrarNome: true,
@@ -236,12 +311,15 @@ void main() {
       expect(find.text('Reportar avaria'), findsNothing);
     });
 
-    testWidgets('falha de TLS ao carregar mostra "Sem ligação ao servidor"', (tester) async {
+    testWidgets('falha de TLS ao carregar mostra "Sem ligação ao servidor"',
+        (tester) async {
       final api = ApiService(
-        client: MockClient((_) async => throw const HandshakeException('certificado')),
+        client: MockClient(
+            (_) async => throw const HandshakeException('certificado')),
       );
       await tester.pumpWidget(MaterialApp(
-        home: ReportesListScreen(api: api, credencial: 'cred-1', fila: MemoriaFilaReportes()),
+        home: ReportesListScreen(
+            api: api, credencial: 'cred-1', fila: MemoriaFilaReportes()),
       ));
       await tester.pumpAndSettle();
       expect(find.text('Sem ligação ao servidor'), findsOneWidget);
@@ -261,7 +339,7 @@ void main() {
     ApiService api(List<String> enviados, int Function(String chave) estado) =>
         ApiService(client: MockClient((req) async {
           if (req.method == 'GET') return _json([], 200);
-          final chave = (jsonDecode(req.body) as Map<String, dynamic>)['idempotency_key'] as String;
+          final chave = req.headers['idempotency-key']!;
           enviados.add(chave);
           return _json(_reporte(descricao: 'x', meu: true), estado(chave));
         }));
@@ -282,7 +360,8 @@ void main() {
       expect(fila.linhas, hasLength(1));
     });
 
-    testWidgets('um 4xx definitivo sai da fila e não bloqueia os seguintes', (tester) async {
+    testWidgets('um 4xx definitivo sai da fila e não bloqueia os seguintes',
+        (tester) async {
       final enviados = <String>[];
       final fila = await filaCom(['k1', 'k2']);
       await tester.pumpWidget(MaterialApp(
@@ -297,7 +376,8 @@ void main() {
       expect(fila.linhas, isEmpty);
     });
 
-    testWidgets('401 e 5xx mantêm a fila para tentar mais tarde', (tester) async {
+    testWidgets('401 e 5xx mantêm a fila para tentar mais tarde',
+        (tester) async {
       for (final estado in [401, 503]) {
         final enviados = <String>[];
         final fila = await filaCom(['k1', 'k2']);

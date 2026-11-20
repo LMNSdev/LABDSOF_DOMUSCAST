@@ -694,7 +694,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve `{id, nome, fracao, credencial}`, a credencial do dispositivo; 30 tentativas por hora por QR code, 20 tentativas com token inválido por hora por IP e máximo de 10 identidades ativas por fração ([10.5](#105-qr-code-revogação-e-abuso)); 409 com `codigo` `nome_duplicado` ou `fracao_cheia` |
 | `PATCH /identidades/me` | residente | US-21: editar nome |
 | `PUT /identidades/{id}/papel` | admin | US-33: `{papel: residente\|comissao}` |
-| `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; aceita `Idempotency-Key` da fila local |
+| `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; exige o cabeçalho `Idempotency-Key`, única por autor, que a fila local reutiliza nos reenvios (um reenvio devolve 200 com o reporte já criado) |
 | `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
 | `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
 | `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`; cria entrada no histórico; se `resolvido`, arquiva o aviso ligado (US-14) |

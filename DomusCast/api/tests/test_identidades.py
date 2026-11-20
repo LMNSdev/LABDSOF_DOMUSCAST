@@ -70,7 +70,7 @@ def test_nome_repetido_na_fracao_devolve_409_nome_duplicado(client, token, repet
     r = entrar(client, token, repetido)
     assert r.status_code == 409
     assert r.json()["codigo"] == "nome_duplicado"
-    assert r.json()["request_id"]
+    assert r.json()["request_id"] == r.headers["X-Request-ID"]
 
 
 def test_mesmo_nome_noutra_fracao_e_aceite(client):
