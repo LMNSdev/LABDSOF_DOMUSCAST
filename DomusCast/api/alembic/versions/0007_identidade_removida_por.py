@@ -2,7 +2,7 @@
 
 Regista o administrador que removeu a identidade.
 
-Revision ID: 0006
+Revision ID: 0007
 Revises: 0005_merge_heads
 Create Date: 2026-11-20
 """
@@ -12,7 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "0006"
+revision: str = "0007"
 down_revision: str | None = "0005_merge_heads"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
