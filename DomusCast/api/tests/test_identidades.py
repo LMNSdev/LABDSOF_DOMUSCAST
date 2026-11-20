@@ -73,6 +73,23 @@ def test_nome_repetido_na_fracao_devolve_409_nome_duplicado(client, token, repet
     assert r.json()["request_id"] == r.headers["X-Request-ID"]
 
 
+def test_nome_de_identidade_removida_devolve_409_e_nao_500(client, db, token):
+    """Defect #105: a restrição única também abrange identidades removidas.
+
+    Se a US-09/US-23 decidir que a pessoa removida pode voltar a entrar com o mesmo
+    nome, este teste passa a esperar 201.
+    """
+    assert entrar(client, token, "Marta Silva").status_code == 201
+    qr = db.query(models.QrToken).filter_by(token_hash=hash_token(token)).one()
+    identidade = db.query(models.Identidade).filter_by(fracao_id=qr.fracao_id).one()
+    identidade.removida_em = datetime.now(timezone.utc)
+    db.commit()
+
+    r = entrar(TestClient(app, raise_server_exceptions=False), token, "Marta Silva")
+    assert r.status_code == 409
+    assert r.json()["codigo"] == "nome_duplicado"
+
+
 def test_mesmo_nome_noutra_fracao_e_aceite(client):
     condominio = novo_condominio(client, n_fracoes=2)
     assert entrar(client, gerar_qr(client, condominio, 0), "Marta Silva").status_code == 201
