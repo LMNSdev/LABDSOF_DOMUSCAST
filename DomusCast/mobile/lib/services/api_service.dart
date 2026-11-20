@@ -182,4 +182,24 @@ class ApiService {
     );
     return _corpo(r, 201) as Map<String, dynamic>;
   }
+
+  // --- US-23: remover identidade ---------------------------------------------
+
+  /// Lista `{id, nome, criado_em}` dos residentes ativos da fração (administrador).
+  Future<List<Map<String, dynamic>>> getIdentidadesFracao(int fracaoId, String credencial) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/fracoes/$fracaoId/identidades'),
+      headers: _auth(credencial),
+    );
+    return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  /// Remove a identidade. Erros: 404 se já foi removida ou não existe.
+  Future<void> removerIdentidade(int identidadeId, String credencial) async {
+    final r = await _client.delete(
+      Uri.parse('$baseUrl/identidades/$identidadeId'),
+      headers: _auth(credencial),
+    );
+    if (r.statusCode != 204) throw _apiException(r);
+  }
 }

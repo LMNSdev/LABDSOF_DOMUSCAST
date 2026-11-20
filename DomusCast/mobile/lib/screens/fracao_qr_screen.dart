@@ -6,8 +6,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
+import '../widgets/residentes_fracao.dart';
 
 /// US-01: gera um QR code para a fração, para enviar ou mostrar a um residente.
+/// US-23: no fim do ecrã, os residentes da fração, para remover quem saiu.
 ///
 /// O servidor só guarda o hash do token, por isso cada QR é gerado a pedido e
 /// não pode ser mostrado de novo. Os QR gerados antes continuam válidos.
@@ -162,6 +164,12 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
                 ),
               ),
             ],
+            const SizedBox(height: 32),
+            ResidentesFracao(
+              api: widget.api,
+              sessao: widget.sessao,
+              fracaoId: widget.fracaoId,
+            ),
           ],
         ),
       ),

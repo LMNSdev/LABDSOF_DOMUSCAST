@@ -243,9 +243,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     }
     final autorNome = r['autor_nome'] as String?;
     final fracao = r['fracao'] as String?;
-    final autor = autorNome != null && fracao != null
-        ? '$autorNome, fração $fracao'
-        : (autorNome ?? 'Residente');
+    final autor = r['autor_removido'] == true
+        // US-23: só o administrador recebe a fração de um autor removido.
+        ? (fracao != null ? 'Residente removido, fração $fracao' : 'Residente removido')
+        : autorNome != null && fracao != null
+            ? '$autorNome, fração $fracao'
+            : (autorNome ?? 'Residente');
     return data.isEmpty ? autor : '$autor - $data';
   }
 
@@ -253,7 +256,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     final estado = r['estado'] as String? ?? 'aberto';
     final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
-    final nomeVisivelAoAdmin = r['fracao'] != null && r['mostrar_nome'] == true;
+    final nomeVisivelAoAdmin =
+        r['fracao'] != null && r['mostrar_nome'] == true && r['autor_removido'] != true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
