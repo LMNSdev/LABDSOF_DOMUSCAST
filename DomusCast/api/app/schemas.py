@@ -106,3 +106,5 @@ class ReporteOut(BaseModel):
     autor_nome: Optional[str] = None
     fracao: Optional[str] = None
     meu: bool = False
+    # US-23: só na vista do administrador, para mostrar "Residente removido, fração A".
+    autor_removido: bool = False
