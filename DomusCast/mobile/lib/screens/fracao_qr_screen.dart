@@ -6,8 +6,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
+import '../widgets/qr_codes_ativos.dart';
 
 /// US-01: gera um QR code para a fração, para enviar ou mostrar a um residente.
+/// US-20: por baixo, a lista dos QR codes ativos, para revogar um ou todos.
 ///
 /// O servidor só guarda o hash do token, por isso cada QR é gerado a pedido e
 /// não pode ser mostrado de novo. Os QR gerados antes continuam válidos.
@@ -34,6 +36,9 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
   bool _aGerar = false;
   String? _erro;
 
+  /// Muda a cada QR gerado, para a lista dos ativos (US-20) recarregar.
+  int _versaoQr = 0;
+
   Future<void> _gerar() async {
     setState(() {
       _aGerar = true;
@@ -42,7 +47,10 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
     try {
       final qr = await widget.api.gerarQr(widget.fracaoId, widget.sessao.credencial);
       if (!mounted) return;
-      setState(() => _link = qr['link'] as String);
+      setState(() {
+        _link = qr['link'] as String;
+        _versaoQr++;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _erro = 'Não foi possível gerar o QR code. Verifique a ligação.');
@@ -162,6 +170,17 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
                 ),
               ),
             ],
+            const SizedBox(height: 32),
+            QrCodesAtivos(
+              key: ValueKey(_versaoQr),
+              api: widget.api,
+              sessao: widget.sessao,
+              fracaoId: widget.fracaoId,
+              designacao: widget.designacao,
+              // O servidor não diz qual dos QR codes está no ecrã: depois de
+              // revogar, tira-se o que está mostrado e volta "Gerar QR code".
+              onRevogado: () => setState(() => _link = null),
+            ),
           ],
         ),
       ),
