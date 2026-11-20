@@ -8,6 +8,7 @@ import unicodedata
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .. import models, rate_limit, schemas
@@ -21,6 +22,7 @@ MAX_IDENTIDADES_POR_FRACAO = 10
 JANELA_S = 3600
 TENTATIVAS_POR_QR = 30
 TOKENS_INVALIDOS_POR_IP = 20
+MENSAGEM_NOME_DUPLICADO = "Já existe alguém com este nome na sua fração."
 
 
 def normalizar_nome(nome: str) -> str:
@@ -64,7 +66,7 @@ def criar_identidade(
 
     nome_normalizado = normalizar_nome(dados.nome)
     if ativas.filter(models.Identidade.nome_normalizado == nome_normalizado).first():
-        raise ErroApi(409, "nome_duplicado", "Já existe alguém com este nome na sua fração.")
+        raise ErroApi(409, "nome_duplicado", MENSAGEM_NOME_DUPLICADO)
 
     credencial = gerar_token()
     identidade = models.Identidade(
@@ -75,7 +77,12 @@ def criar_identidade(
         credencial_hash=hash_token(credencial),
     )
     db.add(identidade)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Pedidos simultâneos com o mesmo nome, ou nome de uma identidade removida (#105).
+        db.rollback()
+        raise ErroApi(409, "nome_duplicado", MENSAGEM_NOME_DUPLICADO) from None
 
     return schemas.IdentidadeCriada(
         id=identidade.id,
