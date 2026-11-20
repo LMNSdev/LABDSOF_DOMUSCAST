@@ -1,20 +1,22 @@
 """US-15: o residente entra com o token do QR code da fração e o seu nome.
+US-23: o administrador remove a identidade de quem saiu.
 
 O token só é validado aqui, por isso a fração só é revelada depois de criada a
 identidade. A credencial devolvida fica no telemóvel; o servidor guarda o hash.
 """
 
 import unicodedata
+from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .. import models, rate_limit, schemas
 from ..database import get_db
 from ..erros import ErroApi
-from ..security import gerar_token, hash_token
+from ..security import admin_do_pedido, gerar_token, hash_token
 
 router = APIRouter()
 
@@ -90,3 +92,35 @@ def criar_identidade(
         fracao=qr.fracao.designacao,
         credencial=credencial,
     )
+
+
+@router.delete("/{identidade_id}", status_code=204)
+def remover_identidade(
+    identidade_id: int,
+    admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Apaga o nome e regista quem removeu; a credencial deixa de ser aceite (401).
+
+    Os reportes ficam, sem autor visível ("Residente removido"). Como o nome
+    normalizado fica vazio, o mesmo nome volta a ser aceite na fração.
+    404 se não existir, já foi removida ou é de outro condomínio (não revela qual).
+    """
+    identidade = (
+        db.query(models.Identidade)
+        .join(models.Fracao, models.Fracao.id == models.Identidade.fracao_id)
+        .filter(
+            models.Identidade.id == identidade_id,
+            models.Identidade.removida_em.is_(None),
+            models.Fracao.condominio_id == admin.condominio_id,
+        )
+        .first()
+    )
+    if identidade is None:
+        raise HTTPException(status_code=404, detail="Identidade não encontrada.")
+    identidade.nome = None
+    identidade.nome_normalizado = None
+    identidade.removida_em = datetime.now(timezone.utc)
+    identidade.removida_por = admin.id
+    db.commit()
+    return Response(status_code=204)

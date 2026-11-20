@@ -61,6 +61,14 @@ class IdentidadeCriada(BaseModel):
     credencial: str
 
 
+class IdentidadeResumo(BaseModel):
+    """US-23: residente ativo da fração, como o administrador o vê."""
+
+    id: int
+    nome: str
+    criado_em: datetime
+
+
 class ReporteCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
