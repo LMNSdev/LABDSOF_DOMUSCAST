@@ -173,6 +173,22 @@ def test_revogar_nao_afeta_identidades(client, db):
     assert client.get("/reportes", headers=auth(credencial)).status_code == 200
 
 
+def test_revogar_regista_o_administrador(client, db):
+    condominio = novo_condominio(client, n_fracoes=2)
+    um = gerar_qr(client, condominio, 0)
+    todos = gerar_qr(client, condominio, 1)
+    admin = db.query(models.Administrador).filter_by(condominio_id=condominio["id"]).one()
+
+    assert revogar(client, qr_do_token(db, um).id, condominio["credencial_admin"]).status_code == 200
+    assert revogar_todos(client, condominio, indice=1).status_code == 200
+
+    for token in (um, todos):
+        qr = qr_do_token(db, token)
+        db.refresh(qr)
+        assert qr.revogado_em is not None
+        assert qr.revogado_por == admin.id
+
+
 def test_revogar_duas_vezes_404(client, db):
     condominio = novo_condominio(client)
     qr_id = qr_do_token(db, gerar_qr(client, condominio)).id

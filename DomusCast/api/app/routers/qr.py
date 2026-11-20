@@ -32,5 +32,6 @@ def revogar_qr(
     if qr is None:
         raise HTTPException(status_code=404, detail="QR code não encontrado.")
     qr.revogado_em = datetime.now(timezone.utc)
+    qr.revogado_por = admin.id
     db.commit()
     return schemas.QrRevogados(revogados=1)

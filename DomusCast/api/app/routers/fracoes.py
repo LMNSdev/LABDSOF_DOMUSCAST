@@ -98,5 +98,6 @@ def revogar_todos_qr(
     agora = datetime.now(timezone.utc)
     for qr in ativos:
         qr.revogado_em = agora
+        qr.revogado_por = admin.id
     db.commit()
     return schemas.QrRevogados(revogados=len(ativos))
