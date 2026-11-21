@@ -211,6 +211,19 @@ void main() {
     expect(find.widgetWithText(TextButton, 'Revogar'), findsOneWidget);
   });
 
+  testWidgets('o botão Revogar tem a etiqueta e a ação de toque para o TalkBack', (tester) async {
+    final semantica = tester.ensureSemantics();
+    await tester.pumpWidget(_secao(_Servidor(_doisAtivos()).api));
+    await tester.pumpAndSettle();
+
+    final etiqueta = 'Revogar o QR code de ${_dataHora(DateTime.utc(2026, 11, 16, 14, 32))}';
+    expect(
+      tester.getSemantics(find.bySemanticsLabel(etiqueta)),
+      isSemantics(label: etiqueta, isButton: true, hasTapAction: true),
+    );
+    semantica.dispose();
+  });
+
   testWidgets('sem ligação ao revogar avisa que nada foi revogado', (tester) async {
     var chamadas = 0;
     final api = ApiService(client: MockClient((req) async {
@@ -291,6 +304,24 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(servidor.pedidos, contains('POST /qr/9/revogar'));
+      expect(find.byType(QrImageView), findsNothing);
+      expect(find.text('Gerar QR code'), findsOneWidget);
+    });
+
+    testWidgets('o QR mostrado já revogado noutro telemóvel (404) também sai do ecrã',
+        (tester) async {
+      final servidor = _Servidor([]);
+      await abrir(tester, servidor);
+
+      await tester.tap(find.text('Gerar QR code'));
+      await tester.pumpAndSettle();
+      servidor.estadoRevogarUm = 404;
+      await tester.tap(find.widgetWithText(TextButton, 'Revogar'));
+      await tester.pumpAndSettle();
+      await tester.tap(_noDialogo('Revogar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Este QR code já tinha sido revogado.'), findsOneWidget);
       expect(find.byType(QrImageView), findsNothing);
       expect(find.text('Gerar QR code'), findsOneWidget);
     });

@@ -146,9 +146,10 @@ class _QrCodesAtivosState extends State<QrCodesAtivos> {
       _mensagem(_revogados(n));
       if (n > 0) widget.onRevogado?.call(qrId);
     } on ApiException catch (e) {
-      _mensagem(e.statusCode == 404 && jaRevogado != null
-          ? jaRevogado
-          : 'Não foi possível revogar. Tente novamente.');
+      final jaEstavaRevogado = e.statusCode == 404 && jaRevogado != null;
+      _mensagem(jaEstavaRevogado ? jaRevogado : 'Não foi possível revogar. Tente novamente.');
+      // Revogado noutro telemóvel: também sai do ecrã, se for o QR code mostrado.
+      if (jaEstavaRevogado) widget.onRevogado?.call(qrId);
     } catch (_) {
       _mensagem('Sem ligação. O QR code não foi revogado.');
     }
@@ -199,14 +200,15 @@ class _QrCodesAtivosState extends State<QrCodesAtivos> {
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text(_residentes(qr['n_residentes'] as int)),
-                  trailing: Semantics(
-                    label: 'Revogar o QR code de ${formatarCriacaoQr(qr['criado_em'] as String)}',
-                    button: true,
-                    excludeSemantics: true,
-                    child: TextButton(
-                      onPressed: () => _revogar(qr),
-                      style: TextButton.styleFrom(foregroundColor: scheme.error),
-                      child: const Text('Revogar'),
+                  // A etiqueta vai no texto: um Semantics com excludeSemantics tirava
+                  // ao botão a ação de toque e o TalkBack não o conseguia ativar.
+                  trailing: TextButton(
+                    onPressed: () => _revogar(qr),
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
+                    child: Text(
+                      'Revogar',
+                      semanticsLabel:
+                          'Revogar o QR code de ${formatarCriacaoQr(qr['criado_em'] as String)}',
                     ),
                   ),
                 ),
