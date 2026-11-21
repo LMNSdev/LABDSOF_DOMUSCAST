@@ -74,6 +74,14 @@ class IdentidadeCriada(BaseModel):
     credencial: str
 
 
+class IdentidadeResumo(BaseModel):
+    """US-23: residente ativo da fração, como o administrador o vê."""
+
+    id: int
+    nome: str
+    criado_em: datetime
+
+
 class ReporteCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -111,3 +119,5 @@ class ReporteOut(BaseModel):
     autor_nome: Optional[str] = None
     fracao: Optional[str] = None
     meu: bool = False
+    # US-23: só na vista do administrador, para mostrar "Residente removido, fração A".
+    autor_removido: bool = False

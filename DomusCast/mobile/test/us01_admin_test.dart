@@ -157,7 +157,7 @@ void main() {
 
     testWidgets('gerar mostra o QR com o link e as ações', (tester) async {
       final api = ApiService(client: MockClient((req) async {
-        // A lista dos QR codes ativos (US-20) também é pedida neste ecrã.
+        // As listas do ecrã da fração (US-20, US-23) também são pedidas.
         if (req.method == 'GET') return _json([], 200);
         expect(req.method, 'POST');
         expect(req.url.path, '/fracoes/1/qr');

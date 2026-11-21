@@ -1,4 +1,5 @@
-"""QR codes de uma fração: gerar (US-01), listar os ativos e revogar todos (US-20).
+"""Uma fração: gerar QR code (US-01), listar os QR codes ativos e revogar todos
+(US-20) e listar os residentes (US-23).
 
 O token só é devolvido quando é gerado; a base de dados guarda apenas o hash.
 Gerar um novo QR não revoga os anteriores; revogar é uma ação própria (US-20).
@@ -105,3 +106,22 @@ def revogar_todos_qr(
     )
     db.commit()
     return schemas.QrRevogados(revogados=n)
+
+
+@router.get("/{fracao_id}/identidades", response_model=list[schemas.IdentidadeResumo])
+def listar_identidades(
+    fracao_id: int,
+    admin: models.Administrador = Depends(admin_do_pedido),
+    db: Session = Depends(get_db),
+):
+    """Residentes ativos da fração (nome e data de entrada), para o administrador remover quem saiu."""
+    fracao = _fracao_do_admin(db, admin, fracao_id)
+    ativas = (
+        db.query(models.Identidade)
+        .filter(models.Identidade.fracao_id == fracao.id, models.Identidade.removida_em.is_(None))
+        .order_by(models.Identidade.criado_em, models.Identidade.id)
+        .all()
+    )
+    return [
+        schemas.IdentidadeResumo(id=i.id, nome=i.nome, criado_em=i.criado_em) for i in ativas
+    ]

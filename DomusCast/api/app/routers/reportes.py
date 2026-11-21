@@ -49,9 +49,12 @@ def _vista(
 ) -> schemas.ReporteOut:
     # Uma identidade removida (US-23) deixa de ser mostrada como autora.
     autor = reporte.autor if reporte.autor is not None and reporte.autor.removida_em is None else None
+    autor_removido = False
     if isinstance(quem, models.Administrador):
         autor_nome = autor.nome if autor else None
-        fracao = autor.fracao.designacao if autor else None
+        # A fração mantém-se para o administrador mesmo depois da remoção (ecrã 4 da US-23).
+        fracao = reporte.autor.fracao.designacao if reporte.autor is not None else None
+        autor_removido = reporte.autor is not None and autor is None
         meu = False
     else:
         autor_nome = autor.nome if autor and reporte.mostrar_nome else None
@@ -68,6 +71,7 @@ def _vista(
         autor_nome=autor_nome,
         fracao=fracao,
         meu=meu,
+        autor_removido=autor_removido,
     )
 
 
