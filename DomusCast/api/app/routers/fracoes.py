@@ -13,13 +13,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..security import (
-    admin_atual,
-    admin_do_pedido,
-    exigir_admin_do_condominio,
-    gerar_token,
-    hash_token,
-)
+from ..security import admin_do_pedido, gerar_token, hash_token
 
 router = APIRouter()
 
@@ -35,13 +29,11 @@ def _fracao_do_admin(db: Session, admin: models.Administrador, fracao_id: int) -
 @router.post("/{fracao_id}/qr", response_model=schemas.QrGerado, status_code=201)
 def gerar_qr(
     fracao_id: int,
-    admin: models.Administrador = Depends(admin_atual),
+    admin: models.Administrador = Depends(admin_do_pedido),
     db: Session = Depends(get_db),
 ):
-    fracao = db.get(models.Fracao, fracao_id)
-    if fracao is None:
-        raise HTTPException(status_code=404, detail="Fração não encontrada.")
-    exigir_admin_do_condominio(admin, fracao.condominio_id)
+    """404 se a fração não existir ou for de outro condomínio (não revela qual)."""
+    fracao = _fracao_do_admin(db, admin, fracao_id)
 
     token = gerar_token()
     qr = models.QrToken(fracao_id=fracao.id, token_hash=hash_token(token))
