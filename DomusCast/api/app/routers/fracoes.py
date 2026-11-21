@@ -89,16 +89,19 @@ def revogar_todos_qr(
     admin: models.Administrador = Depends(admin_do_pedido),
     db: Session = Depends(get_db),
 ):
-    """Revoga todos os QR codes ativos da fração; as identidades já criadas mantêm-se."""
+    """Revoga todos os QR codes ativos da fração; as identidades já criadas mantêm-se.
+
+    Um só UPDATE condicional: não sobrescreve os QR codes revogados em simultâneo
+    por outro pedido, e o número de linhas alteradas é o `revogados`.
+    """
     fracao = _fracao_do_admin(db, admin, fracao_id)
-    ativos = (
+    n = (
         db.query(models.QrToken)
         .filter(models.QrToken.fracao_id == fracao.id, models.QrToken.revogado_em.is_(None))
-        .all()
+        .update(
+            {"revogado_em": datetime.now(timezone.utc), "revogado_por": admin.id},
+            synchronize_session=False,
+        )
     )
-    agora = datetime.now(timezone.utc)
-    for qr in ativos:
-        qr.revogado_em = agora
-        qr.revogado_por = admin.id
     db.commit()
-    return schemas.QrRevogados(revogados=len(ativos))
+    return schemas.QrRevogados(revogados=n)

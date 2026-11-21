@@ -18,20 +18,27 @@ def revogar_qr(
     admin: models.Administrador = Depends(admin_do_pedido),
     db: Session = Depends(get_db),
 ):
-    """404 se não existir, já foi revogado ou é de outro condomínio (não revela qual)."""
-    qr = (
+    """404 se não existir, já foi revogado ou é de outro condomínio (não revela qual).
+
+    Um só UPDATE condicional: numa revogação em simultâneo, a segunda recebe 404 e
+    não sobrescreve quem revogou primeiro (regra 10.2).
+    """
+    do_condominio = db.query(models.Fracao.id).filter(
+        models.Fracao.condominio_id == admin.condominio_id
+    )
+    n = (
         db.query(models.QrToken)
-        .join(models.Fracao, models.Fracao.id == models.QrToken.fracao_id)
         .filter(
             models.QrToken.id == qr_id,
             models.QrToken.revogado_em.is_(None),
-            models.Fracao.condominio_id == admin.condominio_id,
+            models.QrToken.fracao_id.in_(do_condominio),
         )
-        .first()
+        .update(
+            {"revogado_em": datetime.now(timezone.utc), "revogado_por": admin.id},
+            synchronize_session=False,
+        )
     )
-    if qr is None:
+    if n == 0:
         raise HTTPException(status_code=404, detail="QR code não encontrado.")
-    qr.revogado_em = datetime.now(timezone.utc)
-    qr.revogado_por = admin.id
     db.commit()
     return schemas.QrRevogados(revogados=1)
