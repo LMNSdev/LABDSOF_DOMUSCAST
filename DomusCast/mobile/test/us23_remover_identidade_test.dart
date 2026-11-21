@@ -154,6 +154,19 @@ void main() {
       expect(find.widgetWithText(TextButton, 'Remover'), findsOneWidget);
     });
 
+    testWidgets('o botão Remover tem a etiqueta e a ação de toque para o TalkBack',
+        (tester) async {
+      final semantica = tester.ensureSemantics();
+      await tester.pumpWidget(_secao(_Servidor(_doisResidentes()).api));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Remover Marta Silva')),
+        isSemantics(label: 'Remover Marta Silva', isButton: true, hasTapAction: true),
+      );
+      semantica.dispose();
+    });
+
     testWidgets('sem residentes mostra a mensagem própria', (tester) async {
       await tester.pumpWidget(_secao(_Servidor([]).api));
       await tester.pumpAndSettle();

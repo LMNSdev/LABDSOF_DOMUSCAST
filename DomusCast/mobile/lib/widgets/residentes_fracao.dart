@@ -144,15 +144,12 @@ class _ResidentesFracaoState extends State<ResidentesFracao> {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text('entrou a ${_dia(r['criado_em'] as String)}'),
-              trailing: Semantics(
-                label: 'Remover ${r['nome']}',
-                button: true,
-                excludeSemantics: true,
-                child: TextButton(
-                  onPressed: () => _remover(r),
-                  style: TextButton.styleFrom(foregroundColor: scheme.error),
-                  child: const Text('Remover'),
-                ),
+              // A etiqueta vai no texto: um Semantics com excludeSemantics tirava
+              // ao botão a ação de toque e o TalkBack não o conseguia ativar.
+              trailing: TextButton(
+                onPressed: () => _remover(r),
+                style: TextButton.styleFrom(foregroundColor: scheme.error),
+                child: Text('Remover', semanticsLabel: 'Remover ${r['nome']}'),
               ),
             ),
         ]),
