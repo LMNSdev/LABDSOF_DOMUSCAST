@@ -11,7 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from .database import get_db
 from .erros import ErroApi, tratar_erro_api
-from .routers import condominios, fracoes, identidades, reportes
+from .routers import condominios, fracoes, identidades, reportes, reunioes
 
 
 @asynccontextmanager
@@ -79,6 +79,7 @@ app.include_router(reportes.router, prefix="/reportes", tags=["reportes"])
 app.include_router(condominios.router, prefix="/condominios", tags=["condominios"])
 app.include_router(fracoes.router, prefix="/fracoes", tags=["fracoes"])
 app.include_router(identidades.router, prefix="/identidades", tags=["identidades"])
+app.include_router(reunioes.router, prefix="/reunioes", tags=["reunioes"])
 
 
 @app.get("/health", tags=["infra"])
