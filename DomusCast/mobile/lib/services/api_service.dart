@@ -166,6 +166,35 @@ class ApiService {
     return _corpo(r, 201) as Map<String, dynamic>;
   }
 
+  // --- US-20: revogar QR codes ----------------------------------------------
+
+  /// Lista `{id, criado_em, n_residentes}` dos QR codes ativos da fração, sem o token.
+  Future<List<Map<String, dynamic>>> getQrAtivos(int fracaoId, String credencial) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/fracoes/$fracaoId/qr'),
+      headers: _auth(credencial),
+    );
+    return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  /// Revoga todos os QR codes ativos da fração; devolve quantos foram revogados.
+  Future<int> revogarTodosQr(int fracaoId, String credencial) async {
+    final r = await _client.post(
+      Uri.parse('$baseUrl/fracoes/$fracaoId/qr/revogar'),
+      headers: _auth(credencial),
+    );
+    return (_corpo(r, 200) as Map<String, dynamic>)['revogados'] as int;
+  }
+
+  /// Revoga um QR code. Erros: 404 se já foi revogado ou não existe.
+  Future<int> revogarQr(int qrId, String credencial) async {
+    final r = await _client.post(
+      Uri.parse('$baseUrl/qr/$qrId/revogar'),
+      headers: _auth(credencial),
+    );
+    return (_corpo(r, 200) as Map<String, dynamic>)['revogados'] as int;
+  }
+
   // --- US-15: identidade do residente ---------------------------------------
 
   /// Cria a identidade com o token do QR code; devolve `{id, nome, fracao, credencial}`.
