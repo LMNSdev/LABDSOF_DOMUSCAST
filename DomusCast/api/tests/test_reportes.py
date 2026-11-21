@@ -468,13 +468,22 @@ def test_autor_removido_deixa_de_ser_identificado(client, db):
     autora.removida_em = datetime.now(timezone.utc)
     db.commit()
 
-    for credencial in (admin, credencial_b):
-        reporte = next(
+    def ver(credencial):
+        return next(
             r for r in client.get("/reportes", headers=auth(credencial)).json()
             if r["id"] == criado["id"]
         )
-        assert reporte["autor_nome"] is None
-        assert reporte["fracao"] is None
+
+    # US-23: o administrador vê "Residente removido, fração A"; a vizinha vê "Residente".
+    do_admin = ver(admin)
+    assert do_admin["autor_nome"] is None
+    assert do_admin["fracao"] == autora.fracao.designacao
+    assert do_admin["autor_removido"] is True
+
+    da_vizinha = ver(credencial_b)
+    assert da_vizinha["autor_nome"] is None
+    assert da_vizinha["fracao"] is None
+    assert da_vizinha["autor_removido"] is False
 
 
 def test_residente_de_outro_condominio_nao_ve_os_reportes(client):

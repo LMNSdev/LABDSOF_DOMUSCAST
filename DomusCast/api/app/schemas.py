@@ -46,10 +46,23 @@ class CondominioCriado(BaseModel):
 
 
 class QrGerado(BaseModel):
+    id: int  # US-20: o mesmo id da lista dos ativos, para a app saber qual está no ecrã
     token: str
     link: str
     fracao: str
     criado_em: datetime
+
+
+class QrAtivo(BaseModel):
+    """US-20: QR code ainda válido, sem o token (o servidor só guarda o hash)."""
+
+    id: int
+    criado_em: datetime
+    n_residentes: int
+
+
+class QrRevogados(BaseModel):
+    revogados: int
 
 
 # --- US-15: identidade do residente ---
@@ -66,6 +79,14 @@ class IdentidadeCriada(BaseModel):
     nome: str
     fracao: str
     credencial: str
+
+
+class IdentidadeResumo(BaseModel):
+    """US-23: residente ativo da fração, como o administrador o vê."""
+
+    id: int
+    nome: str
+    criado_em: datetime
 
 
 class ReporteCreate(BaseModel):
@@ -105,6 +126,8 @@ class ReporteOut(BaseModel):
     autor_nome: Optional[str] = None
     fracao: Optional[str] = None
     meu: bool = False
+    # US-23: só na vista do administrador, para mostrar "Residente removido, fração A".
+    autor_removido: bool = False
 
 
 # --- US-13: reuniões ---

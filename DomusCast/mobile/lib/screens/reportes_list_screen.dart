@@ -20,6 +20,9 @@ class ReportesListScreen extends StatefulWidget {
   final bool podeReportar;
   final FilaReportes? fila;
 
+  /// US-23: chamado quando a credencial do residente deixou de ser aceite (401).
+  final VoidCallback? onAcessoRemovido;
+
   const ReportesListScreen({
     super.key,
     this.api,
@@ -27,6 +30,7 @@ class ReportesListScreen extends StatefulWidget {
     this.nomeResidente,
     this.podeReportar = true,
     this.fila,
+    this.onAcessoRemovido,
   });
 
   @override
@@ -98,6 +102,11 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         _loading = false;
       });
     } on ApiException catch (e) {
+      final aoRemover = widget.onAcessoRemovido;
+      if (e.statusCode == 401 && widget.podeReportar && aoRemover != null) {
+        aoRemover();
+        return;
+      }
       setState(() {
         _error = e.statusCode == 401
             ? 'A sua identidade já não é válida.'
@@ -206,6 +215,7 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
                       credencial: widget.credencial,
                       nome: widget.nomeResidente,
                       fila: _fila,
+                      onAcessoRemovido: widget.onAcessoRemovido,
                     ),
                   ),
                 );
@@ -243,9 +253,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     }
     final autorNome = r['autor_nome'] as String?;
     final fracao = r['fracao'] as String?;
-    final autor = autorNome != null && fracao != null
-        ? '$autorNome, fração $fracao'
-        : (autorNome ?? 'Residente');
+    final autor = r['autor_removido'] == true
+        // US-23: só o administrador recebe a fração de um autor removido.
+        ? (fracao != null ? 'Residente removido, fração $fracao' : 'Residente removido')
+        : autorNome != null && fracao != null
+            ? '$autorNome, fração $fracao'
+            : (autorNome ?? 'Residente');
     return data.isEmpty ? autor : '$autor - $data';
   }
 
@@ -253,7 +266,8 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     final estado = r['estado'] as String? ?? 'aberto';
     final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
-    final nomeVisivelAoAdmin = r['fracao'] != null && r['mostrar_nome'] == true;
+    final nomeVisivelAoAdmin =
+        r['fracao'] != null && r['mostrar_nome'] == true && r['autor_removido'] != true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),

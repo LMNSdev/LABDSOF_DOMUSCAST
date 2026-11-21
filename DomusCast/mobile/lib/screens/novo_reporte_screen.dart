@@ -22,6 +22,9 @@ class NovoReporteScreen extends StatefulWidget {
   final FilaReportes? fila;
   final Future<XFile?> Function(ImageSource source)? escolherImagem;
 
+  /// US-23: chamado quando a credencial deixou de ser aceite (401) ao submeter.
+  final VoidCallback? onAcessoRemovido;
+
   const NovoReporteScreen({
     super.key,
     this.api,
@@ -29,6 +32,7 @@ class NovoReporteScreen extends StatefulWidget {
     this.nome,
     this.fila,
     this.escolherImagem,
+    this.onAcessoRemovido,
   });
 
   @override
@@ -237,7 +241,10 @@ class _NovoReporteScreenState extends State<NovoReporteScreen> {
       if (erro.statusCode >= 500) {
         await _semLigacao();
       } else if (mounted) {
-        if (erro.statusCode == 401) {
+        final aoRemover = widget.onAcessoRemovido;
+        if (erro.statusCode == 401 && aoRemover != null) {
+          aoRemover();
+        } else if (erro.statusCode == 401) {
           _mostrarMensagem(_mensagemApi(erro));
         } else {
           _mostrarErroSubmissao(_mensagemApi(erro));

@@ -26,6 +26,9 @@ class SessaoResidente {
 abstract class SessaoResidenteStore {
   Future<SessaoResidente?> ler();
   Future<void> guardar(SessaoResidente sessao);
+
+  /// Apaga a credencial, quando a identidade foi removida (US-23).
+  Future<void> apagar();
 }
 
 /// Guarda a credencial no armazenamento seguro do sistema (Android Keystore).
@@ -51,6 +54,9 @@ class SeguraSessaoResidenteStore implements SessaoResidenteStore {
   @override
   Future<void> guardar(SessaoResidente sessao) =>
       _storage.write(key: _chave, value: jsonEncode(sessao.toJson()));
+
+  @override
+  Future<void> apagar() => _storage.delete(key: _chave);
 }
 
 /// Usado nos testes.
@@ -64,4 +70,7 @@ class MemoriaSessaoResidenteStore implements SessaoResidenteStore {
 
   @override
   Future<void> guardar(SessaoResidente sessao) async => _sessao = sessao;
+
+  @override
+  Future<void> apagar() async => _sessao = null;
 }

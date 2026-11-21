@@ -139,6 +139,7 @@ class QrToken(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     revogado_em = Column(DateTime(timezone=True), nullable=True)
+    revogado_por = Column(Integer, ForeignKey("administrador.id"), nullable=True)  # US-20
 
     fracao = relationship("Fracao", back_populates="qr_tokens")
 
@@ -161,6 +162,7 @@ class Identidade(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     removida_em = Column(DateTime(timezone=True), nullable=True)
+    removida_por = Column(Integer, ForeignKey("administrador.id"), nullable=True)  # US-23
 
     fracao = relationship("Fracao", back_populates="identidades")
     reportes = relationship("Reporte", back_populates="autor")
