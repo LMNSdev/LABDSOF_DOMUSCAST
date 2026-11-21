@@ -184,10 +184,23 @@ def test_gerar_qr_sem_credencial_401(client):
     assert client.post(f"/fracoes/{fracao_id}/qr").status_code == 401
 
 
-def test_gerar_qr_de_outro_condominio_403(client):
+def test_gerar_qr_de_outro_condominio_404(client):
+    # Como nos outros endpoints de frações (#125): não revela se a fração existe.
     a = criar(client, nome="Prédio A").json()
     b = criar(client, nome="Prédio B").json()
-    assert gerar_qr(client, b, credencial=a["credencial_admin"]).status_code == 403
+    assert gerar_qr(client, b, credencial=a["credencial_admin"]).status_code == 404
+
+
+def test_residente_nos_endpoints_da_us01_403(client):
+    # Credencial válida, mas de residente: 403 e não 401 (10.2, #125).
+    data = criar(client).json()
+    token = gerar_qr(client, data).json()["token"]
+    residente = client.post("/identidades", json={"token": token, "nome": "Marta Silva"})
+    credencial = residente.json()["credencial"]
+
+    r = client.get(f"/condominios/{data['id']}/fracoes", headers=auth(credencial))
+    assert r.status_code == 403
+    assert gerar_qr(client, data, credencial=credencial).status_code == 403
 
 
 def test_gerar_qr_fracao_inexistente_404(client):

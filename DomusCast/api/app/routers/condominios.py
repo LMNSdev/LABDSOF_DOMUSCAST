@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, rate_limit, schemas
 from ..database import get_db
-from ..security import admin_atual, exigir_admin_do_condominio, gerar_token, hash_token
+from ..security import admin_do_pedido, exigir_admin_do_condominio, gerar_token, hash_token
 
 router = APIRouter()
 
@@ -54,7 +54,7 @@ def criar_condominio(
 @router.get("/{condominio_id}/fracoes", response_model=list[schemas.FracaoResumo])
 def listar_fracoes(
     condominio_id: int,
-    admin: models.Administrador = Depends(admin_atual),
+    admin: models.Administrador = Depends(admin_do_pedido),
     db: Session = Depends(get_db),
 ):
     exigir_admin_do_condominio(admin, condominio_id)

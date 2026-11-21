@@ -71,30 +71,10 @@ def residente_atual(
     return utilizador
 
 
-def admin_atual(
-    cred: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    db: Session = Depends(get_db),
-) -> models.Administrador:
-    """Administrador dono da credencial Bearer; 401 se faltar, for inválida ou foi removido."""
-    if cred is None:
-        raise HTTPException(status_code=401, detail=CREDENCIAL_EM_FALTA)
-    admin = (
-        db.query(models.Administrador)
-        .filter(
-            models.Administrador.credencial_hash == hash_token(cred.credentials),
-            models.Administrador.removido_em.is_(None),
-        )
-        .first()
-    )
-    if admin is None:
-        raise HTTPException(status_code=401, detail=CREDENCIAL_INVALIDA)
-    return admin
-
-
 def admin_do_pedido(
     utilizador: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
 ) -> models.Administrador:
-    """Administrador dono da credencial; 403 se for um residente (10.2)."""
+    """Administrador dono da credencial; 401 sem credencial válida, 403 se for um residente (10.2)."""
     if not isinstance(utilizador, models.Administrador):
         raise HTTPException(status_code=403, detail="Só o administrador pode fazer isto.")
     return utilizador

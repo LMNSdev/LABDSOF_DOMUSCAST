@@ -265,8 +265,8 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `POST /reportes` | US-02/US-09: cria reporte; campo `mostrar_nome` controla a visibilidade do nome; idempotente via `idempotency_key`; campos de contacto são recusados |
 | `GET /reportes` | US-09: lista os reportes do condomínio conforme o papel; residente não recebe fração, recebe o nome só se o autor o mostrar e `meu` nos seus reportes; requer credencial (401) |
 | `POST /condominios` | US-01: cria condomínio, frações (A, B, C…) e primeiro administrador; 1 a 200 frações, 5 criações por hora por IP (429) |
-| `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador (401/403) |
-| `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |
+| `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador; 401 sem credencial, 403 residente ou condomínio de outro administrador |
+| `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos; 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `GET /fracoes/{id}/qr` | US-20: QR codes ativos com `{id, criado_em, n_residentes}` (residentes que entraram com cada um e ainda têm acesso); 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `POST /fracoes/{id}/qr/revogar` | US-20: revoga todos os QR codes ativos da fração e devolve `{revogados}` (0 se não havia); as identidades já criadas não são afetadas |
 | `POST /qr/{id}/revogar` | US-20: revoga um QR code e devolve `{revogados: 1}`; 404 se já foi revogado, não existe ou é de outro condomínio. Os dois `revogar` guardam o administrador em `qr_token.revogado_por` (migração `0006`) |
