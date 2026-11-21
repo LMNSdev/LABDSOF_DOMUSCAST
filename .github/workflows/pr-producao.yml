@@ -4,6 +4,11 @@ name: PR - produção
 # o deploy (release.yml), por isso aqui verifica-se o que só falharia depois:
 # migrações em PostgreSQL, a imagem Docker a arrancar, as vulnerabilidades da
 # imagem, o compose de produção com o Caddyfile e o build do APK.
+#
+# Num PR que só muda docs/ (ex.: a daily) estes jobs são ignorados, tal como o
+# release.yml não cria versão nesse caso. Usa-se "if" nos jobs, e não "paths" no
+# trigger, porque são verificações obrigatórias: um job ignorado conta como
+# aprovado, mas um workflow que não corre deixa o PR à espera.
 on:
   pull_request:
     branches: [main]
@@ -16,8 +21,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  alteracoes:
+    name: Alterações - só docs/?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      docs: ${{ steps.docs.outputs.docs }}
+    steps:
+      # O checkout de um PR é o commit de merge; o primeiro pai é a main.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: docs
+        run: |
+          set -euo pipefail
+          docs=$(bash .github/scripts/docs-only.sh HEAD^1 HEAD)
+          echo "docs=$docs" >> "$GITHUB_OUTPUT"
+          if [ "$docs" = true ]; then
+            echo "### Só mudou docs/: verificações de produção ignoradas" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # Os jobs seguintes correm sempre que o PR não é só de docs/. Se o job
+  # "alteracoes" falhar, o output fica vazio e os jobs correm na mesma.
   postgres:
     name: API - migrações e testes em PostgreSQL
+    needs: alteracoes
+    if: ${{ !cancelled() && needs.alteracoes.outputs.docs != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -73,6 +103,8 @@ jobs:
 
   docker:
     name: Docker - arranque, /health e Trivy
+    needs: alteracoes
+    if: ${{ !cancelled() && needs.alteracoes.outputs.docs != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -113,6 +145,8 @@ jobs:
 
   deploy:
     name: Deploy - compose de produção e Caddyfile
+    needs: alteracoes
+    if: ${{ !cancelled() && needs.alteracoes.outputs.docs != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -141,6 +175,8 @@ jobs:
 
   apk:
     name: Mobile - build do APK
+    needs: alteracoes
+    if: ${{ !cancelled() && needs.alteracoes.outputs.docs != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
