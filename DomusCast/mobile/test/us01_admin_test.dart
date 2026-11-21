@@ -94,6 +94,7 @@ void main() {
             ],
           }, 201);
         }
+        if (req.url.path == '/reunioes') return _json([], 200);
         return _json([
           {'id': 1, 'designacao': 'A', 'n_residentes': 0},
           {'id': 2, 'designacao': 'B', 'n_residentes': 0},

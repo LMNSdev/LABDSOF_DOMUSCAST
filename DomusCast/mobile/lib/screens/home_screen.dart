@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fila: widget.fila,
             onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
           ),
-        Separador.reunioes => const ReunioesScreen(),
+        Separador.reunioes => ReunioesScreen(api: widget.api, credencial: widget.sessao?.credencial),
         Separador.avisos => const SizedBox.shrink(),
         Separador.condominio => CondominioScreen(api: widget.api, sessao: widget.sessao!),
       };
