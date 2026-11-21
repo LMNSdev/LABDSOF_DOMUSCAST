@@ -15,7 +15,8 @@ if [ -z "$anterior" ]; then
   exit 0
 fi
 
-alterados=$(git diff --name-only "$anterior" "$novo")
+# --no-renames: um ficheiro movido para docs/ conta também pelo caminho antigo.
+alterados=$(git diff --name-only --no-renames "$anterior" "$novo")
 if [ -n "$alterados" ] && ! grep -qv '^docs/' <<< "$alterados"; then
   echo true
 else
