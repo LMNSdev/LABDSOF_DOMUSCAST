@@ -33,6 +33,17 @@ check "sem versão anterior gera versão"       "$(bash $do "" fcd55a5)"        
 check "merge só de docs/ não gera versão"     "$(bash $do fcd55a5^1 fcd55a5)"     true
 check "CODEOWNERS (fora de docs/) gera versão" "$(bash $do 1f7c607^1 1f7c607)"    false
 
+# Não há na main um commit que mova código para docs/; usa-se um repositório temporário.
+raiz=$PWD
+tmp=$(mktemp -d)
+(
+  cd "$tmp" && git init -q && git config user.email ci@teste && git config user.name ci
+  mkdir src docs && echo x > src/app.py && echo y > docs/a.md
+  git add . && git commit -qm inicial && git mv src/app.py docs/app.py && git commit -qm mover
+) > /dev/null 2>&1
+check "código movido para docs/ gera versão"  "$(cd "$tmp" && bash "$raiz/$do" HEAD^ HEAD)" false
+rm -rf "$tmp"
+
 pr=.github/scripts/pr-rules.sh
 check "branch feature/ aceite"           "$(bash $pr branch feature/us-09-privacidade)" true
 check "branch feat/ aceite"              "$(bash $pr branch feat/deploy-azure)"         true

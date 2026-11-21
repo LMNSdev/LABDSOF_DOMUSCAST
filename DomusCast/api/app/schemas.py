@@ -39,10 +39,23 @@ class CondominioCriado(BaseModel):
 
 
 class QrGerado(BaseModel):
+    id: int  # US-20: o mesmo id da lista dos ativos, para a app saber qual está no ecrã
     token: str
     link: str
     fracao: str
     criado_em: datetime
+
+
+class QrAtivo(BaseModel):
+    """US-20: QR code ainda válido, sem o token (o servidor só guarda o hash)."""
+
+    id: int
+    criado_em: datetime
+    n_residentes: int
+
+
+class QrRevogados(BaseModel):
+    revogados: int
 
 
 # --- US-15: identidade do residente ---

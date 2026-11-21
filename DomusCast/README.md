@@ -61,6 +61,9 @@ A base de dados é criada e as migrações correm automaticamente.
 | `POST /condominios` | Criar condomínio e frações (devolve a credencial do administrador) |
 | `GET  /condominios/{id}/fracoes` | Listar frações (administrador) |
 | `POST /fracoes/{id}/qr` | Gerar QR code de uma fração (administrador) |
+| `GET  /fracoes/{id}/qr` | Listar os QR codes ativos de uma fração, sem o token (administrador) |
+| `POST /fracoes/{id}/qr/revogar` | Revogar todos os QR codes ativos de uma fração (administrador) |
+| `POST /qr/{id}/revogar` | Revogar um QR code (administrador) |
 | `POST /identidades` | Residente entra com o token do QR code e o nome (devolve a credencial do dispositivo) |
 | `GET  /fracoes/{id}/identidades` | Listar os residentes ativos de uma fração (administrador) |
 | `DELETE /identidades/{id}` | Remover a identidade de um residente (administrador) |
@@ -189,6 +192,8 @@ Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `ma
 | | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
 | | `apk` | `flutter build apk --release`, o mesmo comando do release |
 
+Num PR que só muda `docs/` (ex.: a daily), o job `alteracoes` usa `.github/scripts/docs-only.sh` e os jobs de `pr-producao.yml` são ignorados, porque esse merge não cria versão nem deploy. Um job ignorado conta como aprovado nas verificações obrigatórias.
+
 Para correr os testes da API contra PostgreSQL localmente (com a base de dados `ci_testes` criada):
 
 ```powershell
@@ -262,6 +267,9 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `POST /condominios` | US-01: cria condomínio, frações (A, B, C…) e primeiro administrador; 1 a 200 frações, 5 criações por hora por IP (429) |
 | `GET /condominios/{id}/fracoes` | US-01: frações e nº de residentes; requer `Authorization: Bearer <credencial>` do administrador (401/403) |
 | `POST /fracoes/{id}/qr` | US-01: gera um token novo (só o hash fica guardado) e devolve-o uma vez com o link `domuscast://entrar?t=`; os anteriores continuam válidos |
+| `GET /fracoes/{id}/qr` | US-20: QR codes ativos com `{id, criado_em, n_residentes}` (residentes que entraram com cada um e ainda têm acesso); 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
+| `POST /fracoes/{id}/qr/revogar` | US-20: revoga todos os QR codes ativos da fração e devolve `{revogados}` (0 se não havia); as identidades já criadas não são afetadas |
+| `POST /qr/{id}/revogar` | US-20: revoga um QR code e devolve `{revogados: 1}`; 404 se já foi revogado, não existe ou é de outro condomínio. Os dois `revogar` guardam o administrador em `qr_token.revogado_por` (migração `0006`) |
 | `POST /identidades` | US-15: `{token, nome}` cria a identidade do residente e devolve `{id, nome, fracao, credencial}`; nome único por fração (ignora maiúsculas, acentos e espaços), máximo de 10 por fração, 30 tentativas por hora por QR code; erros 404 e 409 no formato `{codigo, mensagem, request_id}` |
 | `GET /fracoes/{id}/identidades` | US-23: residentes ativos `{id, nome, criado_em}`; 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `DELETE /identidades/{id}` | US-23: apaga o nome, preenche `removida_em` e `removida_por` (migração `0007`) e devolve 204; a credencial removida recebe 401 e os reportes ficam como "Residente removido" (o administrador recebe `autor_removido` e a fração); 404 se já foi removida ou é de outro condomínio |

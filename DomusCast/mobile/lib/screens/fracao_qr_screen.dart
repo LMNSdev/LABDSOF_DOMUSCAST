@@ -6,9 +6,11 @@ import 'package:share_plus/share_plus.dart';
 
 import '../services/api_service.dart';
 import '../services/sessao_admin.dart';
+import '../widgets/qr_codes_ativos.dart';
 import '../widgets/residentes_fracao.dart';
 
 /// US-01: gera um QR code para a fração, para enviar ou mostrar a um residente.
+/// US-20: por baixo, a lista dos QR codes ativos, para revogar um ou todos.
 /// US-23: no fim do ecrã, os residentes da fração, para remover quem saiu.
 ///
 /// O servidor só guarda o hash do token, por isso cada QR é gerado a pedido e
@@ -36,6 +38,12 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
   bool _aGerar = false;
   String? _erro;
 
+  /// Muda a cada QR gerado, para a lista dos ativos (US-20) recarregar.
+  int _versaoQr = 0;
+
+  /// Id do QR code mostrado no ecrã, para o tirar se for revogado (US-20).
+  int? _qrId;
+
   Future<void> _gerar() async {
     setState(() {
       _aGerar = true;
@@ -44,7 +52,11 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
     try {
       final qr = await widget.api.gerarQr(widget.fracaoId, widget.sessao.credencial);
       if (!mounted) return;
-      setState(() => _link = qr['link'] as String);
+      setState(() {
+        _link = qr['link'] as String;
+        _qrId = qr['id'] as int?;
+        _versaoQr++;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _erro = 'Não foi possível gerar o QR code. Verifique a ligação.');
@@ -164,6 +176,24 @@ class _FracaoQrScreenState extends State<FracaoQrScreen> {
                 ),
               ),
             ],
+            const SizedBox(height: 32),
+            QrCodesAtivos(
+              key: ValueKey(_versaoQr),
+              api: widget.api,
+              sessao: widget.sessao,
+              fracaoId: widget.fracaoId,
+              designacao: widget.designacao,
+              // Se o QR code mostrado foi revogado (sozinho ou com "Revogar
+              // todos"), sai do ecrã e volta "Gerar QR code".
+              onRevogado: (qrId) {
+                if (qrId == null || qrId == _qrId) {
+                  setState(() {
+                    _link = null;
+                    _qrId = null;
+                  });
+                }
+              },
+            ),
             const SizedBox(height: 32),
             ResidentesFracao(
               api: widget.api,
