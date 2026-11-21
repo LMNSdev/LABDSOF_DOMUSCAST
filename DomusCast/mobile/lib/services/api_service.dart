@@ -182,4 +182,30 @@ class ApiService {
     );
     return _corpo(r, 201) as Map<String, dynamic>;
   }
+
+  // --- US-13: reuniões -------------------------------------------------------
+
+  /// Reuniões de hoje em diante, por data: `{id, data_hora, local, estado_sync, criado_em}`.
+  Future<List<Map<String, dynamic>>> getReunioes(String credencial) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reunioes'),
+      headers: _auth(credencial),
+    );
+    return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  /// Agenda uma reunião (administrador). [dataHora] é enviada em UTC, com fuso.
+  /// Erros: 403 residente, 422 data no passado ou local inválido, 503 base de dados.
+  Future<Map<String, dynamic>> agendarReuniao({
+    required String credencial,
+    required DateTime dataHora,
+    required String local,
+  }) async {
+    final r = await _client.post(
+      Uri.parse('$baseUrl/reunioes'),
+      headers: {..._auth(credencial), 'Content-Type': 'application/json'},
+      body: jsonEncode({'data_hora': dataHora.toUtc().toIso8601String(), 'local': local}),
+    );
+    return _corpo(r, 201) as Map<String, dynamic>;
+  }
 }

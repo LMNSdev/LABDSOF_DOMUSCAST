@@ -70,9 +70,9 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 **Objetivo:** refinar as duas Must ainda por preparar e, dentro do mesmo conjunto de sete US da sessão anterior, as cinco Should com maior prioridade no backlog: US-05, US-22, US-13, US-10, US-24, US-25 e US-28. A US-13 desbloqueia as reuniões; US-10, US-24 e US-25 cobrem a ata assistida, a aprovação humana e o fallback manual; US-28 cobre a integração externa exigida para o Sprint B.
 
-**Distribuição end-to-end:** US-13 e US-28 com Pedro Soares; US-05 e US-22 com Pedro Costa; US-25 com Luis Santos; US-10 com Leonardo Costa; US-24 com Marco Garcia. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada. Revista depois da sessão; a distribuição inicial era US-05 com Pedro Soares, US-22 com Pedro Costa, US-13 e US-25 com Luis Santos, US-10 e US-28 com Leonardo Costa e US-24 com Marco Garcia.
+**Distribuição end-to-end:** US-05 e US-22 com Pedro Costa; US-13 e US-28 com Pedro Soares; US-24 e US-25 com Marco Garcia; US-10 com Leonardo Costa. O Luis Santos fica com a US-20 e a US-23. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada. (Corrigido a 2026-11-21: o primeiro registo desta linha não correspondia à distribuição acordada na sessão.)
 
-**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os sete wireframes foram revistos e aprovados por Pedro Soares. Os contratos e limites seguintes continuam a ser propostas preparadas para validação da equipa, não decisões aprovadas. Por isso, as sete linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md).
+**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os sete wireframes foram revistos e aprovados por Pedro Soares. Os contratos e limites seguintes continuam a ser propostas preparadas para validação da equipa, não decisões aprovadas, exceto os da US-13, aprovados na sessão. Por isso, as linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md), exceto a US-13 (Sim, 2026-11-19).
 
 **Acessibilidade:** para cada US com interface, a validação planeada inclui TalkBack em PT-PT, com teste de gestos, ativação e anúncio de erro.
 
@@ -100,7 +100,9 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 [Wireframe](design/us-13.html) ([PNG](design/us-13.png)) aprovado.
 
-- **Campos:** proposta de guardar `data_hora` ISO 8601 com fuso Europe/Lisbon, apenas no futuro, e `local` obrigatório com 1 a 200 caracteres. A arquitetura não fixa fuso, horizonte temporal nem limite do local; confirmar estes valores.
+**DoR:** cumprida nesta sessão. A equipa aprovou os limites (data no futuro com fuso Europe/Lisbon, local de 1 a 200 caracteres) e a passagem da fila sem internet para a US-18.
+
+- **Campos:** `data_hora` ISO 8601 com fuso Europe/Lisbon, apenas no futuro, e `local` obrigatório com 1 a 200 caracteres. A arquitetura não fixava fuso, horizonte temporal nem limite do local; estes valores foram confirmados na sessão.
 - **Percurso:** administrador cria a reunião; residentes e administrador consultam `GET /reunioes?desde=`. `POST /reunioes` devolve `201`; a lista devolve `200`, incluindo lista vazia. A criação persiste a reunião antes de qualquer sincronização externa.
 - **Dependências:** a publicação assíncrona pertence à US-28. A fila local sem internet pertence à US-18, que fica sequenciada depois e ainda não foi refinada; até lá, a app não deve afirmar que guardou uma reunião offline.
 - **Falhas:** `403` residente ao criar, `422` data/local inválidos, `503` base de dados indisponível. O estado pendente da publicação não significa que a reunião se perdeu.
