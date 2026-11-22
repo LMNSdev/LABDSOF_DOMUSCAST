@@ -22,6 +22,20 @@ Facilitada por Pedro Soares.
 
 **Próximo passo da equipa:** sessão de [refinamento](refinamento.md) a seguir à daily, para fechar a DoR das primeiras histórias.
 
+## 2026-11-17
+
+Facilitada por Luis Santos. Entrada registada a 2026-11-21.
+
+| Pessoa | Ontem | Hoje | Bloqueios |
+|---|---|---|---|
+| Luis Santos | Integrou a US-01 (PR #96) e o PostgreSQL na porta 5433 (PR #97); atualizou o README e o Sprint Backlog; atribuiu a US-15 e a US-20 a si e a US-02 e a US-03 ao Pedro Soares | Tornar obrigatória a revisão do code owner em todos os PRs; criar as tags de versão automáticas; preparar a VM de produção na Azure e a pipeline de deploy; rever o planeamento (PR #99) | Nenhum reportado |
+| Pedro Soares | Sem progresso desde a daily de 16/11 | Fechar no PR #99 a retrospetiva do Sprint A, a capacidade, o refinamento, a DoR e a distribuição das histórias; implementar a US-15 (#79) | Nenhum reportado |
+| Pedro Costa | Sem progresso desde a daily de 16/11 | Rever o planeamento (PR #99) | Nenhum reportado |
+| Marco Garcia | Sem progresso desde a daily de 16/11 | Sem trabalho atribuído | Nenhum reportado |
+| Leonardo Costa | Sem progresso desde a daily de 16/11 | Sem trabalho atribuído | Nenhum reportado |
+
+**Por atribuir:** US-09 (#84) e US-23 (#86).
+
 ## 2026-11-18
 
 Facilitada por Luis Santos.
@@ -39,3 +53,39 @@ Facilitada por Luis Santos.
 **Por atribuir:** US-03 (#81) e US-09 (#84).
 
 **Dependência:** o defect #105 (atribuído ao Pedro Soares) depende de uma decisão da US-23 (atribuída ao Marco Garcia): ao remover uma identidade, limpar o `nome_normalizado` ou tornar a restrição única só para identidades ativas.
+
+## 2026-11-19
+
+Facilitada por Luis Santos. Entrada registada a 2026-11-21.
+
+| Pessoa | Ontem | Hoje | Bloqueios |
+|---|---|---|---|
+| Luis Santos | Integrou a daily de 18/11 (PR #107), o template de defects (PR #104) e a imagem privada do GHCR (PR #110); reviu os PRs #108 e #109; abriu o PR #111 (credencial OIDC); atribuiu a US-03 ao Leonardo Costa | Rever o PR #108 (US-09) até poder ser integrado; continuar a US-20 (#85) | Nenhum reportado |
+| Pedro Soares | Integrou a pipeline de deploy (PR #103) e as verificações antes de produção (PR #109); abriu o PR #108 (US-09) e respondeu à revisão; reviu os PRs #104, #107 e #110 | Fechar a revisão do PR #108; rever o PR #111; registar o refinamento de 19/11 e distribuir as histórias seguintes; ignorar as verificações de produção em PRs só de `docs/` (#115) | Nenhum reportado |
+| Pedro Costa | Avançou a US-02 (#80) no branch da história | Abrir o PR da US-02 (#80); rever o refinamento de 19/11 | Nenhum reportado |
+| Marco Garcia | Sem progresso desde a daily de 18/11 | Trabalhar na US-23 (#86) | Nenhum reportado |
+| Leonardo Costa | Sem progresso desde a daily de 18/11 | Trabalhar na US-03 (#81) | Nenhum reportado |
+
+## 2026-11-20
+
+Facilitada por Luis Santos. Entrada registada a 2026-11-21.
+
+| Pessoa | Ontem | Hoje | Bloqueios |
+|---|---|---|---|
+| Luis Santos | Reviu e integrou o PR #108, o que fechou a US-09 (#84) | Implementar a US-20 (#85) e a US-23 (#86), que troca com o Marco Garcia pela US-25 (#90), e abrir os PRs; rever os PRs #116, #119 e #120 | Nenhum reportado |
+| Pedro Soares | Respondeu à revisão do PR #108; integrou a credencial OIDC (PR #111) e o refinamento de 19/11 (PR #114); atribuiu a US-05 e a US-22 ao Pedro Costa e a US-13 e a US-28 a si; abriu o PR #116 (#115) | Rever e integrar o PR #112 (US-02); corrigir o defect #105 | Nenhum reportado |
+| Pedro Costa | Abriu o PR #112 (US-02); aprovou o PR #114; atribuiu a US-10 ao Leonardo Costa, a US-24 ao Marco Garcia e a US-25 ao Luis Santos | Acertar as versões do Alembic da US-02 (#80) para o PR #112 poder ser integrado | Nenhum reportado |
+| Marco Garcia | Sem progresso desde a daily de 19/11 | Trabalhar na US-23 (#86) e na US-24 (#89) | Nenhum reportado |
+| Leonardo Costa | Sem progresso desde a daily de 19/11 | Trabalhar na US-03 (#81) e na US-10 (#88) | Nenhum reportado |
+
+## 2026-11-21
+
+Facilitada por Luis Santos.
+
+| Pessoa | Ontem | Hoje | Bloqueios |
+|---|---|---|---|
+| Luis Santos | Abriu os PRs da US-20 (#121) e da US-23 (#122); reviu os PRs #116 e #119; integrou o PR #120, o que fechou o defect #105 | Responder à revisão dos PRs #121 e #122 e integrá-los; rever e integrar os PRs #119, #123 e #124; corrigir as respostas sem permissão de administrador na US-01 (#125); registar as dailies em falta | Nenhum reportado |
+| Pedro Soares | Integrou a US-02 (PR #112), o que fechou a #80; corrigiu o defect #105 (PR #120) | Abrir os PRs da #115 (substitui o #116) e da US-13 (#87); rever os PRs #121, #122 e #126 | Nenhum reportado |
+| Pedro Costa | Acertou as versões do Alembic da US-02 (#80) | Trabalhar na US-05 (#82) e na US-22 (#83) | Nenhum reportado |
+| Marco Garcia | Sem progresso desde a daily de 20/11 | Trabalhar na US-24 (#89) e na US-25 (#90) | Nenhum reportado |
+| Leonardo Costa | Sem progresso desde a daily de 20/11 | Trabalhar na US-03 (#81) e na US-10 (#88) | Nenhum reportado |
