@@ -8,7 +8,7 @@ from pydantic import (
     StringConstraints,
     field_validator,
 )
-from .models import EstadoReporte, EstadoSyncReuniao
+from .models import EstadoAta, EstadoReporte, EstadoSyncReuniao
 
 MAX_FRACOES = 200
 
@@ -168,3 +168,63 @@ class ReuniaoOut(BaseModel):
     def com_fuso(cls, value: datetime) -> datetime:
         # O SQLite devolve datas sem fuso; os valores gravados estão em UTC.
         return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
+# --- US-24: rever e aprovar a ata ---
+
+# Limite provisório (DoR da US-24 por fechar)
+MAX_TEXTO_ATA = 20_000
+
+TextoAta = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_TEXTO_ATA)
+]
+
+
+def _em_utc(value: datetime | None) -> datetime | None:
+    # O SQLite devolve datas sem fuso; os valores gravados estão em UTC.
+    if value is None or value.tzinfo:
+        return value
+    return value.replace(tzinfo=timezone.utc)
+
+
+class AtaRascunhoIn(BaseModel):
+    """Corpo de `PUT /reunioes/{id}/ata`: o texto do rascunho editado."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rascunho: TextoAta
+
+
+class AtaAdminOut(BaseModel):
+    """Vista do administrador: estado, transcrição e rascunho (privados) e a ata aprovada."""
+
+    id: int
+    reuniao_id: int
+    estado: EstadoAta
+    transcricao: Optional[str] = None
+    rascunho: Optional[str] = None
+    texto_aprovado: Optional[str] = None
+    aprovada_em: Optional[datetime] = None
+    aprovada_por: Optional[int] = None
+
+    model_config = {"from_attributes": True}
+
+    @field_validator("aprovada_em")
+    @classmethod
+    def com_fuso(cls, value: datetime | None) -> datetime | None:
+        return _em_utc(value)
+
+
+class AtaPublicaOut(BaseModel):
+    """Vista do residente: só a ata aprovada, sem transcrição, rascunho nem quem aprovou."""
+
+    reuniao_id: int
+    texto_aprovado: str
+    aprovada_em: datetime
+
+    model_config = {"from_attributes": True}
+
+    @field_validator("aprovada_em")
+    @classmethod
+    def com_fuso(cls, value: datetime | None) -> datetime | None:
+        return _em_utc(value)
