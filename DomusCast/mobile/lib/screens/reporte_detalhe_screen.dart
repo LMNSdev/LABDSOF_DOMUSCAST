@@ -27,6 +27,8 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
     with WidgetsBindingObserver {
   Map<String, dynamic>? _reporte;
   Uint8List? _foto;
+  String? _fotoCarregadaUrl;
+  String? _fotoAltCarregado;
   String? _erro;
   bool _loading = true;
   bool _refreshing = false;
@@ -69,10 +71,11 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
         widget.reporteId,
         credencial: widget.credencial,
       );
-      Uint8List? foto;
-      if (reporte['foto_url'] != null) {
+      final fotoUrl = reporte['foto_url'] as String?;
+      Uint8List? novaFoto;
+      if (fotoUrl != null && (_foto == null || _fotoCarregadaUrl != fotoUrl)) {
         try {
-          foto = await widget.api.getReporteFoto(
+          novaFoto = await widget.api.getReporteFoto(
             widget.reporteId,
             credencial: widget.credencial,
           );
@@ -83,7 +86,15 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
       if (!mounted) return;
       setState(() {
         _reporte = reporte;
-        _foto = foto;
+        if (fotoUrl == null) {
+          _foto = null;
+          _fotoCarregadaUrl = null;
+          _fotoAltCarregado = null;
+        } else if (novaFoto != null) {
+          _foto = novaFoto;
+          _fotoCarregadaUrl = fotoUrl;
+          _fotoAltCarregado = reporte['foto_alt'] as String?;
+        }
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -187,7 +198,7 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
                 if (_foto != null) ...[
                   const SizedBox(height: 12),
                   Semantics(
-                    label: r['foto_alt'] as String? ?? 'Foto do reporte',
+                    label: _fotoAltCarregado ?? 'Foto do reporte',
                     image: true,
                     child: Image.memory(_foto!, fit: BoxFit.contain),
                   ),

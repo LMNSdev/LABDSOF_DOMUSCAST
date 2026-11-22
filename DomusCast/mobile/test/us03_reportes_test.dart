@@ -273,6 +273,60 @@ void main() {
     expect(find.bySemanticsLabel('Lâmpada fundida'), findsOneWidget);
   });
 
+  testWidgets('detalhe reutiliza a foto e mantém-na se o refresh falhar', (
+    tester,
+  ) async {
+    final png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==');
+    var pedidosDetalhe = 0;
+    var pedidosFoto = 0;
+    final api = ApiService(client: MockClient((request) async {
+      if (request.url.path.endsWith('/foto')) {
+        pedidosFoto++;
+        if (pedidosFoto == 2) throw http.ClientException('foto indisponível');
+        return http.Response.bytes(Uint8List.fromList(png), 200);
+      }
+      pedidosDetalhe++;
+      return jsonResponse({
+        'id': 7,
+        'descricao': 'Luz fundida',
+        'estado': 'aberto',
+        'foto_url': pedidosDetalhe >= 3
+            ? '/reportes/7/foto?v=2'
+            : '/reportes/7/foto',
+        'foto_alt': pedidosDetalhe >= 3
+            ? 'Nova lâmpada fundida'
+            : 'Lâmpada fundida',
+        'historico': [],
+      });
+    }));
+    await tester.pumpWidget(MaterialApp(home: ReporteDetalheScreen(
+      api: api, reporteId: 7, credencial: 'admin',
+    )));
+    await tester.pumpAndSettle();
+    expect(pedidosFoto, 1);
+    expect(find.bySemanticsLabel('Lâmpada fundida'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pumpAndSettle();
+    expect(pedidosDetalhe, 2);
+    expect(pedidosFoto, 1);
+
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pumpAndSettle();
+    expect(pedidosFoto, 2);
+    expect(find.bySemanticsLabel('Lâmpada fundida'), findsOneWidget);
+    expect(find.bySemanticsLabel('Nova lâmpada fundida'), findsNothing);
+    expect(find.text('Foto indisponível.'), findsNothing);
+
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pumpAndSettle();
+    expect(pedidosFoto, 3);
+    expect(find.bySemanticsLabel('Nova lâmpada fundida'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pumpAndSettle();
+    expect(pedidosFoto, 3);
+  });
+
   testWidgets('administrador vê autor e fração na lista', (tester) async {
     final api = ApiService(client: MockClient((_) async => jsonResponse([{
       'id': 7, 'descricao': 'Luz fundida', 'estado': 'aberto',
