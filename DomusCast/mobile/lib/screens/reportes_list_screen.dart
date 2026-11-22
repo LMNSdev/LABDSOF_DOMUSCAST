@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../widgets/aviso_popup.dart';
 import 'novo_reporte_screen.dart';
+import 'reporte_detalhe_screen.dart';
 
 class ReportesListScreen extends StatefulWidget {
   final ApiService? api;
@@ -22,6 +25,7 @@ class ReportesListScreen extends StatefulWidget {
 
   /// US-23: chamado quando a credencial do residente deixou de ser aceite (401).
   final VoidCallback? onAcessoRemovido;
+  final ValueListenable<bool>? ativo;
 
   const ReportesListScreen({
     super.key,
@@ -31,13 +35,15 @@ class ReportesListScreen extends StatefulWidget {
     this.podeReportar = true,
     this.fila,
     this.onAcessoRemovido,
+    this.ativo,
   });
 
   @override
   State<ReportesListScreen> createState() => _ReportesListScreenState();
 }
 
-class _ReportesListScreenState extends State<ReportesListScreen> {
+class _ReportesListScreenState extends State<ReportesListScreen>
+    with WidgetsBindingObserver {
   late final ApiService _api = widget.api ?? ApiService();
   late final FilaReportes _fila = widget.fila ?? SqliteFilaReportes();
   final _avisoPopup = AvisoPopupController();
@@ -45,15 +51,53 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   bool _loading = true;
   bool _avisoVisivel = false;
   String? _error;
+  String _filtro = 'todos';
+  String? _estado;
+  Timer? _timer;
+  bool _refreshing = false;
+  bool _reloadRequested = false;
+  bool _detailOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addObserver(this);
+    widget.ativo?.addListener(_onAtivo);
+    _updateTimer();
+    if (widget.ativo?.value ?? true) {
+      _load();
+    } else {
+      _loading = false;
+    }
+  }
+
+  void _onAtivo() {
+    _updateTimer();
+    if (widget.ativo?.value == true) _load();
+  }
+
+  void _updateTimer() {
+    _timer?.cancel();
+    _timer = null;
+    if ((widget.ativo?.value ?? true) && !_detailOpen) {
+      _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        (widget.ativo?.value ?? true) &&
+        !_detailOpen) {
+      _load();
+    }
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
+    widget.ativo?.removeListener(_onAtivo);
+    WidgetsBinding.instance.removeObserver(this);
     _avisoPopup.dispose();
     super.dispose();
   }
@@ -90,18 +134,29 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   }
 
   Future<void> _load() async {
+    if (_refreshing) {
+      _reloadRequested = true;
+      return;
+    }
+    _refreshing = true;
     setState(() {
-      _loading = true;
+      _loading = _reportes.isEmpty;
       _error = null;
     });
     await _syncPending();
     try {
-      final reportes = await _api.getReportes(credencial: widget.credencial);
+      final reportes = await _api.getReportes(
+        credencial: widget.credencial,
+        filtro: _filtro,
+        estado: _estado,
+      );
+      if (!mounted) return;
       setState(() {
         _reportes = reportes;
         _loading = false;
       });
     } on ApiException catch (e) {
+      if (!mounted) return;
       final aoRemover = widget.onAcessoRemovido;
       if (e.statusCode == 401 && widget.podeReportar && aoRemover != null) {
         aoRemover();
@@ -116,7 +171,50 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     } on Exception {
       // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
       _semLigacao();
+    } finally {
+      _refreshing = false;
+      if (_reloadRequested && mounted) {
+        _reloadRequested = false;
+        _load();
+      }
     }
+  }
+
+  void _setFiltro(String filtro) {
+    if (_filtro == filtro) return;
+    setState(() {
+      _filtro = filtro;
+      _reportes = [];
+    });
+    _load();
+  }
+
+  void _setEstado(String? estado) {
+    if (_estado == estado) return;
+    setState(() {
+      _estado = estado;
+      _reportes = [];
+    });
+    _load();
+  }
+
+  Future<void> _abrir(Map<String, dynamic> reporte) async {
+    _detailOpen = true;
+    _updateTimer();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ReporteDetalheScreen(
+          api: _api,
+          credencial: widget.credencial,
+          reporteId: reporte['id'] as int,
+          onAcessoRemovido: widget.onAcessoRemovido,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    _detailOpen = false;
+    _updateTimer();
+    _load();
   }
 
   void _semLigacao() {
@@ -128,26 +226,27 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   }
 
   ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(
-      String estado) {
+    String estado,
+  ) {
     return switch (estado) {
       'resolvido' => (
-          bg: const Color(0xFFE8F5E9),
-          fg: const Color(0xFF2E7D32),
-          label: 'Resolvido',
-          icon: Icons.check_circle_outline,
-        ),
+        bg: const Color(0xFFE8F5E9),
+        fg: const Color(0xFF2E7D32),
+        label: 'Resolvido',
+        icon: Icons.check_circle_outline,
+      ),
       'em_curso' => (
-          bg: const Color(0xFFFFF3E0),
-          fg: const Color(0xFFE65100),
-          label: 'Em curso',
-          icon: Icons.autorenew,
-        ),
+        bg: const Color(0xFFFFF3E0),
+        fg: const Color(0xFFE65100),
+        label: 'Em curso',
+        icon: Icons.autorenew,
+      ),
       _ => (
-          bg: const Color(0xFFFFEBEE),
-          fg: const Color(0xFFC62828),
-          label: 'Aberto',
-          icon: Icons.error_outline,
-        ),
+        bg: const Color(0xFFFFEBEE),
+        fg: const Color(0xFFC62828),
+        label: 'Aberto',
+        icon: Icons.error_outline,
+      ),
     };
   }
 
@@ -164,21 +263,78 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final body = _loading
+    final content = _loading
         ? const Center(child: CircularProgressIndicator())
         : _error != null
-            ? _buildError()
-            : _reportes.isEmpty
-                ? _buildEmpty()
-                : RefreshIndicator(
-                    onRefresh: _load,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 16),
-                      itemCount: _reportes.length,
-                      itemBuilder: (context, i) => _buildCard(_reportes[i]),
-                    ),
-                  );
+        ? _buildError()
+        : _reportes.isEmpty
+        ? LayoutBuilder(
+            builder: (context, constraints) => RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: constraints.maxHeight, child: _buildEmpty()),
+                ],
+              ),
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _load,
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              itemCount: _reportes.length,
+              itemBuilder: (context, i) => _buildCard(_reportes[i]),
+            ),
+          );
+
+    final body = Column(
+      children: [
+        if (widget.podeReportar)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('Todos'),
+                  selected: _filtro == 'todos',
+                  onSelected: (_) => _setFiltro('todos'),
+                ),
+                const SizedBox(width: 8),
+                ChoiceChip(
+                  label: const Text('Os meus'),
+                  selected: _filtro == 'meus',
+                  onSelected: (_) => _setFiltro('meus'),
+                ),
+              ],
+            ),
+          ),
+        SizedBox(
+          height: 56,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              for (final (value, label) in [
+                (null, 'Qualquer estado'),
+                ('aberto', 'Aberto'),
+                ('em_curso', 'Em curso'),
+                ('resolvido', 'Resolvido'),
+              ]) ...[
+                ChoiceChip(
+                  label: Text(label),
+                  selected: _estado == value,
+                  onSelected: (_) => _setEstado(value),
+                ),
+                const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ),
+        Expanded(child: content),
+      ],
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -255,10 +411,12 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     final fracao = r['fracao'] as String?;
     final autor = r['autor_removido'] == true
         // US-23: só o administrador recebe a fração de um autor removido.
-        ? (fracao != null ? 'Residente removido, fração $fracao' : 'Residente removido')
+        ? (fracao != null
+              ? 'Residente removido, fração $fracao'
+              : 'Residente removido')
         : autorNome != null && fracao != null
-            ? '$autorNome, fração $fracao'
-            : (autorNome ?? 'Residente');
+        ? '$autorNome, fração $fracao'
+        : (autorNome ?? 'Residente');
     return data.isEmpty ? autor : '$autor - $data';
   }
 
@@ -266,87 +424,107 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
     final estado = r['estado'] as String? ?? 'aberto';
     final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
+    final atualizacao = _formatDate(r['atualizado_em'] as String?);
     final nomeVisivelAoAdmin =
-        r['fracao'] != null && r['mostrar_nome'] == true && r['autor_removido'] != true;
+        r['fracao'] != null &&
+        r['mostrar_nome'] == true &&
+        r['autor_removido'] != true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    r['descricao'] as String? ?? '',
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w500),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _autorTexto(r, data),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (nomeVisivelAoAdmin) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+      child: InkWell(
+        onTap: () => _abrir(r),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
                     child: Text(
-                      'nome visível',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                      r['descricao'] as String? ?? '',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: style.bg,
-                    borderRadius: BorderRadius.circular(20),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _autorTexto(r, data),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(style.icon, size: 13, color: style.fg),
-                      const SizedBox(width: 4),
-                      Text(
-                        style.label,
+                  if (nomeVisivelAoAdmin) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'nome visível',
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: style.fg,
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
-                    ],
+                    ),
+                  ],
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: style.bg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(style.icon, size: 13, color: style.fg),
+                        const SizedBox(width: 4),
+                        Text(
+                          style.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: style.fg,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Criado: $data · Atualizado: $atualizacao',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              if (r['duplicado_de_id'] != null)
+                Text('Duplicado do #${r['duplicado_de_id']}'),
+            ],
+          ),
         ),
       ),
     );
@@ -385,11 +563,18 @@ class _ReportesListScreenState extends State<ReportesListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_outline,
-                size: 64, color: Colors.grey.shade400),
+            Icon(
+              Icons.check_circle_outline,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 16),
             Text(
-              'Nenhum reporte ainda',
+              _filtro == 'meus'
+                  ? 'Ainda não reportou nenhum problema.'
+                  : _estado != null
+                  ? 'Nenhum reporte neste estado.'
+                  : 'Nenhum reporte ainda',
               style: TextStyle(
                 color: Colors.grey.shade600,
                 fontSize: 18,

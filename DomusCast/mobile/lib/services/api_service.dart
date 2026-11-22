@@ -30,19 +30,43 @@ class ApiService {
   final String baseUrl;
   final http.Client _client;
 
-  ApiService({
-    this.baseUrl = kApiBaseUrl,
-    http.Client? client,
-  }) : _client = client ?? http.Client();
+  ApiService({this.baseUrl = kApiBaseUrl, http.Client? client})
+    : _client = client ?? http.Client();
 
   /// US-09: o residente recebe `autor_nome` só se o autor o mostrou e nunca a
   /// `fracao`; `meu` indica os seus reportes. O administrador recebe nome e fração.
-  Future<List<Map<String, dynamic>>> getReportes({String? credencial}) async {
+  Future<List<Map<String, dynamic>>> getReportes({
+    String? credencial,
+    String filtro = 'todos',
+    String? estado,
+  }) async {
+    final query = <String, String>{
+      if (filtro != 'todos') 'filtro': filtro,
+      if (estado != null) 'estado': estado,
+    };
     final r = await _client.get(
-      Uri.parse('$baseUrl/reportes'),
+      Uri.parse('$baseUrl/reportes')
+          .replace(queryParameters: query.isEmpty ? null : query),
       headers: credencial == null ? null : _auth(credencial),
     );
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> getReporte(int id, {String? credencial}) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reportes/$id'),
+      headers: credencial == null ? null : _auth(credencial),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
+  Future<Uint8List> getReporteFoto(int id, {String? credencial}) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reportes/$id/foto'),
+      headers: credencial == null ? null : _auth(credencial),
+    );
+    if (r.statusCode != 200) throw _apiException(r);
+    return r.bodyBytes;
   }
 
   /// Erros: 401 sem credencial válida, 403 administrador, 422 dados inválidos.
@@ -73,19 +97,17 @@ class ApiService {
       };
     }
 
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/reportes'),
-    )
-      ..headers.addAll({
-        ..._auth(credencial),
-        'Idempotency-Key': idempotencyKey,
-      })
-      ..fields.addAll({
-        'descricao': descricao,
-        'mostrar_nome': mostrarNome.toString(),
-        if (fotoAlt != null) 'foto_alt': fotoAlt,
-      });
+    final request =
+        http.MultipartRequest('POST', Uri.parse('$baseUrl/reportes'))
+          ..headers.addAll({
+            ..._auth(credencial),
+            'Idempotency-Key': idempotencyKey,
+          })
+          ..fields.addAll({
+            'descricao': descricao,
+            'mostrar_nome': mostrarNome.toString(),
+            if (fotoAlt != null) 'foto_alt': fotoAlt,
+          });
 
     if (fotoBytes != null) {
       request.files.add(
@@ -108,8 +130,9 @@ class ApiService {
 
   // --- US-01: condomínio, frações e QR codes -------------------------------
 
-  Map<String, String> _auth(String credencial) =>
-      {'Authorization': 'Bearer $credencial'};
+  Map<String, String> _auth(String credencial) => {
+    'Authorization': 'Bearer $credencial',
+  };
 
   dynamic _corpo(http.Response r, int esperado) {
     if (r.statusCode != esperado) throw _apiException(r);
@@ -141,15 +164,20 @@ class ApiService {
     final r = await _client.post(
       Uri.parse('$baseUrl/condominios'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(
-          {'nome': nome, 'nome_admin': nomeAdmin, 'n_fracoes': nFracoes}),
+      body: jsonEncode({
+        'nome': nome,
+        'nome_admin': nomeAdmin,
+        'n_fracoes': nFracoes,
+      }),
     );
     return _corpo(r, 201) as Map<String, dynamic>;
   }
 
   /// Lista `{id, designacao, n_residentes}` das frações do condomínio.
   Future<List<Map<String, dynamic>>> getFracoes(
-      int condominioId, String credencial) async {
+    int condominioId,
+    String credencial,
+  ) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/condominios/$condominioId/fracoes'),
       headers: _auth(credencial),
@@ -169,7 +197,10 @@ class ApiService {
   // --- US-20: revogar QR codes ----------------------------------------------
 
   /// Lista `{id, criado_em, n_residentes}` dos QR codes ativos da fração, sem o token.
-  Future<List<Map<String, dynamic>>> getQrAtivos(int fracaoId, String credencial) async {
+  Future<List<Map<String, dynamic>>> getQrAtivos(
+    int fracaoId,
+    String credencial,
+  ) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/fracoes/$fracaoId/qr'),
       headers: _auth(credencial),
@@ -215,7 +246,10 @@ class ApiService {
   // --- US-23: remover identidade ---------------------------------------------
 
   /// Lista `{id, nome, criado_em}` dos residentes ativos da fração (administrador).
-  Future<List<Map<String, dynamic>>> getIdentidadesFracao(int fracaoId, String credencial) async {
+  Future<List<Map<String, dynamic>>> getIdentidadesFracao(
+    int fracaoId,
+    String credencial,
+  ) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/fracoes/$fracaoId/identidades'),
       headers: _auth(credencial),
@@ -253,7 +287,10 @@ class ApiService {
     final r = await _client.post(
       Uri.parse('$baseUrl/reunioes'),
       headers: {..._auth(credencial), 'Content-Type': 'application/json'},
-      body: jsonEncode({'data_hora': dataHora.toUtc().toIso8601String(), 'local': local}),
+      body: jsonEncode({
+        'data_hora': dataHora.toUtc().toIso8601String(),
+        'local': local,
+      }),
     );
     return _corpo(r, 201) as Map<String, dynamic>;
   }
