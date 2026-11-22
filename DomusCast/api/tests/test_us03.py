@@ -1,7 +1,11 @@
 from datetime import timedelta
 
+import pytest
+from sqlalchemy.exc import OperationalError
+
 from app import models
-from tests.test_reportes import auth, criar_duas_sessoes_na_mesma_fracao, criar_sessao, reportar
+from app.security import hash_token
+from tests.test_reportes import _criar_residente, auth, criar_duas_sessoes_na_mesma_fracao, criar_sessao, reportar
 
 
 def test_filtros_ordem_e_privacidade(client, db):
@@ -34,10 +38,11 @@ def test_detalhe_historico_e_isolamento(client, db):
     admin, residente, _, _ = criar_duas_sessoes_na_mesma_fracao(client)
     criado = reportar(client, residente, "Fuga", mostrar_nome="false").json()
     modelo = db.get(models.Reporte, criado["id"])
+    administrador = db.query(models.Administrador).filter_by(credencial_hash=hash_token(admin)).one()
     db.add(models.ReporteHistorico(
         reporte_id=modelo.id, estado_anterior=models.EstadoReporte.aberto,
         estado_novo=models.EstadoReporte.em_curso, nota="Técnico agendado",
-        autor_tipo="administrador", autor_id=1,
+        autor_tipo="administrador", autor_id=administrador.id,
         criado_em=modelo.criado_em + timedelta(days=1),
     ))
     db.commit()
@@ -53,6 +58,7 @@ def test_detalhe_historico_e_isolamento(client, db):
     for token in (outro_admin, outro_residente):
         assert client.get(f"/reportes/{criado['id']}", headers=auth(token)).status_code == 404
     assert client.get(f"/reportes/{criado['id']}").status_code == 401
+    assert client.get("/reportes/999999", headers=auth(residente)).status_code == 404
 
 
 def test_co_reporter_aparece_em_meus(client, db):
@@ -83,8 +89,31 @@ def test_foto_autenticada(client, db, tmp_path, monkeypatch):
     assert detalhe["foto_url"] == f"/reportes/{criado['id']}/foto"
     foto = client.get(detalhe["foto_url"], headers=auth(residente))
     assert foto.status_code == 200
+    assert foto.headers["cache-control"] == "private, no-store"
     assert foto.content[:2] == b"\xff\xd8"
     assert client.get(detalhe["foto_url"]).status_code == 401
     from tests.test_reportes import _criar_residente
     _, outro_residente = _criar_residente(db)
     assert client.get(detalhe["foto_url"], headers=auth(outro_residente)).status_code == 404
+
+
+def test_foto_ausente_devolve_404(client, db):
+    _, residente = _criar_residente(db)
+    criado = reportar(client, residente, "Sem foto").json()
+    assert client.get(f"/reportes/{criado['id']}/foto", headers=auth(residente)).status_code == 404
+
+
+@pytest.mark.parametrize("sufixo", ["", "/1"])
+def test_consulta_com_base_indisponivel_devolve_503(client, db, monkeypatch, sufixo):
+    _, residente = _criar_residente(db)
+    consulta_original = db.query
+
+    def falhar_so_reportes(modelo, *args):
+        if modelo is models.Reporte:
+            raise OperationalError("SELECT", {}, Exception("ligação perdida"))
+        return consulta_original(modelo, *args)
+
+    monkeypatch.setattr(db, "query", falhar_so_reportes)
+    resposta = client.get(f"/reportes{sufixo}", headers=auth(residente))
+    assert resposta.status_code == 503
+    assert resposta.json()["codigo"] == "servico_indisponivel"

@@ -53,12 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Map<Separador, GlobalKey<NavigatorState>> _navs = {
     for (final s in _separadores) s: GlobalKey<NavigatorState>(),
   };
-  late int _atual = _separadores
-      .indexOf(widget.separadorInicial)
-      .clamp(0, _separadores.length - 1);
-  late final ValueNotifier<bool> _reportesAtivos = ValueNotifier(
-    _separadores[_atual] == Separador.reportes,
-  );
+  late int _atual = _separadores.indexOf(widget.separadorInicial).clamp(0, _separadores.length - 1);
+
+  late final ValueNotifier<bool> _reportesAtivos =
+      ValueNotifier(_separadores[_atual] == Separador.reportes);
 
   @override
   void dispose() {
@@ -67,50 +65,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _raiz(Separador s) => switch (s) {
-    Separador.reportes => ReportesListScreen(
-      api: widget.api,
-      credencial:
-          widget.sessao?.credencial ?? widget.sessaoResidente?.credencial,
-      nomeResidente: widget.sessaoResidente?.nome,
-      podeReportar: widget.sessao == null,
-      fila: widget.fila,
-      onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
-      ativo: _reportesAtivos,
-    ),
-    Separador.reunioes => ReunioesScreen(
-      api: widget.api,
-      credencial: widget.sessao?.credencial,
-    ),
-    Separador.avisos => const SizedBox.shrink(),
-    Separador.condominio => CondominioScreen(
-      api: widget.api,
-      sessao: widget.sessao!,
-    ),
-  };
+        Separador.reportes => ReportesListScreen(
+            api: widget.api,
+            credencial: widget.sessao?.credencial ?? widget.sessaoResidente?.credencial,
+            nomeResidente: widget.sessaoResidente?.nome,
+            podeReportar: widget.sessao == null,
+            fila: widget.fila,
+            onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
+            ativo: _reportesAtivos,
+          ),
+        Separador.reunioes => ReunioesScreen(api: widget.api, credencial: widget.sessao?.credencial),
+        Separador.avisos => const SizedBox.shrink(),
+        Separador.condominio => CondominioScreen(api: widget.api, sessao: widget.sessao!),
+      };
 
   NavigationDestination _destino(Separador s) => switch (s) {
-    Separador.reportes => const NavigationDestination(
-      icon: Icon(Icons.report_problem_outlined),
-      selectedIcon: Icon(Icons.report_problem),
-      label: 'Reportes',
-    ),
-    Separador.reunioes => const NavigationDestination(
-      icon: Icon(Icons.event_outlined),
-      selectedIcon: Icon(Icons.event),
-      label: 'Reuniões',
-    ),
-    Separador.avisos => const NavigationDestination(
-      icon: Icon(Icons.campaign_outlined),
-      label: 'Avisos',
-      enabled: false,
-      tooltip: 'Em breve',
-    ),
-    Separador.condominio => const NavigationDestination(
-      icon: Icon(Icons.apartment_outlined),
-      selectedIcon: Icon(Icons.apartment),
-      label: 'Condomínio',
-    ),
-  };
+        Separador.reportes => const NavigationDestination(
+            icon: Icon(Icons.report_problem_outlined),
+            selectedIcon: Icon(Icons.report_problem),
+            label: 'Reportes',
+          ),
+        Separador.reunioes => const NavigationDestination(
+            icon: Icon(Icons.event_outlined),
+            selectedIcon: Icon(Icons.event),
+            label: 'Reuniões',
+          ),
+        Separador.avisos => const NavigationDestination(
+            icon: Icon(Icons.campaign_outlined),
+            label: 'Avisos',
+            enabled: false,
+            tooltip: 'Em breve',
+          ),
+        Separador.condominio => const NavigationDestination(
+            icon: Icon(Icons.apartment_outlined),
+            selectedIcon: Icon(Icons.apartment),
+            label: 'Condomínio',
+          ),
+      };
 
   /// US-23: a API deixou de aceitar a credencial do residente. Apaga-a e mostra
   /// o aviso em vez da app; a fila offline fica no telemóvel.
@@ -119,9 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await store.apagar();
     if (!mounted) return;
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => AcessoRemovidoScreen(api: widget.api, store: store),
-      ),
+      MaterialPageRoute(builder: (_) => AcessoRemovidoScreen(api: widget.api, store: store)),
       (_) => false,
     );
   }
@@ -164,8 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
             for (final s in _separadores)
               Navigator(
                 key: _navs[s],
-                onGenerateRoute: (_) =>
-                    MaterialPageRoute(builder: (_) => _raiz(s)),
+                onGenerateRoute: (_) => MaterialPageRoute(builder: (_) => _raiz(s)),
               ),
           ],
         ),

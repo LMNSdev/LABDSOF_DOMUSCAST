@@ -57,6 +57,8 @@ class _ReportesListScreenState extends State<ReportesListScreen>
   bool _refreshing = false;
   bool _reloadRequested = false;
   bool _detailOpen = false;
+  bool _foreground = true;
+  int _filterVersion = 0;
 
   @override
   void initState() {
@@ -73,22 +75,22 @@ class _ReportesListScreenState extends State<ReportesListScreen>
 
   void _onAtivo() {
     _updateTimer();
-    if (widget.ativo?.value == true) _load();
+    if (_foreground && widget.ativo?.value == true) _load();
   }
 
   void _updateTimer() {
     _timer?.cancel();
     _timer = null;
-    if ((widget.ativo?.value ?? true) && !_detailOpen) {
+    if (_foreground && (widget.ativo?.value ?? true) && !_detailOpen) {
       _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        (widget.ativo?.value ?? true) &&
-        !_detailOpen) {
+    _foreground = state == AppLifecycleState.resumed;
+    _updateTimer();
+    if (_foreground && (widget.ativo?.value ?? true) && !_detailOpen) {
       _load();
     }
   }
@@ -139,38 +141,45 @@ class _ReportesListScreenState extends State<ReportesListScreen>
       return;
     }
     _refreshing = true;
+    final version = _filterVersion;
     setState(() {
       _loading = _reportes.isEmpty;
       _error = null;
     });
-    await _syncPending();
     try {
+      await _syncPending();
       final reportes = await _api.getReportes(
         credencial: widget.credencial,
         filtro: _filtro,
         estado: _estado,
       );
-      if (!mounted) return;
+      if (!mounted || version != _filterVersion) return;
       setState(() {
         _reportes = reportes;
         _loading = false;
       });
     } on ApiException catch (e) {
-      if (!mounted) return;
+      if (!mounted || version != _filterVersion) return;
       final aoRemover = widget.onAcessoRemovido;
       if (e.statusCode == 401 && widget.podeReportar && aoRemover != null) {
         aoRemover();
         return;
       }
+      if (e.statusCode != 401 && _reportes.isNotEmpty) {
+        _avisoFalhaRefresh();
+        return;
+      }
       setState(() {
         _error = e.statusCode == 401
-            ? 'A sua identidade já não é válida.'
+            ? (widget.podeReportar
+                  ? 'A sua identidade já não é válida.'
+                  : 'A sua sessão já não é válida.')
             : 'Não foi possível carregar os reportes.';
         _loading = false;
       });
     } on Exception {
       // Sem rede ou falha de ligação (inclui HandshakeException e TimeoutException).
-      _semLigacao();
+      if (version == _filterVersion) _semLigacao();
     } finally {
       _refreshing = false;
       if (_reloadRequested && mounted) {
@@ -184,6 +193,7 @@ class _ReportesListScreenState extends State<ReportesListScreen>
     if (_filtro == filtro) return;
     setState(() {
       _filtro = filtro;
+      _filterVersion++;
       _reportes = [];
     });
     _load();
@@ -193,6 +203,7 @@ class _ReportesListScreenState extends State<ReportesListScreen>
     if (_estado == estado) return;
     setState(() {
       _estado = estado;
+      _filterVersion++;
       _reportes = [];
     });
     _load();
@@ -219,10 +230,21 @@ class _ReportesListScreenState extends State<ReportesListScreen>
 
   void _semLigacao() {
     if (!mounted) return;
+    if (_reportes.isNotEmpty) {
+      _avisoFalhaRefresh();
+      return;
+    }
     setState(() {
       _error = 'Sem ligação ao servidor';
       _loading = false;
     });
+  }
+
+  void _avisoFalhaRefresh() {
+    setState(() => _loading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sem ligação. A mostrar a última lista.')),
+    );
   }
 
   ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(

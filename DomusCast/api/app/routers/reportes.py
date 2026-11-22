@@ -317,21 +317,21 @@ def listar_reportes(
     condominio_id = (
         quem.condominio_id if isinstance(quem, models.Administrador) else quem.fracao.condominio_id
     )
-    query = db.query(models.Reporte).options(joinedload(models.Reporte.autor).joinedload(models.Identidade.fracao))
-    query = query.filter(models.Reporte.condominio_id == condominio_id)
-    if filtro == "meus":
-        if isinstance(quem, models.Administrador):
-            raise HTTPException(status_code=422, detail="O filtro 'meus' é só para residentes.")
-        query = query.filter(
-            (models.Reporte.autor_id == quem.id)
-            | models.Reporte.seguidores.any(
-                (models.ReporteSeguidor.identidade_id == quem.id)
-                & (models.ReporteSeguidor.tipo == models.TipoSeguidor.co_reporter)
-            )
-        )
-    if estado is not None:
-        query = query.filter(models.Reporte.estado == estado)
+    if filtro == "meus" and isinstance(quem, models.Administrador):
+        raise HTTPException(status_code=422, detail="O filtro 'meus' é só para residentes.")
     try:
+        query = db.query(models.Reporte).options(joinedload(models.Reporte.autor).joinedload(models.Identidade.fracao))
+        query = query.filter(models.Reporte.condominio_id == condominio_id)
+        if filtro == "meus":
+            query = query.filter(
+                (models.Reporte.autor_id == quem.id)
+                | models.Reporte.seguidores.any(
+                    (models.ReporteSeguidor.identidade_id == quem.id)
+                    & (models.ReporteSeguidor.tipo == models.TipoSeguidor.co_reporter)
+                )
+            )
+        if estado is not None:
+            query = query.filter(models.Reporte.estado == estado)
         reportes = query.order_by(models.Reporte.atualizado_em.desc(), models.Reporte.id.desc()).all()
     except OperationalError as exc:
         raise _indisponivel() from exc
@@ -383,4 +383,4 @@ def obter_foto(
     caminho = MEDIA_ROOT / reporte.foto_path
     if not caminho.is_file():
         raise HTTPException(status_code=404, detail="Foto não encontrada.")
-    return FileResponse(caminho)
+    return FileResponse(caminho, headers={"Cache-Control": "private, no-store"})

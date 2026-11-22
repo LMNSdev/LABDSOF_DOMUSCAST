@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -22,21 +23,45 @@ class ReporteDetalheScreen extends StatefulWidget {
   State<ReporteDetalheScreen> createState() => _ReporteDetalheScreenState();
 }
 
-class _ReporteDetalheScreenState extends State<ReporteDetalheScreen> {
+class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
+    with WidgetsBindingObserver {
   Map<String, dynamic>? _reporte;
   Uint8List? _foto;
   String? _erro;
   bool _loading = true;
+  bool _refreshing = false;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
     _load();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _timer?.cancel();
+    _timer = null;
+    if (state == AppLifecycleState.resumed) {
+      _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+      _load();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   Future<void> _load() async {
+    if (_refreshing) return;
+    _refreshing = true;
     setState(() {
-      _loading = true;
+      _loading = _reporte == null;
       _erro = null;
     });
     try {
@@ -67,19 +92,38 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen> {
         widget.onAcessoRemovido!();
         return;
       }
+      if (_reporte != null && e.statusCode != 401) {
+        _avisarFalha();
+        return;
+      }
       setState(() {
-        _erro = e.statusCode == 404
+        _erro = e.statusCode == 401
+            ? 'A sua sessão já não é válida.'
+            : e.statusCode == 404
             ? 'Reporte não encontrado.'
             : 'Não foi possível carregar o reporte. Verifique a ligação.';
         _loading = false;
       });
     } on Exception {
       if (!mounted) return;
+      if (_reporte != null) {
+        _avisarFalha();
+        return;
+      }
       setState(() {
         _erro = 'Não foi possível carregar o reporte. Verifique a ligação.';
         _loading = false;
       });
+    } finally {
+      _refreshing = false;
     }
+  }
+
+  void _avisarFalha() {
+    setState(() => _loading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sem ligação. A mostrar o último reporte.')),
+    );
   }
 
   String _data(dynamic value) {
