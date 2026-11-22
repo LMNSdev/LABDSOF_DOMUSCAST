@@ -45,7 +45,9 @@ class EstadoSyncReuniao(str, enum.Enum):
 
 
 class EstadoAta(str, enum.Enum):
-    rascunho = "rascunho"
+    a_transcrever = "a_transcrever"
+    pendente_revisao = "pendente_revisao"
+    falhou_transcricao = "falhou_transcricao"
     aprovada = "aprovada"
 
 
@@ -287,14 +289,14 @@ class Reuniao(Base):
     )
 
     condominio = relationship("Condominio", back_populates="reunioes")
-    atas = relationship("Ata", back_populates="reuniao")
+    ata = relationship("Ata", back_populates="reuniao", uselist=False)
 
 
 class Ata(Base):
     __tablename__ = "ata"
 
     id = Column(Integer, primary_key=True)
-    reuniao_id = Column(Integer, ForeignKey("reuniao.id"), nullable=False)
+    reuniao_id = Column(Integer, ForeignKey("reuniao.id"), nullable=False, unique=True)
     audio_path = Column(String(500), nullable=True)
     transcricao = Column(Text, nullable=True)
     rascunho = Column(Text, nullable=True)
@@ -302,11 +304,11 @@ class Ata(Base):
     estado = Column(
         Enum(EstadoAta, name="estado_ata"),
         nullable=False,
-        server_default="rascunho",
     )
     aprovada_em = Column(DateTime(timezone=True), nullable=True)
+    aprovada_por = Column(Integer, ForeignKey("administrador.id"), nullable=True)
 
-    reuniao = relationship("Reuniao", back_populates="atas")
+    reuniao = relationship("Reuniao", back_populates="ata")
 
 
 class Job(Base):
