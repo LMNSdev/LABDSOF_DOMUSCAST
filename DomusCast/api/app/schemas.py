@@ -119,6 +119,7 @@ class ReporteOut(BaseModel):
     id: int
     descricao: str
     foto_url: Optional[str] = None
+    foto_alt: Optional[str] = None
     estado: EstadoReporte
     criado_em: datetime
     atualizado_em: datetime
@@ -128,6 +129,19 @@ class ReporteOut(BaseModel):
     meu: bool = False
     # US-23: só na vista do administrador, para mostrar "Residente removido, fração A".
     autor_removido: bool = False
+    duplicado_de_id: Optional[int] = None
+
+
+class ReporteHistoricoOut(BaseModel):
+    estado_anterior: Optional[EstadoReporte] = None
+    estado_novo: EstadoReporte
+    nota: Optional[str] = None
+    autor_tipo: str
+    criado_em: datetime
+
+
+class ReporteDetalheOut(ReporteOut):
+    historico: list[ReporteHistoricoOut]
 
 
 # --- US-13: reuniões ---
