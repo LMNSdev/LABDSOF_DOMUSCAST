@@ -16,6 +16,16 @@ class ApiException implements Exception {
   String toString() => mensagem ?? 'ApiException($statusCode, $codigo)';
 }
 
+/// Fonte do áudio selecionado. O stream evita carregar ficheiros grandes na memória.
+class AudioAta {
+  final String nome;
+  final int tamanho;
+  final Stream<List<int>> Function() abrirStream;
+
+  const AudioAta(
+      {required this.nome, required this.tamanho, required this.abrirStream});
+}
+
 /// Endereço da API. Definido no build com `--dart-define=API_BASE_URL=...`
 /// (o APK da pipeline aponta para a VM em HTTPS); sem ele, usa o host da
 /// máquina vista a partir do emulador Android.
@@ -195,7 +205,8 @@ class ApiService {
   // --- US-20: revogar QR codes ----------------------------------------------
 
   /// Lista `{id, criado_em, n_residentes}` dos QR codes ativos da fração, sem o token.
-  Future<List<Map<String, dynamic>>> getQrAtivos(int fracaoId, String credencial) async {
+  Future<List<Map<String, dynamic>>> getQrAtivos(
+      int fracaoId, String credencial) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/fracoes/$fracaoId/qr'),
       headers: _auth(credencial),
@@ -241,7 +252,8 @@ class ApiService {
   // --- US-23: remover identidade ---------------------------------------------
 
   /// Lista `{id, nome, criado_em}` dos residentes ativos da fração (administrador).
-  Future<List<Map<String, dynamic>>> getIdentidadesFracao(int fracaoId, String credencial) async {
+  Future<List<Map<String, dynamic>>> getIdentidadesFracao(
+      int fracaoId, String credencial) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/fracoes/$fracaoId/identidades'),
       headers: _auth(credencial),
@@ -261,9 +273,12 @@ class ApiService {
   // --- US-13: reuniões -------------------------------------------------------
 
   /// Reuniões de hoje em diante, por data: `{id, data_hora, local, estado_sync, criado_em}`.
-  Future<List<Map<String, dynamic>>> getReunioes(String credencial) async {
+  Future<List<Map<String, dynamic>>> getReunioes(String credencial,
+      {bool incluirPassadas = false}) async {
     final r = await _client.get(
-      Uri.parse('$baseUrl/reunioes'),
+      Uri.parse('$baseUrl/reunioes').replace(
+        queryParameters: incluirPassadas ? {'incluir_passadas': 'true'} : null,
+      ),
       headers: _auth(credencial),
     );
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
@@ -279,8 +294,50 @@ class ApiService {
     final r = await _client.post(
       Uri.parse('$baseUrl/reunioes'),
       headers: {..._auth(credencial), 'Content-Type': 'application/json'},
-      body: jsonEncode({'data_hora': dataHora.toUtc().toIso8601String(), 'local': local}),
+      body: jsonEncode(
+          {'data_hora': dataHora.toUtc().toIso8601String(), 'local': local}),
     );
     return _corpo(r, 201) as Map<String, dynamic>;
+  }
+
+  // --- US-10: transcrição privada da ata -----------------------------------
+
+  Future<Map<String, dynamic>> getAta(int reuniaoId, String credencial) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata'),
+      headers: _auth(credencial),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> carregarAudioAta({
+    required int reuniaoId,
+    required String credencial,
+    required AudioAta audio,
+  }) async {
+    final extensao = audio.nome.split('.').last.toLowerCase();
+    final subtipo = switch (extensao) {
+      'mp3' => 'mpeg',
+      'm4a' => 'mp4',
+      'wav' => 'wav',
+      _ => throw ArgumentError('Use um ficheiro MP3, M4A ou WAV.'),
+    };
+    if (audio.tamanho == 0 || audio.tamanho > 200 * 1024 * 1024) {
+      throw ArgumentError('O áudio deve ter entre 1 byte e 200 MB.');
+    }
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata/audio'),
+    )..headers.addAll(_auth(credencial));
+    request.files.add(http.MultipartFile(
+      'audio',
+      audio.abrirStream(),
+      audio.tamanho,
+      filename: audio.nome,
+      contentType: MediaType('audio', subtipo),
+    ));
+    final streamed = await _client.send(request);
+    final response = await http.Response.fromStream(streamed);
+    return _corpo(response, 202) as Map<String, dynamic>;
   }
 }

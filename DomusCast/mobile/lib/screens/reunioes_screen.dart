@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import 'ata_screen.dart';
 import 'nova_reuniao_screen.dart';
 
 /// Separador "Reuniões".
@@ -33,7 +34,8 @@ class ReunioesScreen extends StatelessWidget {
               Icon(Icons.event_outlined, size: 56, color: muted),
               const SizedBox(height: 12),
               Text('As reuniões vão aparecer aqui.',
-                  textAlign: TextAlign.center, style: TextStyle(color: muted, fontSize: 16)),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: muted, fontSize: 16)),
             ],
           ),
         ),
@@ -70,6 +72,7 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
   List<Map<String, dynamic>> _reunioes = [];
   bool _aCarregar = true;
   String? _erro;
+  bool _incluirPassadas = false;
 
   @override
   void initState() {
@@ -83,7 +86,10 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
       _erro = null;
     });
     try {
-      final reunioes = await widget.api.getReunioes(widget.credencial);
+      final reunioes = await widget.api.getReunioes(
+        widget.credencial,
+        incluirPassadas: _incluirPassadas,
+      );
       if (!mounted) return;
       setState(() {
         _reunioes = reunioes;
@@ -100,41 +106,58 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
 
   Future<void> _agendar() async {
     final criada = await Navigator.of(context).push<bool>(MaterialPageRoute(
-      builder: (_) => NovaReuniaoScreen(api: widget.api, credencial: widget.credencial),
+      builder: (_) =>
+          NovaReuniaoScreen(api: widget.api, credencial: widget.credencial),
     ));
     if (criada != true || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reunião agendada.')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Reunião agendada.')));
     await _carregar();
+  }
+
+  Future<void> _abrirAta(Map<String, dynamic> reuniao) async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => AtaScreen(
+        api: widget.api,
+        credencial: widget.credencial,
+        reuniao: reuniao,
+      ),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final Widget corpo;
+    final Widget lista;
     if (_aCarregar) {
-      corpo = const Center(child: CircularProgressIndicator());
+      lista = const Center(child: CircularProgressIndicator());
     } else if (_erro != null) {
-      corpo = Center(
+      lista = Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(_erro!, textAlign: TextAlign.center),
-          TextButton(onPressed: _carregar, child: const Text('Tentar novamente')),
+          TextButton(
+              onPressed: _carregar, child: const Text('Tentar novamente')),
         ]),
       );
     } else if (_reunioes.isEmpty) {
-      corpo = Center(
+      lista = Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.event_outlined, size: 56, color: scheme.onSurfaceVariant),
+            Icon(Icons.event_outlined,
+                size: 56, color: scheme.onSurfaceVariant),
             const SizedBox(height: 12),
-            Text('Ainda não há reuniões agendadas.',
+            Text(
+                _incluirPassadas
+                    ? 'Ainda não há reuniões.'
+                    : 'Ainda não há reuniões agendadas.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 16)),
           ]),
         ),
       );
     } else {
-      corpo = RefreshIndicator(
+      lista = RefreshIndicator(
         onRefresh: _carregar,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -151,6 +174,8 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
                     '${estadoPublicacao(r['estado_sync'] as String?)}',
                   ),
                   isThreeLine: true,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _abrirAta(r),
                 ),
               ),
           ],
@@ -160,7 +185,21 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reuniões')),
-      body: corpo,
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Mostrar reuniões passadas'),
+            value: _incluirPassadas,
+            onChanged: (valor) {
+              setState(() => _incluirPassadas = valor);
+              _carregar();
+            },
+          ),
+        ),
+        Expanded(child: lista),
+      ]),
       bottomNavigationBar: _aCarregar
           ? null
           : SafeArea(
@@ -170,7 +209,8 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
                   onPressed: _agendar,
                   icon: const Icon(Icons.add),
                   label: const Text('Agendar reunião'),
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
             ),
