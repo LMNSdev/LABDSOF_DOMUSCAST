@@ -8,15 +8,16 @@ import io
 import os
 import warnings
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartException
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -63,7 +64,8 @@ def _vista(
     return schemas.ReporteOut(
         id=reporte.id,
         descricao=reporte.descricao,
-        foto_url=reporte.foto_url,
+        foto_url=f"/reportes/{reporte.id}/foto" if reporte.foto_path else reporte.foto_url,
+        foto_alt=reporte.foto_alt,
         estado=reporte.estado,
         criado_em=reporte.criado_em,
         atualizado_em=reporte.atualizado_em,
@@ -72,6 +74,7 @@ def _vista(
         fracao=fracao,
         meu=meu,
         autor_removido=autor_removido,
+        duplicado_de_id=reporte.duplicado_de_id,
     )
 
 
@@ -221,6 +224,14 @@ def _criar(
     )
     db.add(reporte)
     try:
+        db.flush()
+        db.add(models.ReporteHistorico(
+            reporte_id=reporte.id,
+            estado_anterior=None,
+            estado_novo=models.EstadoReporte.aberto,
+            autor_tipo="sistema",
+            criado_em=reporte.criado_em,
+        ))
         db.commit()
     except IntegrityError:
         # Dois pedidos simultâneos do mesmo autor com a mesma chave: devolve o que ficou gravado.
@@ -299,15 +310,77 @@ def listar_reportes(
         models.Administrador | models.Identidade, Depends(utilizador_atual)
     ],
     db: Annotated[Session, Depends(get_db)],
+    filtro: Literal["todos", "meus"] = "todos",
+    estado: models.EstadoReporte | None = None,
 ):
-    """US-09: reportes do condomínio de quem pede, com o autor visível conforme o papel."""
+    """US-03: reportes do condomínio, filtrados e ordenados pela última alteração."""
     condominio_id = (
         quem.condominio_id if isinstance(quem, models.Administrador) else quem.fracao.condominio_id
     )
-    reportes = (
-        db.query(models.Reporte)
-        .filter(models.Reporte.condominio_id == condominio_id)
-        .order_by(models.Reporte.criado_em.desc())
-        .all()
-    )
+    if filtro == "meus" and isinstance(quem, models.Administrador):
+        raise HTTPException(status_code=422, detail="O filtro 'meus' é só para residentes.")
+    try:
+        query = db.query(models.Reporte).options(joinedload(models.Reporte.autor).joinedload(models.Identidade.fracao))
+        query = query.filter(models.Reporte.condominio_id == condominio_id)
+        if filtro == "meus":
+            query = query.filter(
+                (models.Reporte.autor_id == quem.id)
+                | models.Reporte.seguidores.any(
+                    (models.ReporteSeguidor.identidade_id == quem.id)
+                    & (models.ReporteSeguidor.tipo == models.TipoSeguidor.co_reporter)
+                )
+            )
+        if estado is not None:
+            query = query.filter(models.Reporte.estado == estado)
+        reportes = query.order_by(models.Reporte.atualizado_em.desc(), models.Reporte.id.desc()).all()
+    except OperationalError as exc:
+        raise _indisponivel() from exc
     return [_vista(r, quem) for r in reportes]
+
+
+def _reporte_do_condominio(db: Session, reporte_id: int, quem: models.Administrador | models.Identidade) -> models.Reporte:
+    condominio_id = quem.condominio_id if isinstance(quem, models.Administrador) else quem.fracao.condominio_id
+    try:
+        reporte = (db.query(models.Reporte)
+            .options(joinedload(models.Reporte.autor).joinedload(models.Identidade.fracao), joinedload(models.Reporte.historico))
+            .filter(models.Reporte.id == reporte_id, models.Reporte.condominio_id == condominio_id)
+            .first())
+    except OperationalError as exc:
+        raise _indisponivel() from exc
+    if reporte is None:
+        raise HTTPException(status_code=404, detail="Reporte não encontrado.")
+    return reporte
+
+
+@router.get("/{reporte_id}", response_model=schemas.ReporteDetalheOut)
+def obter_reporte(
+    reporte_id: int,
+    quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    reporte = _reporte_do_condominio(db, reporte_id, quem)
+    historico = [schemas.ReporteHistoricoOut.model_validate({
+        "estado_anterior": h.estado_anterior, "estado_novo": h.estado_novo,
+        "nota": h.nota, "autor_tipo": h.autor_tipo, "criado_em": h.criado_em,
+    }) for h in sorted(reporte.historico, key=lambda h: (h.criado_em, h.id))]
+    if not any(h.estado_anterior is None for h in historico):
+        historico.insert(0, schemas.ReporteHistoricoOut(
+            estado_anterior=None, estado_novo=models.EstadoReporte.aberto,
+            nota=None, autor_tipo="sistema", criado_em=reporte.criado_em,
+        ))
+    return schemas.ReporteDetalheOut(**_vista(reporte, quem).model_dump(), historico=historico)
+
+
+@router.get("/{reporte_id}/foto")
+def obter_foto(
+    reporte_id: int,
+    quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    reporte = _reporte_do_condominio(db, reporte_id, quem)
+    if not reporte.foto_path:
+        raise HTTPException(status_code=404, detail="Foto não encontrada.")
+    caminho = MEDIA_ROOT / reporte.foto_path
+    if not caminho.is_file():
+        raise HTTPException(status_code=404, detail="Foto não encontrada.")
+    return FileResponse(caminho, headers={"Cache-Control": "private, no-store"})

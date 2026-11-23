@@ -208,7 +208,8 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('aviso-popup')), findsNothing);
-    expect(tester.getTopLeft(find.text('Fuga na garagem')).dy, lessThan(120));
+    // A US-03 coloca os filtros acima da lista; o reporte continua no topo.
+    expect(tester.getTopLeft(find.text('Fuga na garagem')).dy, lessThan(240));
   });
 
   testWidgets('foto escolhida exige texto alternativo', (tester) async {

@@ -55,6 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
   };
   late int _atual = _separadores.indexOf(widget.separadorInicial).clamp(0, _separadores.length - 1);
 
+  late final ValueNotifier<bool> _reportesAtivos =
+      ValueNotifier(_separadores[_atual] == Separador.reportes);
+
+  @override
+  void dispose() {
+    _reportesAtivos.dispose();
+    super.dispose();
+  }
+
   Widget _raiz(Separador s) => switch (s) {
         Separador.reportes => ReportesListScreen(
             api: widget.api,
@@ -63,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
             podeReportar: widget.sessao == null,
             fila: widget.fila,
             onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
+            ativo: _reportesAtivos,
           ),
         Separador.reunioes => ReunioesScreen(api: widget.api, credencial: widget.sessao?.credencial),
         Separador.avisos => const SizedBox.shrink(),
@@ -112,6 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     setState(() => _atual = i);
+    _reportesAtivos.value = _separadores[i] == Separador.reportes;
   }
 
   /// "Voltar" do Android: fecha o ecrã aberto no separador; no início de outro
@@ -122,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
       nav.pop();
     } else if (_atual != 0) {
       setState(() => _atual = 0);
+      _reportesAtivos.value = true;
     } else {
       SystemNavigator.pop();
     }

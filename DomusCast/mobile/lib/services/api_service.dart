@@ -37,12 +37,38 @@ class ApiService {
 
   /// US-09: o residente recebe `autor_nome` só se o autor o mostrou e nunca a
   /// `fracao`; `meu` indica os seus reportes. O administrador recebe nome e fração.
-  Future<List<Map<String, dynamic>>> getReportes({String? credencial}) async {
+  Future<List<Map<String, dynamic>>> getReportes({
+    String? credencial,
+    String filtro = 'todos',
+    String? estado,
+  }) async {
+    final query = <String, String>{
+      if (filtro != 'todos') 'filtro': filtro,
+      if (estado != null) 'estado': estado,
+    };
     final r = await _client.get(
-      Uri.parse('$baseUrl/reportes'),
+      Uri.parse('$baseUrl/reportes')
+          .replace(queryParameters: query.isEmpty ? null : query),
       headers: credencial == null ? null : _auth(credencial),
     );
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> getReporte(int id, {String? credencial}) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reportes/$id'),
+      headers: credencial == null ? null : _auth(credencial),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
+  Future<Uint8List> getReporteFoto(int id, {String? credencial}) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reportes/$id/foto'),
+      headers: credencial == null ? null : _auth(credencial),
+    );
+    if (r.statusCode != 200) throw _apiException(r);
+    return r.bodyBytes;
   }
 
   /// Erros: 401 sem credencial válida, 403 administrador, 422 dados inválidos.
