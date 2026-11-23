@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from app import models
 from app.database import Base
 from app.worker.openai_provider import FalhaProvider, _formatar_rascunho
-from app.worker.processor import processar_job, recuperar_jobs, reservar_job
+from app.worker.processor import limpar_audios_aprovados, processar_job, recuperar_jobs, reservar_job
 
 
 @pytest.fixture
@@ -138,8 +138,6 @@ def test_resposta_tardia_nao_substitui_ata_aprovada(trabalho):
                 ata = db.get(models.Ata, ata_id)
                 ata.estado = models.EstadoAta.aprovada
                 ata.texto_aprovado = "Texto confirmado pelo administrador"
-                ata.audio_path = None
-                ata.transcricao = None
                 db.commit()
             return super().gerar_rascunho(transcricao)
 
@@ -149,8 +147,18 @@ def test_resposta_tardia_nao_substitui_ata_aprovada(trabalho):
         ata = db.get(models.Ata, ata_id)
         assert ata.texto_aprovado == "Texto confirmado pelo administrador"
         assert ata.rascunho is None
-        assert ata.transcricao is None
+        # A transcrição pode ter sido guardada antes da aprovação, mas a
+        # resposta tardia não acrescenta um rascunho nem muda o texto publicado.
         assert db.get(models.Job, job_id).estado == models.EstadoJob.concluido
+    assert limpar_audios_aprovados(sessoes, raiz) == 1
+    assert limpar_audios_aprovados(sessoes, raiz) == 0
+    with sessoes() as db:
+        ata = db.get(models.Ata, ata_id)
+        assert ata.audio_path is None
+        assert ata.transcricao is None
+        assert ata.rascunho is None
+        assert ata.texto_aprovado == "Texto confirmado pelo administrador"
+    assert not (raiz / "ata.wav").exists()
 
 
 def test_arranque_recupera_job_interrompido(trabalho):

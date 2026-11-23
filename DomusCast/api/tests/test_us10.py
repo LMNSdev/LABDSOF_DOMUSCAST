@@ -48,7 +48,9 @@ def test_upload_cria_ata_e_job_sem_esperar_pela_ia(client, db, tmp_path, monkeyp
     job = db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata.id}").one()
     assert job.estado == models.EstadoJob.pendente
     assert job.request_id == resposta.headers["X-Request-ID"]
-    assert client.get(f"/reunioes/{reuniao_id}/ata", headers=_auth(token)).json() == dados
+    consulta = client.get(f"/reunioes/{reuniao_id}/ata", headers=_auth(token))
+    assert consulta.json() == dados
+    assert consulta.headers["cache-control"] == "private, no-store"
 
 
 def test_reenvio_reutiliza_ata_e_job_e_reinicia_falha(client, db, tmp_path, monkeypatch):

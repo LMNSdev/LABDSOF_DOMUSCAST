@@ -31,6 +31,36 @@ class Provider(Protocol):
 SessionFactory = Callable[[], Session]
 
 
+def limpar_audios_aprovados(
+    sessoes: SessionFactory = SessionLocal, media_root: Path | None = None,
+) -> int:
+    """Conclui a limpeza após aprovação, incluindo depois de um crash.
+
+    A US-24 deve guardar o estado `aprovada` e conservar `audio_path` até
+    esta limpeza. Assim, uma interrupção entre o commit e o unlink é retomada.
+    """
+    raiz = (media_root or Path(os.getenv("MEDIA_ROOT", "media"))).resolve()
+    removidos = 0
+    while True:
+        with sessoes() as db:
+            ata = db.query(models.Ata).filter(
+                models.Ata.estado == models.EstadoAta.aprovada,
+                models.Ata.audio_path.isnot(None),
+            ).order_by(models.Ata.id).with_for_update(skip_locked=True).first()
+            if ata is None:
+                return removidos
+            caminho = (raiz / ata.audio_path).resolve()
+            if caminho.is_relative_to(raiz):
+                caminho.unlink(missing_ok=True)
+            ata.audio_path = None
+            ata.audio_sha256 = None
+            ata.transcricao = None
+            ata.rascunho = None
+            db.commit()
+            removidos += 1
+            _log("audio_aprovado_eliminado", ata_id=ata.id)
+
+
 def _log(evento: str, job: models.Job | None = None, **campos: object) -> None:
     logger.info(json.dumps({
         "timestamp": datetime.now(timezone.utc).isoformat(),

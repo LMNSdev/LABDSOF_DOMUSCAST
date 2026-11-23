@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .. import models
 from ..database import SessionLocal
-from .processor import processar_job, recuperar_jobs, reservar_job
+from .processor import limpar_audios_aprovados, processar_job, recuperar_jobs, reservar_job
 
 
 logger = logging.getLogger("domuscast.worker")
@@ -78,6 +78,7 @@ def main() -> None:
             sleep(5)
     while True:
         try:
+            limpar_audios_aprovados()
             job_id = reservar_job()
             if job_id is None:
                 sleep(2)

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -168,6 +168,7 @@ def carregar_audio(
 @router.get("/{reuniao_id}/ata", response_model=schemas.AtaOut)
 def consultar_ata(
     reuniao_id: int,
+    response: Response,
     admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
     db: Annotated[Session, Depends(get_db)],
 ):
@@ -180,6 +181,7 @@ def consultar_ata(
         raise _indisponivel() from exc
     if ata is None:
         raise HTTPException(status_code=404, detail="Ata não encontrada.")
+    response.headers["Cache-Control"] = "private, no-store"
     return _resposta(ata)
 
 
