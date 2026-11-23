@@ -11,7 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from .database import get_db
 from .erros import ErroApi, tratar_erro_api
-from .routers import condominios, fracoes, identidades, qr, reportes, reunioes
+from .routers import atas, condominios, fracoes, identidades, qr, reportes, reunioes
 
 
 @asynccontextmanager
@@ -48,6 +48,9 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         401: "nao_autenticado",
         403: "sem_permissao",
         404: "nao_encontrado",
+        409: "conflito",
+        413: "pedido_demasiado_grande",
+        415: "formato_nao_suportado",
         422: "dados_invalidos",
         429: "limite_pedidos",
         503: "servico_indisponivel",
@@ -81,6 +84,7 @@ app.include_router(fracoes.router, prefix="/fracoes", tags=["fracoes"])
 app.include_router(identidades.router, prefix="/identidades", tags=["identidades"])
 app.include_router(qr.router, prefix="/qr", tags=["qr"])
 app.include_router(reunioes.router, prefix="/reunioes", tags=["reunioes"])
+app.include_router(atas.router, prefix="/reunioes", tags=["atas"])
 
 
 @app.get("/health", tags=["infra"])

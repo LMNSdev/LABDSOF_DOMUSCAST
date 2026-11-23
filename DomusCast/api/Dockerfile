@@ -13,7 +13,7 @@ COPY requirements.txt .
 # upgrade: aplica as correções de segurança do Debian que ainda não estão na imagem base
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y gcc && \
+    apt-get install -y gcc ffmpeg && \
     rm -rf /var/lib/apt/lists/*
 
 # O pip só é preciso no build; sai da imagem final com as dependências que traz consigo
