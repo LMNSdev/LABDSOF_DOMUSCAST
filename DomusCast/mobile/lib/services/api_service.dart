@@ -273,10 +273,10 @@ class ApiService {
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
-  // --- US-24: rever e aprovar a ata ------------------------------------------
+  // --- US-24 e US-25: escrever, rever e aprovar a ata ------------------------
 
-  /// Ata da reunião. Para o administrador: `{id, reuniao_id, estado, transcricao,
-  /// rascunho, texto_aprovado, aprovada_em, aprovada_por}`.
+  /// Ata da reunião. Para o administrador: `{id, reuniao_id, estado, origem, transcricao,
+  /// rascunho, texto_aprovado, aprovada_em, aprovada_por}`; `origem` é `ia` ou `manual`.
   /// Erros: 404 `reuniao_nao_encontrada` ou `ata_inexistente`, 503 base de dados.
   Future<Map<String, dynamic>> getAta(int reuniaoId, String credencial) async {
     final r = await _client.get(
@@ -286,8 +286,9 @@ class ApiService {
     return _corpo(r, 200) as Map<String, dynamic>;
   }
 
-  /// Guarda o rascunho editado, sem o publicar. Devolve a ata atualizada.
-  /// Erros: 409 `ata_ja_aprovada`, `ata_em_processamento` ou `ata_sem_rascunho`,
+  /// Guarda o rascunho, sem o publicar. Devolve a ata atualizada.
+  /// Sem ata, ou com a transcrição falhada, cria ou converte a ata em manual (US-25).
+  /// Erros: 404 `reuniao_nao_encontrada`, 409 `ata_ja_aprovada` ou `ata_em_processamento`,
   /// 422 texto vazio ou acima do limite, 503 base de dados.
   Future<Map<String, dynamic>> guardarRascunhoAta(
     int reuniaoId,
