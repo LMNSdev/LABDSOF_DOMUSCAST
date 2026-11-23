@@ -260,13 +260,56 @@ class ApiService {
 
   // --- US-13: reuniões -------------------------------------------------------
 
-  /// Reuniões de hoje em diante, por data: `{id, data_hora, local, estado_sync, criado_em}`.
-  Future<List<Map<String, dynamic>>> getReunioes(String credencial) async {
+  /// Reuniões por data: `{id, data_hora, local, estado_sync, criado_em}`.
+  /// Sem [desde], só as de hoje em diante; com [desde], as criadas desde essa data,
+  /// incluindo as que já passaram (a ata de uma assembleia é feita depois dela).
+  Future<List<Map<String, dynamic>>> getReunioes(String credencial, {DateTime? desde}) async {
     final r = await _client.get(
-      Uri.parse('$baseUrl/reunioes'),
+      Uri.parse('$baseUrl/reunioes').replace(
+        queryParameters: desde == null ? null : {'desde': desde.toUtc().toIso8601String()},
+      ),
       headers: _auth(credencial),
     );
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  // --- US-24: rever e aprovar a ata ------------------------------------------
+
+  /// Ata da reunião. Para o administrador: `{id, reuniao_id, estado, transcricao,
+  /// rascunho, texto_aprovado, aprovada_em, aprovada_por}`.
+  /// Erros: 404 `reuniao_nao_encontrada` ou `ata_inexistente`, 503 base de dados.
+  Future<Map<String, dynamic>> getAta(int reuniaoId, String credencial) async {
+    final r = await _client.get(
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata'),
+      headers: _auth(credencial),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
+  /// Guarda o rascunho editado, sem o publicar. Devolve a ata atualizada.
+  /// Erros: 409 `ata_ja_aprovada`, `ata_em_processamento` ou `ata_sem_rascunho`,
+  /// 422 texto vazio ou acima do limite, 503 base de dados.
+  Future<Map<String, dynamic>> guardarRascunhoAta(
+    int reuniaoId,
+    String credencial,
+    String rascunho,
+  ) async {
+    final r = await _client.put(
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata'),
+      headers: {..._auth(credencial), 'Content-Type': 'application/json'},
+      body: jsonEncode({'rascunho': rascunho}),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
+  /// Aprova e publica o rascunho guardado. Devolve a ata aprovada.
+  /// Erros: 409 `ata_ja_aprovada`, `ata_em_processamento` ou `ata_sem_rascunho`, 503.
+  Future<Map<String, dynamic>> aprovarAta(int reuniaoId, String credencial) async {
+    final r = await _client.post(
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata/aprovar'),
+      headers: _auth(credencial),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
   }
 
   /// Agenda uma reunião (administrador). [dataHora] é enviada em UTC, com fuso.

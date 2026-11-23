@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import 'ata_screen.dart';
 import 'nova_reuniao_screen.dart';
 
 /// Separador "Reuniões".
 ///
 /// Administrador (com [credencial]): lista das reuniões de hoje em diante, com o
-/// estado da publicação no calendário, e "Agendar reunião" (US-13).
+/// estado da publicação no calendário, e "Agendar reunião" (US-13). Por baixo, as
+/// reuniões anteriores; tocar numa reunião abre a ata (US-24).
 /// Residente: por agora só o aviso; ver as reuniões é a US-27.
 class ReunioesScreen extends StatelessWidget {
   final ApiService? api;
@@ -66,8 +68,13 @@ class _ReunioesAdmin extends StatefulWidget {
   State<_ReunioesAdmin> createState() => _ReunioesAdminState();
 }
 
+/// Qualquer data anterior à app: com `desde`, a API devolve as reuniões criadas
+/// desde essa data, ou seja, todas, incluindo as que já passaram.
+final _desdeSempre = DateTime.utc(2000);
+
 class _ReunioesAdminState extends State<_ReunioesAdmin> {
-  List<Map<String, dynamic>> _reunioes = [];
+  List<Map<String, dynamic>> _proximas = [];
+  List<Map<String, dynamic>> _anteriores = [];
   bool _aCarregar = true;
   String? _erro;
 
@@ -83,10 +90,17 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
       _erro = null;
     });
     try {
-      final reunioes = await widget.api.getReunioes(widget.credencial);
+      final reunioes = await widget.api.getReunioes(widget.credencial, desde: _desdeSempre);
       if (!mounted) return;
+      // Hoje conta como "próxima", como na lista da US-13 sem `desde`.
+      final agora = DateTime.now();
+      final hoje = DateTime(agora.year, agora.month, agora.day);
+      bool passou(Map<String, dynamic> r) =>
+          DateTime.parse(r['data_hora'] as String).toLocal().isBefore(hoje);
       setState(() {
-        _reunioes = reunioes;
+        _proximas = reunioes.where((r) => !passou(r)).toList();
+        // A API ordena por data; as anteriores ficam da mais recente para a mais antiga.
+        _anteriores = reunioes.where(passou).toList().reversed.toList();
         _aCarregar = false;
       });
     } catch (_) {
@@ -107,6 +121,29 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
     await _carregar();
   }
 
+  void _abrirAta(Map<String, dynamic> reuniao) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => AtaScreen(api: widget.api, credencial: widget.credencial, reuniao: reuniao),
+    ));
+  }
+
+  Widget _cartao(Map<String, dynamic> r, {required bool anterior}) => Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ListTile(
+          title: const Text('Assembleia de condóminos',
+              style: TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: Text(
+            '${formatarReuniao(r['data_hora'] as String)}\n'
+            '${r['local']}\n'
+            // Numa reunião que já passou, a publicação no calendário já não interessa.
+            '${anterior ? 'Ver ata' : estadoPublicacao(r['estado_sync'] as String?)}',
+          ),
+          isThreeLine: true,
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _abrirAta(r),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -120,7 +157,7 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
           TextButton(onPressed: _carregar, child: const Text('Tentar novamente')),
         ]),
       );
-    } else if (_reunioes.isEmpty) {
+    } else if (_proximas.isEmpty && _anteriores.isEmpty) {
       corpo = Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -139,20 +176,25 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            for (final r in _reunioes)
-              Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  title: const Text('Assembleia de condóminos',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(
-                    '${formatarReuniao(r['data_hora'] as String)}\n'
-                    '${r['local']}\n'
-                    '${estadoPublicacao(r['estado_sync'] as String?)}',
-                  ),
-                  isThreeLine: true,
+            if (_proximas.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text('Ainda não há reuniões agendadas.',
+                    style: TextStyle(color: scheme.onSurfaceVariant)),
+              ),
+            for (final r in _proximas) _cartao(r, anterior: false),
+            if (_anteriores.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                child: Semantics(
+                  header: true,
+                  child: Text('Reuniões anteriores',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant)),
                 ),
               ),
+              for (final r in _anteriores) _cartao(r, anterior: true),
+            ],
           ],
         ),
       );
