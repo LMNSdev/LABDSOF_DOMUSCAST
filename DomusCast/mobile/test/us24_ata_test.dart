@@ -42,6 +42,7 @@ Map<String, dynamic> _ata({
       'id': 1,
       'reuniao_id': 7,
       'estado': estado,
+      'origem': 'ia',
       'transcricao': transcricao,
       'rascunho': rascunho,
       'texto_aprovado': textoAprovado,
@@ -497,12 +498,14 @@ void main() {
       expect(find.text('Gerado por IA. Pendente de revisão.'), findsOneWidget);
     });
 
-    testWidgets('transcrição falhada: informa e não permite editar', (tester) async {
+    testWidgets('transcrição falhada: informa e não permite editar o rascunho', (tester) async {
       await _abrirAta(
           tester, _Servidor(_ata(estado: 'falhou_transcricao', transcricao: null, rascunho: null)));
 
       expect(find.text('A transcrição falhou.'), findsOneWidget);
-      expect(find.text('O áudio continua guardado.'), findsOneWidget);
+      // A partir daqui, a ata manual é da US-25 (test/us25_ata_manual_test.dart).
+      expect(find.text('O áudio continua guardado. Pode escrever a ata manualmente.'),
+          findsOneWidget);
       expect(find.text('Editar rascunho'), findsNothing);
     });
 

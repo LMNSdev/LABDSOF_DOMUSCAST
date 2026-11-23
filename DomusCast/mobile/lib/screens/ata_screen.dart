@@ -18,6 +18,10 @@ const kMaxTextoAta = 20000;
 /// 3. Confirmação antes de publicar.
 /// 4. Publicada: fica só o texto aprovado.
 ///
+/// US-25 (`docs/sprintB/design/us-25.html`): sem ata, ou com a transcrição falhada,
+/// o administrador escreve uma ata manual, que segue o mesmo fluxo de aprovação e
+/// fica identificada como manual.
+///
 /// O envio do áudio e o acompanhamento da transcrição são da US-10; aqui só se
 /// mostra o estado. Os residentes não chegam a este ecrã (a ata publicada chega-lhes
 /// pela US-26) e a API nunca lhes devolve rascunhos.
@@ -55,6 +59,11 @@ class _AtaScreenState extends State<AtaScreen> {
 
   int get _reuniaoId => widget.reuniao['id'] as int;
   bool get _temAlteracoes => _texto.text.trim() != _guardado;
+
+  /// A ata é (ou vai ser) manual: já é manual, ainda não existe, ou a transcrição
+  /// falhou. Nos dois últimos casos, guardar cria ou converte a ata em manual (US-25).
+  bool get _manual =>
+      _ata == null || _ata!['origem'] == 'manual' || _ata!['estado'] == 'falhou_transcricao';
 
   @override
   void initState() {
@@ -101,6 +110,8 @@ class _AtaScreenState extends State<AtaScreen> {
     }
   }
 
+  /// Edita o rascunho guardado; numa reunião sem ata ou com a transcrição falhada,
+  /// começa uma ata manual com o editor vazio (US-25).
   void _editar() {
     _guardado = (_ata?['rascunho'] as String?) ?? '';
     _texto.text = _guardado;
@@ -134,7 +145,8 @@ class _AtaScreenState extends State<AtaScreen> {
       if (descartar != true || !mounted) return;
     }
     setState(() {
-      _modo = _Modo.ver;
+      // Sem ata guardada (a ata manual ainda não foi criada), volta ao "sem ata".
+      _modo = _ata == null ? _Modo.semAta : _Modo.ver;
       _erro = null;
     });
   }
@@ -233,6 +245,8 @@ class _AtaScreenState extends State<AtaScreen> {
       ApiException(statusCode: 422) =>
         'O texto da ata tem de ter entre 1 e $kMaxTextoAta caracteres.',
       ApiException(statusCode: 401 || 403) => 'Só o administrador pode rever e aprovar a ata.',
+      ApiException(statusCode: 404, codigo: 'reuniao_nao_encontrada') =>
+        'Esta reunião já não existe.',
       ApiException(statusCode: 404) => 'Esta ata já não existe.',
       http.ClientException() || SocketException() || TimeoutException() =>
         'Não foi possível guardar. O texto continua no editor. '
@@ -252,7 +266,9 @@ class _AtaScreenState extends State<AtaScreen> {
   }
 
   String get _titulo => switch (_modo) {
+        _Modo.editar when _manual => 'Ata manual',
         _Modo.editar => 'Editar ata',
+        _Modo.ver when _ata?['estado'] == 'pendente_revisao' && _manual => 'Rever ata manual',
         _Modo.ver when _ata?['estado'] == 'pendente_revisao' => 'Rever ata',
         _Modo.ver when _ata?['estado'] == 'aprovada' => 'Ata aprovada',
         _ => 'Ata da assembleia',
@@ -290,7 +306,7 @@ class _AtaScreenState extends State<AtaScreen> {
         return _lista([
           const _Estado(
             texto: 'Esta reunião ainda não tem ata.',
-            detalhe: 'A ata fica disponível aqui depois de ser preparada.',
+            detalhe: 'Pode escrever a ata manualmente, sem depender do serviço de IA.',
           ),
         ]);
       case _Modo.editar:
@@ -308,6 +324,15 @@ class _AtaScreenState extends State<AtaScreen> {
   Widget _ver(Map<String, dynamic> ata) {
     final transcricao = ata['transcricao'] as String?;
     switch (ata['estado']) {
+      case 'pendente_revisao' when ata['origem'] == 'manual':
+        return _lista([
+          const _Estado(
+            texto: 'Ata manual. Ainda não publicada.',
+            detalhe: 'Só os administradores a veem até ser aprovada.',
+          ),
+          const SizedBox(height: 12),
+          _Texto(titulo: 'Texto da ata', texto: (ata['rascunho'] as String?) ?? ''),
+        ]);
       case 'pendente_revisao':
         return _lista([
           const _Estado(
@@ -323,7 +348,9 @@ class _AtaScreenState extends State<AtaScreen> {
         final aprovadaEm = ata['aprovada_em'] as String?;
         return _lista([
           _Estado(
-            texto: 'Ata aprovada e publicada aos residentes.',
+            texto: ata['origem'] == 'manual'
+                ? 'Ata manual aprovada e publicada aos residentes.'
+                : 'Ata aprovada e publicada aos residentes.',
             detalhe: [
               if (aprovadaEm != null) 'Aprovada pelo administrador em ${formatarReuniao(aprovadaEm)}.',
               'O áudio, a transcrição e o rascunho foram eliminados.',
@@ -344,7 +371,7 @@ class _AtaScreenState extends State<AtaScreen> {
         return _lista([
           const _Estado(
             texto: 'A transcrição falhou.',
-            detalhe: 'O áudio continua guardado.',
+            detalhe: 'O áudio continua guardado. Pode escrever a ata manualmente.',
           ),
         ]);
       default:
@@ -374,6 +401,10 @@ class _AtaScreenState extends State<AtaScreen> {
           ),
           const SizedBox(height: 12),
         ],
+        if (_manual) ...[
+          const _Estado(texto: 'Sem rascunho de IA. A ata será identificada como manual.'),
+          const SizedBox(height: 12),
+        ],
         if (transcricao != null) ...[_Transcricao(texto: transcricao), const SizedBox(height: 12)],
         TextField(
           controller: _texto,
@@ -382,10 +413,11 @@ class _AtaScreenState extends State<AtaScreen> {
           maxLines: null,
           maxLength: kMaxTextoAta,
           keyboardType: TextInputType.multiline,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Texto da ata',
+            hintText: _manual ? 'Escreva as decisões confirmadas na assembleia.' : null,
             alignLabelWithHint: true,
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
             filled: true,
             fillColor: Colors.white,
           ),
@@ -432,7 +464,15 @@ class _AtaScreenState extends State<AtaScreen> {
       conteudo = FilledButton.icon(
         onPressed: _editar,
         icon: const Icon(Icons.edit_outlined),
-        label: const Text('Editar rascunho'),
+        label: Text(_manual ? 'Editar ata' : 'Editar rascunho'),
+        style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+      );
+    } else if (_modo == _Modo.semAta ||
+        (_modo == _Modo.ver && _ata?['estado'] == 'falhou_transcricao')) {
+      conteudo = FilledButton.icon(
+        onPressed: _editar,
+        icon: const Icon(Icons.edit_note_outlined),
+        label: const Text('Escrever ata manual'),
         style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
       );
     } else if (_modo == _Modo.ver && _ata?['estado'] == 'a_transcrever') {
