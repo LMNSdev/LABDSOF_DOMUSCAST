@@ -8,7 +8,7 @@ from pydantic import (
     StringConstraints,
     field_validator,
 )
-from .models import EstadoAta, EstadoReporte, EstadoSyncReuniao
+from .models import EstadoAta, EstadoReporte, EstadoSyncReuniao, OrigemAta
 
 MAX_FRACOES = 200
 
@@ -215,6 +215,7 @@ class AtaAdminOut(BaseModel):
     id: int
     reuniao_id: int
     estado: EstadoAta
+    origem: OrigemAta
     transcricao: Optional[str] = None
     rascunho: Optional[str] = None
     texto_aprovado: Optional[str] = None
@@ -230,9 +231,13 @@ class AtaAdminOut(BaseModel):
 
 
 class AtaPublicaOut(BaseModel):
-    """Vista do residente: só a ata aprovada, sem transcrição, rascunho nem quem aprovou."""
+    """Vista do residente: só a ata aprovada, sem transcrição, rascunho nem quem aprovou.
+
+    Inclui a origem, para a app indicar que uma ata é manual e não gerada por IA (US-25).
+    """
 
     reuniao_id: int
+    origem: OrigemAta
     texto_aprovado: str
     aprovada_em: datetime
 

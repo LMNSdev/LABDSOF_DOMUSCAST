@@ -31,13 +31,14 @@ CAMPOS_ADMIN = {
     "id",
     "reuniao_id",
     "estado",
+    "origem",
     "transcricao",
     "rascunho",
     "texto_aprovado",
     "aprovada_em",
     "aprovada_por",
 }
-CAMPOS_PUBLICOS = {"reuniao_id", "texto_aprovado", "aprovada_em"}
+CAMPOS_PUBLICOS = {"reuniao_id", "origem", "texto_aprovado", "aprovada_em"}
 # Limite provisório da DoR (por confirmar pela equipa). Escrito à mão de propósito:
 # mudar o limite em `schemas.py` tem de obrigar a mudar também este teste.
 LIMITE_TEXTO = 20_000
@@ -184,6 +185,7 @@ def test_admin_consulta_transcricao_e_rascunho(client, db, cenario):
     assert set(dados) == CAMPOS_ADMIN
     assert dados["reuniao_id"] == cenario.reuniao.id
     assert dados["estado"] == "pendente_revisao"
+    assert dados["origem"] == "ia"
     assert dados["transcricao"] == TRANSCRICAO
     assert dados["rascunho"] == RASCUNHO
     assert dados["texto_aprovado"] is None
@@ -471,7 +473,29 @@ def test_editar_e_aprovar_publica_o_texto_editado_ao_residente(client, db, cenar
     assert resposta.status_code == 200
     assert set(resposta.json()) == CAMPOS_PUBLICOS  # sem transcrição, rascunho nem quem aprovou
     assert resposta.json()["texto_aprovado"] == EDITADO
+    assert resposta.json()["origem"] == "ia"
     assert RASCUNHO not in resposta.text
+
+
+@pytest.mark.parametrize("token", ["token_admin", "token_residente"])
+def test_ata_manual_publicada_indica_a_origem(client, db, cenario, token):
+    """US-25, critério 3: a origem chega à app nas duas vistas, também depois de publicada."""
+    _ata(
+        db,
+        cenario.reuniao,
+        estado=models.EstadoAta.aprovada,
+        origem=models.OrigemAta.manual,
+        transcricao=None,
+        rascunho=None,
+        audio_path=None,
+        texto_aprovado=EDITADO,
+        aprovada_em=datetime.now(timezone.utc),
+    )
+
+    resposta = _get(client, cenario.reuniao.id, getattr(cenario, token))
+
+    assert resposta.status_code == 200
+    assert resposta.json()["origem"] == "manual"
 
 
 def test_aprovacao_regista_o_administrador_que_aprovou_e_nao_outro(client, db, cenario, media):
