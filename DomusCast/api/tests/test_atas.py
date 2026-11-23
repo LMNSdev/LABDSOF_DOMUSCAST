@@ -343,19 +343,11 @@ def test_editar_ata_de_outro_condominio_devolve_404(client, db, cenario):
     assert _lida(db, ata_alheia).rascunho == RASCUNHO
 
 
-def test_editar_reuniao_sem_ata_devolve_404(client, cenario):
-    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
-
-    assert resposta.status_code == 404
-    assert resposta.json()["codigo"] == "ata_inexistente"
-
-
 @pytest.mark.parametrize(
     ("estado", "codigo"),
     [
         (models.EstadoAta.aprovada, "ata_ja_aprovada"),
         (models.EstadoAta.a_transcrever, "ata_em_processamento"),
-        (models.EstadoAta.falhou_transcricao, "ata_sem_rascunho"),
     ],
 )
 def test_editar_fora_de_revisao_devolve_409(client, db, cenario, estado, codigo):
@@ -388,7 +380,7 @@ def test_ata_aprovada_entre_a_leitura_e_a_escrita_nao_volta_a_ter_rascunho(
 ):
     """Corrida: outro pedido aprova a ata depois de o PUT a ler e antes de escrever."""
     ata = _ata(db, cenario.reuniao)
-    ler = atas_router._ata_do_admin
+    ler = atas_router._ata_da_reuniao
 
     def ler_e_aprovar_noutro_pedido(*args):
         lida = ler(*args)
@@ -399,7 +391,7 @@ def test_ata_aprovada_entre_a_leitura_e_a_escrita_nao_volta_a_ter_rascunho(
         db.commit()
         return lida
 
-    monkeypatch.setattr(atas_router, "_ata_do_admin", ler_e_aprovar_noutro_pedido)
+    monkeypatch.setattr(atas_router, "_ata_da_reuniao", ler_e_aprovar_noutro_pedido)
 
     resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
 
@@ -420,6 +412,202 @@ def test_put_base_de_dados_indisponivel_devolve_503_e_nao_altera(client, db, cen
     assert resposta.json()["codigo"] == "servico_indisponivel"
     monkeypatch.undo()
     assert _lida(db, ata).rascunho == RASCUNHO
+
+
+# --- US-25: ata manual (PUT sem ata ou com a transcrição falhada) ----------
+
+
+def _ata_falhada(db, reuniao):
+    """Uma ata cuja transcrição falhou (US-10): o áudio continua guardado."""
+    return _ata(
+        db,
+        reuniao,
+        estado=models.EstadoAta.falhou_transcricao,
+        transcricao="Transcrição parcial",
+        rascunho=None,
+    )
+
+
+def test_sem_ata_o_admin_cria_uma_ata_manual_por_publicar(client, db, cenario):
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert set(dados) == CAMPOS_ADMIN
+    assert dados["origem"] == "manual"
+    assert dados["estado"] == "pendente_revisao"
+    assert dados["rascunho"] == EDITADO
+    assert dados["transcricao"] is None
+    assert dados["texto_aprovado"] is None
+    gravada = _ata_da(db, cenario.reuniao)
+    assert gravada.origem == models.OrigemAta.manual
+    assert gravada.audio_path is None
+    # Guardar não publica: o residente continua sem ata.
+    assert _get(client, cenario.reuniao.id, cenario.token_residente).status_code == 404
+
+
+def test_ata_manual_segue_o_fluxo_de_aprovacao_sem_rascunho_de_ia(client, db, cenario, media):
+    """Critérios 1 e 2: escrever, editar e aprovar, como na US-24."""
+    _put(client, cenario.reuniao.id, cenario.token_admin, "Primeira versão")
+    assert _put(client, cenario.reuniao.id, cenario.token_admin).status_code == 200
+
+    resposta = _aprovar(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["origem"] == "manual"
+    assert resposta.json()["texto_aprovado"] == EDITADO
+    assert resposta.json()["aprovada_por"] == cenario.admin.id
+    publica = _get(client, cenario.reuniao.id, cenario.token_residente)
+    assert publica.status_code == 200
+    assert publica.json()["texto_aprovado"] == EDITADO
+    assert publica.json()["origem"] == "manual"
+    assert db.query(models.Ata).filter_by(reuniao_id=cenario.reuniao.id).count() == 1
+
+
+def test_transcricao_falhada_passa_a_ata_manual_e_guarda_o_audio(client, db, cenario, media):
+    ata = _ata_falhada(db, cenario.reuniao)
+
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["origem"] == "manual"
+    assert resposta.json()["estado"] == "pendente_revisao"
+    assert resposta.json()["transcricao"] is None
+    gravada = _lida(db, ata)
+    assert gravada.rascunho == EDITADO
+    assert gravada.audio_path == "atas/assembleia.m4a"
+    assert (media / "atas" / "assembleia.m4a").exists()
+
+
+def test_aprovar_ata_manual_de_transcricao_falhada_apaga_o_audio(client, db, cenario, media):
+    """US-10: o áudio é apagado depois da aprovação, também quando a ata é manual."""
+    ata = _ata_falhada(db, cenario.reuniao)
+    _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    resposta = _aprovar(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["origem"] == "manual"
+    assert _lida(db, ata).audio_path is None
+    assert not (media / "atas" / "assembleia.m4a").exists()
+
+
+def test_editar_rascunho_de_ia_mantem_a_origem_ia(client, db, cenario):
+    """Um rascunho de IA editado continua a ser uma ata assistida por IA (US-24)."""
+    ata = _ata(db, cenario.reuniao)
+
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin, "Texto reescrito")
+
+    assert resposta.status_code == 200
+    assert resposta.json()["origem"] == "ia"
+    gravada = _lida(db, ata)
+    assert gravada.origem == models.OrigemAta.ia
+    assert gravada.transcricao == TRANSCRICAO
+
+
+def test_residente_nao_cria_ata_manual(client, db, cenario):
+    resposta = _put(client, cenario.reuniao.id, cenario.token_residente)
+
+    assert resposta.status_code == 403
+    assert resposta.json()["codigo"] == "sem_permissao"
+    assert db.query(models.Ata).filter_by(reuniao_id=cenario.reuniao.id).count() == 0
+
+
+def test_criar_ata_manual_noutro_condominio_devolve_404(client, db, cenario):
+    reuniao_alheia = _reuniao(db, _condominio(db))
+
+    resposta = _put(client, reuniao_alheia.id, cenario.token_admin)
+
+    assert resposta.status_code == 404
+    assert resposta.json()["codigo"] == "reuniao_nao_encontrada"
+    assert db.query(models.Ata).filter_by(reuniao_id=reuniao_alheia.id).count() == 0
+
+
+@pytest.mark.parametrize("corpo", [{"rascunho": "   "}, {"rascunho": "x" * (LIMITE_TEXTO + 1)}])
+def test_ata_manual_invalida_devolve_422_e_nao_cria_ata(client, db, cenario, corpo):
+    resposta = client.put(
+        f"/reunioes/{cenario.reuniao.id}/ata", headers=_auth(cenario.token_admin), json=corpo
+    )
+
+    assert resposta.status_code == 422
+    assert db.query(models.Ata).filter_by(reuniao_id=cenario.reuniao.id).count() == 0
+
+
+def test_criar_ata_manual_com_base_de_dados_indisponivel_devolve_503(
+    client, db, cenario, monkeypatch
+):
+    """Ecrã 4 do wireframe: o erro não cria nada; o texto fica no editor da app."""
+    _falhar_commit(db, monkeypatch)
+
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 503
+    assert resposta.json()["codigo"] == "servico_indisponivel"
+    monkeypatch.undo()
+    db.rollback()
+    assert db.query(models.Ata).filter_by(reuniao_id=cenario.reuniao.id).count() == 0
+
+
+@pytest.mark.parametrize(
+    ("estado", "origem", "status", "codigo"),
+    [
+        # O upload da US-10 chegou primeiro: a transcrição está em curso.
+        (models.EstadoAta.a_transcrever, models.OrigemAta.ia, 409, "ata_em_processamento"),
+        # Outro administrador criou a ata manual primeiro: o texto é guardado nessa ata.
+        (models.EstadoAta.pendente_revisao, models.OrigemAta.manual, 200, None),
+    ],
+)
+def test_ata_criada_por_outro_pedido_antes_do_insert(
+    client, db, cenario, monkeypatch, estado, origem, status, codigo
+):
+    """Corrida: o PUT leu a reunião sem ata, mas outro pedido criou-a antes do INSERT."""
+    existente = _ata(db, cenario.reuniao, estado=estado, origem=origem, rascunho=None)
+    ler = atas_router._ata_da_reuniao
+    leituras = []
+
+    def primeira_leitura_sem_ata(*args):
+        # A primeira leitura é anterior ao outro pedido; as seguintes já veem a ata.
+        leituras.append(args)
+        return None if len(leituras) == 1 else ler(*args)
+
+    monkeypatch.setattr(atas_router, "_ata_da_reuniao", primeira_leitura_sem_ata)
+
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == status
+    if codigo:
+        assert resposta.json()["codigo"] == codigo
+    assert db.query(models.Ata).filter_by(reuniao_id=cenario.reuniao.id).count() == 1
+    gravada = _lida(db, existente)
+    assert gravada.origem == origem
+    assert gravada.rascunho == (EDITADO if status == 200 else None)
+
+
+def test_audio_reenviado_entre_a_leitura_e_a_escrita_nao_passa_a_manual(
+    client, db, cenario, monkeypatch
+):
+    """Corrida: a ata falhada volta a `a_transcrever` (reenvio do áudio, US-10) antes do UPDATE."""
+    ata = _ata_falhada(db, cenario.reuniao)
+    ler = atas_router._ata_da_reuniao
+
+    def ler_e_reenviar_o_audio(*args):
+        lida = ler(*args)
+        db.query(models.Ata).filter_by(id=lida.id).update(
+            {"estado": models.EstadoAta.a_transcrever}, synchronize_session=False
+        )
+        db.commit()
+        return lida
+
+    monkeypatch.setattr(atas_router, "_ata_da_reuniao", ler_e_reenviar_o_audio)
+
+    resposta = _put(client, cenario.reuniao.id, cenario.token_admin)
+
+    assert resposta.status_code == 409
+    assert resposta.json()["codigo"] == "ata_em_processamento"
+    gravada = _lida(db, ata)
+    assert gravada.estado == models.EstadoAta.a_transcrever
+    assert gravada.origem == models.OrigemAta.ia
+    assert gravada.rascunho is None
 
 
 # --- POST /reunioes/{id}/ata/aprovar ---------------------------------------

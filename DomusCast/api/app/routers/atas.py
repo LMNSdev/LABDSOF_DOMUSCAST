@@ -1,9 +1,11 @@
-"""US-24: o administrador revê, edita e aprova a ata; os residentes só veem a ata aprovada.
+"""US-24 e US-25: o administrador escreve, revê e aprova a ata; os residentes só veem a aprovada.
 
-A ata nasce na US-10 (upload do áudio e Worker) ou na US-25 (ata manual).
+A ata nasce na US-10 (upload do áudio e Worker, `origem=ia`) ou na US-25 (ata
+manual, `origem=manual`).
 
 - `GET /reunioes/{id}/ata`: completar na US-10; minimo implementado para US-24.
-- `PUT /reunioes/{id}/ata`: guarda o rascunho editado, sem o publicar.
+- `PUT /reunioes/{id}/ata`: guarda o rascunho, sem o publicar. Numa reunião sem
+  ata, ou com a transcrição falhada, cria ou converte a ata em manual (US-25).
 - `POST /reunioes/{id}/ata/aprovar`: publica o rascunho como texto aprovado,
   regista quem aprovou e apaga áudio, transcrição e rascunho.
 
@@ -16,8 +18,8 @@ from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import case, cast, func
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
@@ -30,6 +32,8 @@ from .reunioes import _condominio_de, _indisponivel
 router = APIRouter()
 
 PENDENTE = models.EstadoAta.pendente_revisao
+FALHOU = models.EstadoAta.falhou_transcricao
+MANUAL = models.OrigemAta.manual
 
 
 def _reuniao_do_condominio(db: Session, condominio_id: int, reuniao_id: int) -> models.Reuniao:
@@ -51,10 +55,33 @@ def _sem_ata() -> ErroApi:
     return ErroApi(404, "ata_inexistente", "Esta reunião ainda não tem ata.")
 
 
+def _ata_da_reuniao(
+    db: Session, admin: models.Administrador, reuniao_id: int
+) -> models.Ata | None:
+    """A ata da reunião, ou `None` se ainda não tiver; 404 se a reunião não for do condomínio."""
+    return _reuniao_do_condominio(db, admin.condominio_id, reuniao_id).ata
+
+
 def _ata_do_admin(db: Session, admin: models.Administrador, reuniao_id: int) -> models.Ata:
-    ata = _reuniao_do_condominio(db, admin.condominio_id, reuniao_id).ata
+    ata = _ata_da_reuniao(db, admin, reuniao_id)
     if ata is None:
         raise _sem_ata()
+    return ata
+
+
+def _criar_ata_manual(db: Session, reuniao_id: int, rascunho: str) -> models.Ata | None:
+    """US-25: cria a ata manual. Devolve `None` se outro pedido criou uma ata entretanto.
+
+    A ata única por reunião (`uq_ata_reuniao_id`) resolve a corrida com o upload
+    da US-10 ou com outro administrador: só um INSERT ganha.
+    """
+    ata = models.Ata(reuniao_id=reuniao_id, estado=PENDENTE, origem=MANUAL, rascunho=rascunho)
+    db.add(ata)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return None
     return ata
 
 
@@ -103,13 +130,42 @@ def guardar_rascunho(
     admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    """Guarda o rascunho editado. Não publica. Ata continua `pendente_revisao`."""
+    """Guarda o rascunho, sem o publicar. A ata fica `pendente_revisao`.
+
+    - Sem ata: cria uma ata manual (US-25).
+    - `falhou_transcricao`: passa a manual. A transcrição é limpa (a falhada não
+      tem conteúdo útil); o áudio fica até à aprovação, que o apaga (US-10).
+    - `pendente_revisao`: guarda o texto e mantém a origem (US-24).
+    - `a_transcrever` ou `aprovada`: 409.
+    """
     try:
-        ata = _ata_do_admin(db, admin, reuniao_id)
+        ata = _ata_da_reuniao(db, admin, reuniao_id)
+        if ata is None:
+            criada = _criar_ata_manual(db, reuniao_id, dados.rascunho)
+            if criada is not None:
+                db.refresh(criada)
+                return criada
+            # Outro pedido criou a ata primeiro: segue como edição dessa ata.
+            ata = _ata_do_admin(db, admin, reuniao_id)
+        falhada = models.Ata.estado == FALHOU
         alteradas = (
             db.query(models.Ata)
-            .filter(models.Ata.id == ata.id, models.Ata.estado == PENDENTE)
-            .update({"rascunho": dados.rascunho}, synchronize_session=False)
+            .filter(models.Ata.id == ata.id, models.Ata.estado.in_([PENDENTE, FALHOU]))
+            .update(
+                {
+                    # O lado direito usa os valores antes do UPDATE (PostgreSQL e SQLite).
+                    # O CAST dá ao literal o tipo `origem_ata`: o PostgreSQL não junta
+                    # um enum e um texto no mesmo CASE.
+                    "origem": case(
+                        (falhada, cast(MANUAL.value, models.Ata.origem.type)),
+                        else_=models.Ata.origem,
+                    ),
+                    "transcricao": case((falhada, None), else_=models.Ata.transcricao),
+                    "estado": PENDENTE,
+                    "rascunho": dados.rascunho,
+                },
+                synchronize_session=False,
+            )
         )
         if alteradas == 0:
             db.rollback()
