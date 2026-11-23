@@ -43,12 +43,14 @@ flutter pub get
 
 ## Correr o projeto
 
-### Backend (API + base de dados)
+### Backend (API + Worker + base de dados)
 
 ```powershell
 cd DomusCast
 docker compose up --build
 ```
+
+Para processar atas com a OpenAI, cria `DomusCast/.env` com `OPENAI_API_KEY=<chave>` antes de arrancar. A chave só entra no Worker. Sem a chave, a API continua disponível e os jobs de transcrição terminam em `falhou_transcricao` após as tentativas previstas.
 
 Aguarda a mensagem `Uvicorn running on http://0.0.0.0:8000`.  
 A base de dados é criada e as migrações correm automaticamente.
@@ -67,6 +69,9 @@ A base de dados é criada e as migrações correm automaticamente.
 | `POST /identidades` | Residente entra com o token do QR code e o nome (devolve a credencial do dispositivo) |
 | `GET  /fracoes/{id}/identidades` | Listar os residentes ativos de uma fração (administrador) |
 | `DELETE /identidades/{id}` | Remover a identidade de um residente (administrador) |
+| `POST /reunioes/{id}/ata/audio` | Enviar áudio para transcrição assíncrona (administrador; MP3, M4A ou WAV até 200 MB) |
+| `GET /reunioes/{id}/ata` | Consultar estado, transcrição e rascunho privados |
+| `GET /reunioes/{id}/ata/audio` | Consultar o áudio original antes da aprovação (administrador) |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
 
 ### App Flutter
@@ -279,7 +284,7 @@ docs/                              ← Documentação do projeto (Sprint A, back
 
 ---
 
-## Onde a IA entra (Sprint B, ainda não implementado)
+## Transcrição de atas por IA (US-10)
 
 A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunho de ata** que o administrador revê e aprova. São dois passos de IA diferentes, porque resolvem problemas diferentes, ambos feitos pelo Worker com a **API da OpenAI** (uma só chave):
 
@@ -291,6 +296,8 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 - Custo estimado: cerca de US$ 0,27 por ata de 1 hora de áudio (preços consultados a 2026-10-23; detalhe em [docs/sprintA/sprintA.md, secção 7.4](../docs/sprintA/sprintA.md#74-abordagem-de-avaliação)).
 - O áudio da assembleia é enviado à OpenAI; por isso usamos gravações sintéticas nos testes e avisamos os presentes antes de gravar.
 - A IA não publica nem decide nada: o rascunho fica "gerado por IA, pendente de revisão" até o administrador o aprovar. Sem IA, o administrador escreve a ata à mão.
+- Na app, o administrador abre **Reuniões**, ativa **Mostrar reuniões passadas**, escolhe a assembleia e envia o áudio. O ecrã mostra o estado e atualiza-o periodicamente; uma falha permite selecionar e reenviar o mesmo ficheiro, sem criar outra ata ou job. O áudio original fica guardado em caso de falha.
+- A aprovação e publicação pertencem à US-24; quando essa história marcar a ata como aprovada, o Worker elimina o original e os dados intermédios, mesmo após reinício. O fallback manual pertence à US-25. As escolhas de 200 MB e MP3/M4A/WAV ainda aguardam confirmação da equipa. Ver [implementação e validação da US-10](../docs/sprintB/US10-implementacao.md).
 - Detalhe e justificação: [docs/sprintA/sprintA.md, secção 7](../docs/sprintA/sprintA.md#7-responsible-ai-opportunity-assessment).
 
 ---
@@ -299,7 +306,7 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 
 - Autenticação real por QR code por fração (US-01, US-15)
 - Gestão de estado dos reportes pelo administrador (US-03, US-05, US-22)
-- Transcrição de atas por IA com fallback manual (US-10, US-24, US-25), ver [Onde a IA entra](#onde-a-ia-entra-sprint-b-ainda-não-implementado)
+- Rever e aprovar rascunhos e permitir atas manuais (US-24, US-25)
 - Integração com calendário de assembleias (US-13, US-28, US-29)
 - Workflow assíncrono com Worker + PostgreSQL queue (SKIP LOCKED)
 - Testes de integração com PostgreSQL real na CI

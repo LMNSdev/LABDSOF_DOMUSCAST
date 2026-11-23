@@ -68,7 +68,7 @@ Na VM, o script [`DomusCast/deploy/bootstrap-vm.sh`](../../../DomusCast/deploy/b
 - **Menor privilégio.** A identidade do GitHub só consegue ler o estado, ligar e desalocar esta VM. Não cria, apaga nem altera recursos, e não entra na VM (isso é feito com a chave SSH do utilizador `deploy`, que também não tem `sudo`).
 
   ![Atribuição de papéis na VM: a identidade domuscast-github-deploy tem o papel DomusCast VM Operator só sobre este recurso](images/04-permissoes-identidade.png)
-- **Segredos da aplicação** (password do PostgreSQL, chaves de API) ficam num `.env` em `/opt/domuscast` na VM, fora do repositório, como definido em [8.8](../../sprintA/sprintA.md#88-vista-de-deployment).
+- **Segredos da aplicação** (password do PostgreSQL, chaves de API) ficam num `.env` em `/opt/domuscast` na VM, fora do repositório, como definido em [8.8](../../sprintA/sprintA.md#88-vista-de-deployment). Para a US-10, adicionar `OPENAI_API_KEY=<chave>` a esse ficheiro antes de iniciar o Worker; a API não recebe esta variável. O volume `media` é partilhado pela API e pelo Worker para a gravação continuar disponível até à aprovação.
 - **Limite de gasto.** A subscrição de estudante pára os recursos quando o crédito acaba; não há cobrança no cartão porque não há cartão. O orçamento avisa antes disso.
 
   ![Orçamento domuscast-mensal: US$ 25, reposto mensalmente, válido de 01/11/2026 a 31/10/2027](images/05-orcamento.png)
