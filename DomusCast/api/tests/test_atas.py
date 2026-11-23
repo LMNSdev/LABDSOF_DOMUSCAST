@@ -91,12 +91,14 @@ def _ata(
     transcricao=TRANSCRICAO,
     rascunho=RASCUNHO,
     audio_path="atas/assembleia.m4a",
+    origem=models.OrigemAta.ia,
     **extra,
 ):
     """Uma ata tal como a US-10 a deixaria (por omissão, pronta para revisão)."""
     ata = models.Ata(
         reuniao_id=reuniao.id,
         estado=estado,
+        origem=origem,
         transcricao=transcricao,
         rascunho=rascunho,
         audio_path=audio_path,
@@ -739,7 +741,7 @@ def test_resultado_da_ia_para_ata_inexistente_e_ignorado(db):
 
 
 # ---------------------------------------------------------------------------
-# Modelo de dados (migração 0008)
+# Modelo de dados (migrações 0008 e 0009)
 # ---------------------------------------------------------------------------
 
 
@@ -747,7 +749,13 @@ def test_uma_reuniao_so_pode_ter_uma_ata(db, cenario):
     from sqlalchemy.exc import IntegrityError
 
     _ata(db, cenario.reuniao)
-    db.add(models.Ata(reuniao_id=cenario.reuniao.id, estado=models.EstadoAta.a_transcrever))
+    db.add(
+        models.Ata(
+            reuniao_id=cenario.reuniao.id,
+            estado=models.EstadoAta.a_transcrever,
+            origem=models.OrigemAta.ia,
+        )
+    )
 
     with pytest.raises(IntegrityError):
         db.commit()
@@ -757,7 +765,18 @@ def test_uma_reuniao_so_pode_ter_uma_ata(db, cenario):
 def test_ata_sem_estado_e_recusada(db, cenario):
     from sqlalchemy.exc import IntegrityError
 
-    db.add(models.Ata(reuniao_id=cenario.reuniao.id))
+    db.add(models.Ata(reuniao_id=cenario.reuniao.id, origem=models.OrigemAta.ia))
+
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
+
+
+def test_ata_sem_origem_e_recusada(db, cenario):
+    """Migração 0009: quem cria a ata (US-10 ou US-25) indica sempre a origem."""
+    from sqlalchemy.exc import IntegrityError
+
+    db.add(models.Ata(reuniao_id=cenario.reuniao.id, estado=models.EstadoAta.a_transcrever))
 
     with pytest.raises(IntegrityError):
         db.commit()

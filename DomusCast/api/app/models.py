@@ -51,6 +51,11 @@ class EstadoAta(str, enum.Enum):
     aprovada = "aprovada"
 
 
+class OrigemAta(str, enum.Enum):
+    ia = "ia"
+    manual = "manual"
+
+
 class EstadoJob(str, enum.Enum):
     pendente = "pendente"
     em_curso = "em_curso"
@@ -305,6 +310,7 @@ class Ata(Base):
         Enum(EstadoAta, name="estado_ata"),
         nullable=False,
     )
+    origem = Column(Enum(OrigemAta, name="origem_ata"), nullable=False)
     aprovada_em = Column(DateTime(timezone=True), nullable=True)
     aprovada_por = Column(Integer, ForeignKey("administrador.id"), nullable=True)
 
