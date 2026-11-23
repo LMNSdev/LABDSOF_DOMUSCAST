@@ -148,3 +148,17 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
 
 **Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar os contratos, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
+
+## 2026-11-23
+
+**Participantes:** Marco Garcia.
+
+### US-29: Feed iCal do condomínio
+
+[Wireframe](design/us-29.html) ([PNG](design/us-29.png)) aprovado.
+
+- **Token derivado:** em vez de `condominio.calendario_token_hash` ([8.3](../sprintA/sprintA.md#83-modelo-de-dados)), guarda-se `condominio.calendario_token_versao` e o token é `HMAC-SHA256(SEGREDO_CALENDARIO, "{condominio_id}:{versao}")`. Com só o hash, o link seria mostrado uma única vez e voltar a partilhá-lo obrigaria a regenerar, o que corta a subscrição a todo o condomínio, porque há um só token por condomínio. Continua sem token guardado em claro (10.5); regenerar incrementa a versão num só `UPDATE`.
+- **Ver o link:** novo `GET /condominios/{id}/calendario`, que devolve `{url, webcal_url}` ao administrador e aos residentes do condomínio. O residente vê-o no separador Reuniões, sem depender da US-27. Só o administrador regenera, com confirmação.
+- **Feed:** `GET /condominios/{id}/calendario.ics?token=`, sem credencial Bearer, porque as apps de calendário não a enviam. Token em falta, inválido, antigo ou de outro condomínio: 404 nos quatro casos, para não revelar que o condomínio existe (TM-01). Só os pedidos com token inválido contam para o limite de 20 por hora por IP (429), porque as apps de calendário atualizam o feed sozinhas.
+- **Conteúdo:** as reuniões dos últimos 12 meses e as futuras, qualquer que seja o `estado_sync`, porque o feed é o fallback da US-28. Cada reunião é um `VEVENT` com `UID` estável `reuniao-{id}@domuscast`, para não duplicar ao atualizar, e 2 horas de duração, porque a reunião não tem hora de fim. Gerado com a biblioteca `icalendar` (RFC 5545).
+- **Subscrever no telemóvel:** a app do Google Calendar para Android não subscreve por URL, por isso a app não abre o `webcal://`: mostra o link com "Copiar" e "Partilhar" e instruções para Google Calendar, Apple Calendar e Outlook.

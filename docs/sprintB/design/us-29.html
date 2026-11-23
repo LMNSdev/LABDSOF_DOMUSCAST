@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-29 wireframe</title>
+<style>
+  body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 6px}
+  .subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+
+  .flow{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;color:#1b1b1b;font-family:system-ui,sans-serif;font-size:12px;position:relative}
+  .phone .bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+  .phone .body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+  .card{background:#fff;border-radius:10px;padding:10px}
+  .link{background:#fff;border:1px solid #c6cfdf;border-radius:10px;padding:8px;font-family:ui-monospace,monospace;font-size:10px;word-break:break-all}
+  .acts2{display:flex;gap:8px}
+  .acts2 .btn{flex:1}
+  .btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+  .btn.out{background:#fff;color:#0F3478;border:1.5px solid #0F3478}
+  .btn.danger{background:#fff;color:#B3261E;border:1.5px solid #B3261E}
+  .shade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
+  .dialog{background:#fff;border-radius:14px;padding:14px;width:180px;font-size:12px}
+  .dialog .acts{display:flex;justify-content:flex-end;gap:12px;margin-top:12px;font-weight:700;color:#0F3478}
+  .dialog .acts .red{color:#B3261E}
+  .snack{background:#1c6b2c;color:#fff;border-radius:8px;padding:8px;font-size:11px}
+  .erro{background:#fff;border:1.5px solid #B3261E;color:#B3261E;border-radius:10px;padding:10px}
+  .tabs{display:flex;justify-content:space-around;background:#fff;border-top:1px solid #c6cfdf;padding:8px 0;font-size:10px;color:#667}
+  .tabs b{color:#0F3478}
+  .note{font-size:11px;color:#667}
+  .cap{width:230px;font-size:13px;margin-top:6px}
+  .cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-29: feed iCal do condomínio</h1>
+<p class="subtitle">O administrador abre o ecrã no separador Condomínio, no cartão "Calendário do condomínio" que hoje está "em breve"; o residente abre-o no separador Reuniões. O link vem de <code>GET /condominios/{id}/calendario</code> e pode ser mostrado sempre, porque o token é calculado a partir de uma versão (<a href="../refinamento.md#us-29-feed-ical-do-condomínio">refinamento</a>). A subscrição faz-se na app de calendário de cada um, colando o link; a app não a abre, porque a app do Google Calendar para Android não subscreve por URL. Só o administrador regenera o link.</p>
+
+<div class="flow">
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Calendário do condomínio</div>
+      <div class="body">
+        <div class="note">Subscreva este link na sua app de calendário para ver as assembleias do condomínio.</div>
+        <div class="link">https://domuscast…/condominios/7/calendario.ics?token=k3Jf…</div>
+        <div class="acts2"><div class="btn out">Copiar</div><div class="btn">Partilhar</div></div>
+        <div class="card"><b>Como subscrever</b>
+          <div class="note"><b>Google Calendar:</b> no computador, Outros calendários &gt; A partir do URL.<br><b>Apple:</b> Definições &gt; Calendário &gt; Contas &gt; Adicionar calendário subscrito.<br><b>Outlook:</b> Adicionar calendário &gt; Subscrever da Web.</div>
+        </div>
+        <div class="note">As apps de calendário podem demorar algumas horas a mostrar alterações.</div>
+        <div style="margin-top:auto" class="btn danger">Regenerar link</div>
+      </div>
+    </div>
+    <div class="cap"><b>1. Administrador</b>Link sempre visível, com copiar e partilhar (como o QR code) e instruções curtas por app.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Calendário do condomínio</div>
+      <div class="body">
+        <div class="note">Subscreva este link na sua app de calendário para ver as assembleias do condomínio.</div>
+        <div class="link">https://domuscast…/condominios/7/calendario.ics?token=k3Jf…</div>
+        <div class="acts2"><div class="btn out">Copiar</div><div class="btn">Partilhar</div></div>
+      </div>
+      <div class="shade"><div class="dialog"><b>Regenerar o link do calendário?</b><br><br>O link atual deixa de funcionar. Quem já subscreveu deixa de receber as reuniões até subscrever o novo link.<div class="acts"><span>Cancelar</span><span class="red">Regenerar</span></div></div></div>
+    </div>
+    <div class="cap"><b>2. Confirmação</b>Para quando o link foi divulgado a quem não devia; não se desfaz.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Calendário do condomínio</div>
+      <div class="body">
+        <div class="snack">Link regenerado. Partilhe o novo link com os residentes.</div>
+        <div class="link">https://domuscast…/condominios/7/calendario.ics?token=Qw9a…</div>
+        <div class="acts2"><div class="btn out">Copiar</div><div class="btn">Partilhar</div></div>
+        <div style="margin-top:auto" class="btn danger">Regenerar link</div>
+      </div>
+    </div>
+    <div class="cap"><b>3. Depois de regenerar</b>O novo link aparece logo, pronto a partilhar; o anterior devolve erro.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">Reuniões</div>
+      <div class="body">
+        <div class="note" style="text-align:center;margin-top:40px">As reuniões vão aparecer aqui.</div>
+        <div style="margin-top:auto" class="btn out">Subscrever no calendário</div>
+      </div>
+      <div class="tabs"><span>Reportes</span><b>Reuniões</b><span>Avisos</span></div>
+    </div>
+    <div class="cap"><b>4. Residente, separador Reuniões</b>Abre o ecrã 1 sem "Regenerar link". Não depende da US-27 (ver reuniões na app).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="bar">&lsaquo; Calendário do condomínio</div>
+      <div class="body">
+        <div class="erro">Não foi possível obter o link do calendário. Verifique a ligação.</div>
+        <div class="btn">Tentar novamente</div>
+      </div>
+    </div>
+    <div class="cap"><b>5. Erro</b>Sem ligação ou API indisponível; o erro é anunciado pelo TalkBack.</div>
+  </div>
+</div>
+</body>
+</html>
