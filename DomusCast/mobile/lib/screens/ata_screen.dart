@@ -238,9 +238,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
                   style: Theme.of(context).textTheme.titleMedium),
               SelectableText((_ata?['transcricao'] as String?) ?? ''),
             ],
-            if (estado == 'aprovada')
-              const Text(
-                  'Ata aprovada. O áudio foi eliminado após a aprovação.'),
+            if (estado == 'aprovada') const Text('Ata aprovada.'),
             if (podeEnviar && !_aCarregar) ...[
               const SizedBox(height: 20),
               const Text(

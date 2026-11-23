@@ -4,6 +4,7 @@ import 'package:domuscast/screens/ata_screen.dart';
 import 'package:domuscast/screens/reunioes_screen.dart';
 import 'package:domuscast/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -158,5 +159,27 @@ void main() {
     expect(
         find.text('Formato não aceite. Use MP3, M4A ou WAV.'), findsOneWidget);
     expect(find.text('Enviar áudio'), findsOneWidget);
+  });
+
+  testWidgets('seleção e envio têm ações acessíveis; estado é anunciado',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    final api = ApiService(
+        client: MockClient((_) async => _json(_ata('a_transcrever'), 200)));
+    await tester.pumpWidget(_ecra(api));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    final no = tester.getSemantics(find.textContaining('A transcrever.'));
+    expect(no.getSemanticsData().flagsCollection.isLiveRegion, isTrue);
+
+    final apiSemAta =
+        ApiService(client: MockClient((_) async => _json({}, 404)));
+    await tester.pumpWidget(_ecra(apiSemAta));
+    await tester.pumpAndSettle();
+    final escolher = tester.getSemantics(
+        find.bySemanticsLabel(RegExp('Escolher áudio MP3, M4A ou WAV')).first);
+    expect(escolher.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    handle.dispose();
   });
 }
