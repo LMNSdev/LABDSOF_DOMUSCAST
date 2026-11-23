@@ -8,6 +8,7 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
@@ -180,3 +181,35 @@ def consultar_ata(
     if ata is None:
         raise HTTPException(status_code=404, detail="Ata não encontrada.")
     return _resposta(ata)
+
+
+@router.get("/{reuniao_id}/ata/audio")
+def consultar_audio(
+    reuniao_id: int,
+    admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Áudio original para o administrador confirmar passagens da transcrição."""
+    try:
+        ata = db.query(models.Ata).join(models.Reuniao).filter(
+            models.Ata.reuniao_id == reuniao_id,
+            models.Reuniao.condominio_id == admin.condominio_id,
+        ).first()
+    except OperationalError as exc:
+        raise _indisponivel() from exc
+    if ata is None or ata.audio_path is None or ata.estado == models.EstadoAta.aprovada:
+        raise HTTPException(status_code=404, detail="Áudio não encontrado.")
+    raiz = MEDIA_ROOT.resolve()
+    caminho = (raiz / ata.audio_path).resolve()
+    if not caminho.is_relative_to(raiz) or not caminho.is_file():
+        raise HTTPException(status_code=404, detail="Áudio não encontrado.")
+    tipo = {
+        ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".wav": "audio/wav",
+    }.get(caminho.suffix, "application/octet-stream")
+    return FileResponse(
+        caminho,
+        media_type=tipo,
+        filename=f"ata-reuniao-{reuniao_id}{caminho.suffix}",
+        content_disposition_type="inline",
+        headers={"Cache-Control": "private, no-store"},
+    )

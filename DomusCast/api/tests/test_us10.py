@@ -106,6 +106,28 @@ def test_apenas_admin_do_condominio_consulta_e_carrega(client, db, tmp_path, mon
     assert client.get("/reunioes/999999/ata", headers=_auth(token)).status_code == 404
 
 
+def test_audio_original_so_esta_disponivel_ao_admin_antes_da_aprovacao(client, db, tmp_path, monkeypatch):
+    monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
+    admin, token = _admin(db)
+    reuniao_id = _agendar(client, token).json()["id"]
+    residente = _residente(db, db.get(models.Condominio, admin.condominio_id))
+    _, outro_admin = _admin(db)
+    ata_id = _enviar(client, reuniao_id, token).json()["id"]
+    url = f"/reunioes/{reuniao_id}/ata/audio"
+
+    resposta = client.get(url, headers=_auth(token))
+    assert resposta.status_code == 200
+    assert resposta.content == _wav()
+    assert resposta.headers["cache-control"] == "private, no-store"
+    assert client.get(url, headers=_auth(residente)).status_code == 403
+    assert client.get(url, headers=_auth(outro_admin)).status_code == 404
+    assert client.get(url).status_code == 401
+    ata = db.get(models.Ata, ata_id)
+    ata.estado = models.EstadoAta.aprovada
+    db.commit()
+    assert client.get(url, headers=_auth(token)).status_code == 404
+
+
 def test_formato_tamanho_e_pedido_invalidos(client, db, tmp_path, monkeypatch):
     monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
     _, token = _admin(db)
