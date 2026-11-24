@@ -260,7 +260,8 @@ class ApiService {
 
   // --- US-13: reuniões -------------------------------------------------------
 
-  /// Reuniões de hoje em diante, por data: `{id, data_hora, local, estado_sync, criado_em}`.
+  /// Reuniões de hoje em diante, por data:
+  /// `{id, data_hora, local, estado_sync, criado_em, atualizado_em}`.
   Future<List<Map<String, dynamic>>> getReunioes(String credencial) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/reunioes'),

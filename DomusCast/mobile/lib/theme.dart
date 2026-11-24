@@ -4,6 +4,13 @@ const _primary = Color(0xFF0F3478);
 const _secondary = Color(0xFF1565C0);
 const _accent = Color(0xFF42A5F5);
 
+/// Estados com cor própria, como nos wireframes (US-28): verde para concluído
+/// e amarelo para pendente ou aviso. Texto escuro para manter o contraste.
+const sucessoFundo = Color(0xFFDFF5E3);
+const sucessoTexto = Color(0xFF1C6B2C);
+const avisoFundo = Color(0xFFFFF2D6);
+const avisoTexto = Color(0xFF5C4000);
+
 final appTheme = ThemeData(
   useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(
