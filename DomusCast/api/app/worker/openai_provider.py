@@ -152,7 +152,12 @@ def _formatar_rascunho(dados: dict, transcricao: str) -> str:
 class OpenAIProvider:
     def __init__(self, chave: str | None = None, cliente: httpx.Client | None = None):
         self.chave = chave if chave is not None else os.getenv("OPENAI_API_KEY", "")
-        self.cliente = cliente or httpx.Client(base_url="https://api.openai.com/v1")
+        self._fecha_cliente = cliente is None
+        self.cliente = cliente if cliente is not None else httpx.Client(base_url="https://api.openai.com/v1")
+
+    def close(self) -> None:
+        if self._fecha_cliente:
+            self.cliente.close()
 
     def _headers(self) -> dict[str, str]:
         if not self.chave:

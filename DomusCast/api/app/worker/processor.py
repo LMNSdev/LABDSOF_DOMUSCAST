@@ -189,7 +189,9 @@ def processar_job(
     sessoes: SessionFactory = SessionLocal,
     media_root: Path | None = None,
 ) -> None:
-    provider = provider or OpenAIProvider()
+    provider_proprio = provider is None
+    if provider is None:
+        provider = OpenAIProvider()
     raiz = (media_root or Path(os.getenv("MEDIA_ROOT", "media"))).resolve()
     inicio = monotonic()
     try:
@@ -222,5 +224,7 @@ def processar_job(
         logger.exception("falha_interna_no_job_sem_conteudo_pessoal")
         _registar_falha(job_id, "falha_interna", sessoes)
     finally:
+        if provider_proprio:
+            provider.close()
         logger.info(json.dumps({"evento": "job_duracao", "job_id": job_id,
                                 "duracao_segundos": round(monotonic() - inicio, 3)}))

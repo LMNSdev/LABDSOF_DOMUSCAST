@@ -77,3 +77,16 @@ def test_provider_sem_chave_nao_envia_audio(tmp_path, monkeypatch):
         provider = OpenAIProvider(chave="", cliente=cliente)
         with pytest.raises(FalhaProvider, match="chave_ia_ausente"):
             provider.transcrever(parte)
+
+
+def test_provider_fecha_apenas_o_cliente_que_criou():
+    provider = OpenAIProvider(chave="chave-de-teste")
+    cliente = provider.cliente
+    provider.close()
+    assert cliente.is_closed
+
+    externo = httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(200)))
+    provider = OpenAIProvider(chave="chave-de-teste", cliente=externo)
+    provider.close()
+    assert not externo.is_closed
+    externo.close()

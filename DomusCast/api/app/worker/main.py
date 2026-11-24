@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .. import models
 from ..database import SessionLocal
+from .openai_provider import OpenAIProvider
 from .processor import limpar_audios_aprovados, processar_job, recuperar_jobs, reservar_job
 
 
@@ -76,17 +77,21 @@ def main() -> None:
         except SQLAlchemyError:
             logger.warning(json.dumps({"componente": "worker", "evento": "bd_indisponivel"}))
             sleep(5)
-    while True:
-        try:
-            limpar_audios_aprovados()
-            job_id = reservar_job()
-            if job_id is None:
-                sleep(2)
-            else:
-                processar_job(job_id)
-        except SQLAlchemyError:
-            logger.warning(json.dumps({"componente": "worker", "evento": "bd_indisponivel"}))
-            sleep(5)
+    provider = OpenAIProvider()
+    try:
+        while True:
+            try:
+                limpar_audios_aprovados()
+                job_id = reservar_job()
+                if job_id is None:
+                    sleep(2)
+                else:
+                    processar_job(job_id, provider=provider)
+            except SQLAlchemyError:
+                logger.warning(json.dumps({"componente": "worker", "evento": "bd_indisponivel"}))
+                sleep(5)
+    finally:
+        provider.close()
 
 
 if __name__ == "__main__":
