@@ -1,6 +1,7 @@
 """Contrato HTTP dos dois passos de IA, sem chamadas nem chaves reais."""
 
 import json
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -90,3 +91,15 @@ def test_provider_fecha_apenas_o_cliente_que_criou():
     provider.close()
     assert not externo.is_closed
     externo.close()
+
+
+def test_assembleia_de_mais_de_uma_hora_cabe_no_limite(tmp_path, monkeypatch):
+    monkeypatch.setattr(openai_provider, "_executavel", lambda _: "ffprobe")
+    duracao = 70 * 60
+    monkeypatch.setattr(openai_provider.subprocess, "run",
+                        lambda *_args, **_kwargs: SimpleNamespace(stdout=str(duracao)))
+    assert openai_provider._duracao(tmp_path / "audio.wav") == duracao
+
+    duracao = 3 * 60 * 60 + 1
+    with pytest.raises(FalhaProvider, match="duracao_audio_invalida"):
+        openai_provider._duracao(tmp_path / "audio.wav")

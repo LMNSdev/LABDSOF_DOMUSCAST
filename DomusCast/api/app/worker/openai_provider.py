@@ -12,7 +12,7 @@ import httpx
 
 
 MAX_PARTE_BYTES = 25_000_000
-MAX_DURACAO_S = 60 * 60
+MAX_DURACAO_S = 3 * 60 * 60
 MODELO_TRANSCRICAO = "gpt-transcribe"
 MODELO_RASCUNHO = "gpt-4o-mini"
 
