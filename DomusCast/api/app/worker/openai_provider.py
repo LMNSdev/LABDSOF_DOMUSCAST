@@ -180,6 +180,7 @@ class OpenAIProvider:
                 "/responses", headers=self._headers(),
                 json={
                     "model": MODELO_RASCUNHO,
+                    "store": False,
                     "instructions": INSTRUCOES,
                     "input": f"<transcricao>\n{transcricao}\n</transcricao>",
                     "text": {"format": {"type": "json_schema", "name": "rascunho_ata",

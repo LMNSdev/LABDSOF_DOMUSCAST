@@ -26,6 +26,7 @@ def test_provider_envia_audio_e_transcricao_aos_endpoints_certos(tmp_path, monke
         assert pedido.url.path == "/v1/responses"
         corpo = json.loads(pedido.content)
         assert corpo["model"] == "gpt-4o-mini"
+        assert corpo["store"] is False
         assert corpo["text"]["format"]["type"] == "json_schema"
         assert corpo["text"]["format"]["strict"] is True
         assert "Decidiram reparar a entrada." in corpo["input"]

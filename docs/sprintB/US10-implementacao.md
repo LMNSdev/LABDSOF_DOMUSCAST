@@ -20,6 +20,8 @@ Issue [#88](https://github.com/LMNSdev/LABDSOF_DOMUSCAST/issues/88). A implement
 | Tentativas | 5 no total, com esperas de 1, 2, 4 e 8 minutos | O refinamento também enumera 16 minutos: esse quinto intervalo só caberia entre seis tentativas. Confirmar com a equipa |
 | Chave da OpenAI | `OPENAI_API_KEY` só no Worker | Definir em `DomusCast/.env` no desenvolvimento ou `/opt/domuscast/.env` na VM; nunca versionar |
 
+O pedido de rascunho à Responses API usa `store: false`, porque o valor por omissão guardaria a resposta para consulta posterior ([documentação da OpenAI](https://developers.openai.com/api/reference/resources/responses/methods/create)). Isto não resolve, por si só, as condições de tratamento e retenção de dados do fornecedor assinaladas no [modelo de ameaças](../sprintA/sprintA.md#106-modelo-de-ameaças-inicial).
+
 O processamento não cria uma fila offline para áudio no dispositivo: a US-18 trata a fila local. O ato de aprovar e publicar é da US-24; a US-10 mantém o original até esse passo e prepara a limpeza após o estado aprovado. A ata manual em falha é da US-25. Estas dependências foram mantidas para não publicar texto gerado pela IA sem revisão humana.
 
 ## Validação realizada
