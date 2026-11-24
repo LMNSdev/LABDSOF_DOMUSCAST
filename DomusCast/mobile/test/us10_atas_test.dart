@@ -136,6 +136,8 @@ void main() {
     await tester.pumpWidget(_ecra(api));
     await tester.pumpAndSettle();
     expect(find.textContaining('excede o limite de 3 horas'), findsOneWidget);
+    expect(find.text('Substituir áudio'), findsOneWidget);
+    expect(find.text('Tentar transcrição novamente'), findsNothing);
   });
 
   testWidgets('reuniões passadas ficam acessíveis ao administrador',

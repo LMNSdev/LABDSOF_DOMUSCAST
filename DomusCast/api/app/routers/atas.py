@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Annotated
@@ -23,6 +24,7 @@ MAX_AUDIO_BYTES = 200_000_000
 EXTENSOES = {".mp3", ".m4a", ".wav"}
 BLOCO = 1024 * 1024
 JOB_TRANSCRICAO = "transcrever"
+logger = logging.getLogger("domuscast.atas")
 
 
 def _indisponivel() -> HTTPException:
@@ -142,11 +144,28 @@ def carregar_audio(
         if ata is not None:
             if ata.estado == models.EstadoAta.aprovada:
                 raise ErroApi(409, "ata_ja_aprovada", "A ata já foi aprovada.")
-            if ata.audio_sha256 != digest:
-                raise ErroApi(409, "audio_diferente", "Esta reunião já tem outro áudio.")
-            if ata.estado == models.EstadoAta.falhou_transcricao:
+            if ata.estado == models.EstadoAta.falhou_transcricao and ata.origem == models.OrigemAta.ia:
+                if ata.audio_sha256 != digest:
+                    raiz = MEDIA_ROOT.resolve()
+                    anterior = (raiz / (ata.audio_path or "")).resolve()
+                    caminho_anterior_valido = bool(ata.audio_path and anterior.is_relative_to(raiz))
+                    ata.audio_path = caminho_relativo
+                    ata.audio_sha256 = digest
+                    ata.transcricao = None
+                    _repor_job(db, ata, request.state.request_id)
+                    db.commit()
+                    manter_ficheiro = True
+                    if caminho_anterior_valido:
+                        try:
+                            anterior.unlink(missing_ok=True)
+                        except OSError:
+                            logger.warning("audio_substituido_pendente_de_limpeza ata_id=%s", ata.id)
+                    return _resposta(ata, db)
                 _repor_job(db, ata, request.state.request_id)
                 db.commit()
+                return _resposta(ata, db)
+            if ata.audio_sha256 != digest:
+                raise ErroApi(409, "audio_diferente", "Esta reunião já tem outro áudio.")
             return _resposta(ata, db)
 
         ata = models.Ata(

@@ -58,6 +58,8 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
           'O áudio excede o limite de 3 horas. Escolha uma gravação mais curta.',
         'audio_invalido' =>
           'O áudio não pôde ser lido. Escolha outro ficheiro.',
+        'audio_em_falta' =>
+          'O áudio original não está disponível. Escolha outro ficheiro.',
         'chave_ia_ausente' =>
           'A transcrição por IA não está configurada. Contacte o administrador do sistema.',
         'credito_ia_esgotado' =>
@@ -237,7 +239,11 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final estado = _ata?['estado'] as String?;
-    final podeEnviar = estado == null;
+    final motivo = _ata?['erro_transcricao'] as String?;
+    final podeSubstituir = estado == 'falhou_transcricao' &&
+        {'duracao_audio_invalida', 'audio_invalido', 'audio_em_falta'}
+            .contains(motivo);
+    final podeEnviar = estado == null || podeSubstituir;
     return Scaffold(
       appBar: AppBar(title: const Text('Ata da reunião')),
       body: RefreshIndicator(
@@ -273,8 +279,8 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               Semantics(
                   liveRegion: true,
                   child: Text(
-                      '${_motivoFalha(_ata?['erro_transcricao'] as String?)} O áudio continua guardado. Pode tentar novamente sem selecionar o ficheiro.')),
-            if (estado == 'falhou_transcricao') ...[
+                      '${_motivoFalha(motivo)} O áudio continua guardado. ${podeSubstituir ? 'Escolha outro ficheiro para o substituir.' : 'Pode tentar novamente sem selecionar o ficheiro.'}')),
+            if (estado == 'falhou_transcricao' && !podeSubstituir) ...[
               const SizedBox(height: 16),
               const Text(
                   'Uma nova tentativa enviará o áudio e a transcrição à OpenAI.'),
@@ -317,7 +323,8 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               FilledButton.icon(
                 onPressed: _audio == null || _aEnviar ? null : _enviar,
                 icon: const Icon(Icons.upload_file),
-                label: const Text('Enviar áudio'),
+                label:
+                    Text(podeSubstituir ? 'Substituir áudio' : 'Enviar áudio'),
               ),
               if (_aEnviar) const Center(child: CircularProgressIndicator()),
             ],
