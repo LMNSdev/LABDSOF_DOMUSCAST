@@ -640,8 +640,8 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-22, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
 | `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-28); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)) |
-| `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, origem, estado, aprovada_em, aprovada_por | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10, US-24). `origem`: `ia` ou `manual` (US-25); `aprovada_por` identifica o administrador que aprovou (US-24) |
-| `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
+| `ata` | id, reuniao_id, audio_path, audio_sha256, transcricao, rascunho, texto_aprovado, origem, estado, aprovada_em, aprovada_por | `audio_sha256` identifica reenvios do mesmo original (US-10); `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10, US-24). `origem`: `ia` ou `manual` (US-25); `aprovada_por` identifica o administrador que aprovou (US-24) |
+| `job` | id, tipo, chave_idempotencia, payload, request_id, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `request_id` liga o pedido aos logs do job; `chave_idempotencia` única por tipo |
 
 **Relações e cardinalidades** (o diagrama usa notação pé-de-galinha):
 
@@ -705,9 +705,11 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
 | `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
-| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano) |
+| `POST /reunioes`, `GET /reunioes?desde=&incluir_passadas=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano); `incluir_passadas` permite ao administrador abrir assembleias concluídas para tratar a ata (US-10) |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
+| `POST /reunioes/{id}/ata/repetir` | admin | US-10: repõe o job falhado usando o áudio guardado, sem novo upload |
+| `GET /reunioes/{id}/ata/audio` | admin | US-10: consulta privada do original antes da aprovação, sem cache |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |
 | `GET /health`, `GET /metrics` | operação | [8.7](#87-observabilidade) |
 
