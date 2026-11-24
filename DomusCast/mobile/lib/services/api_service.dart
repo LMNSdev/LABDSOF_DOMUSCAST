@@ -340,4 +340,14 @@ class ApiService {
     final response = await http.Response.fromStream(streamed);
     return _corpo(response, 202) as Map<String, dynamic>;
   }
+
+  /// Recomeça a transcrição com o áudio original guardado no servidor.
+  Future<Map<String, dynamic>> repetirTranscricaoAta(
+      int reuniaoId, String credencial) async {
+    final r = await _client.post(
+      Uri.parse('$baseUrl/reunioes/$reuniaoId/ata/repetir'),
+      headers: _auth(credencial),
+    );
+    return _corpo(r, 202) as Map<String, dynamic>;
+  }
 }

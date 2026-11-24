@@ -89,14 +89,27 @@ def _resposta(ata: models.Ata) -> dict:
     }
 
 
+def _repor_job(db: Session, ata: models.Ata, request_id: str) -> None:
+    job = db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata.id}").one()
+    job.estado = models.EstadoJob.pendente
+    job.tentativas = 0
+    job.proxima_tentativa_em = None
+    job.erro = None
+    job.request_id = request_id
+    ata.estado = models.EstadoAta.a_transcrever
+    ata.rascunho = None
+
+
 @router.post("/{reuniao_id}/ata/audio", response_model=schemas.AtaOut, status_code=202)
 def carregar_audio(
     reuniao_id: int,
     request: Request,
+    response: Response,
     audio: Annotated[UploadFile, File()],
     admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
     db: Annotated[Session, Depends(get_db)],
 ):
+    response.headers["Cache-Control"] = "private, no-store"
     try:
         reuniao = db.query(models.Reuniao).filter(
             models.Reuniao.id == reuniao_id,
@@ -129,13 +142,7 @@ def carregar_audio(
             if ata.audio_sha256 != digest:
                 raise ErroApi(409, "audio_diferente", "Esta reunião já tem outro áudio.")
             if ata.estado == models.EstadoAta.falhou_transcricao:
-                job = db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata.id}").one()
-                job.estado = models.EstadoJob.pendente
-                job.tentativas = 0
-                job.proxima_tentativa_em = None
-                job.erro = None
-                ata.estado = models.EstadoAta.a_transcrever
-                ata.rascunho = None
+                _repor_job(db, ata, request.state.request_id)
                 db.commit()
             return _resposta(ata)
 
@@ -163,6 +170,44 @@ def carregar_audio(
     finally:
         if not manter_ficheiro:
             caminho.unlink(missing_ok=True)
+
+
+@router.post("/{reuniao_id}/ata/repetir", response_model=schemas.AtaOut, status_code=202)
+def repetir_transcricao(
+    reuniao_id: int,
+    request: Request,
+    response: Response,
+    admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Reutiliza o áudio e o job guardados sem pedir o ficheiro ao telemóvel."""
+    response.headers["Cache-Control"] = "private, no-store"
+    try:
+        reuniao = db.query(models.Reuniao).filter(
+            models.Reuniao.id == reuniao_id,
+            models.Reuniao.condominio_id == admin.condominio_id,
+        ).with_for_update().first()
+        if reuniao is None:
+            raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        ata = db.query(models.Ata).filter_by(reuniao_id=reuniao_id).first()
+        if ata is None:
+            raise HTTPException(status_code=404, detail="Ata não encontrada.")
+        if ata.estado == models.EstadoAta.aprovada:
+            raise ErroApi(409, "ata_ja_aprovada", "A ata já foi aprovada.")
+        if ata.estado == models.EstadoAta.a_transcrever:
+            return _resposta(ata)
+        if ata.estado != models.EstadoAta.falhou_transcricao or ata.origem != models.OrigemAta.ia:
+            raise ErroApi(409, "ata_nao_falhou", "Esta ata não está em falha de transcrição.")
+        raiz = MEDIA_ROOT.resolve()
+        caminho = (raiz / (ata.audio_path or "")).resolve()
+        if not ata.audio_path or not caminho.is_relative_to(raiz) or not caminho.is_file():
+            raise ErroApi(409, "audio_em_falta", "O áudio original não está disponível.")
+        _repor_job(db, ata, request.state.request_id)
+        db.commit()
+        return _resposta(ata)
+    except OperationalError as exc:
+        db.rollback()
+        raise _indisponivel() from exc
 
 
 @router.get("/{reuniao_id}/ata", response_model=schemas.AtaOut)

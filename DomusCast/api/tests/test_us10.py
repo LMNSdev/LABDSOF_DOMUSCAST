@@ -80,6 +80,63 @@ def test_reenvio_reutiliza_ata_e_job_e_reinicia_falha(client, db, tmp_path, monk
     assert (tmp_path / ata.audio_path).exists()
 
 
+def test_repetir_a_partir_do_audio_guardado_sem_novo_upload(client, db, tmp_path, monkeypatch):
+    monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
+    admin, token = _admin(db)
+    reuniao_id = _agendar(client, token).json()["id"]
+    ata_id = _enviar(client, reuniao_id, token).json()["id"]
+    ata = db.get(models.Ata, ata_id)
+    job = db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata_id}").one()
+    ata.estado = models.EstadoAta.falhou_transcricao
+    ata.transcricao = "Transcrição já guardada antes da falha do rascunho."
+    job.estado = models.EstadoJob.falhou
+    job.tentativas = 5
+    db.commit()
+
+    url = f"/reunioes/{reuniao_id}/ata/repetir"
+    resposta = client.post(url, headers=_auth(token))
+    assert resposta.status_code == 202
+    assert resposta.headers["cache-control"] == "private, no-store"
+    assert resposta.json()["estado"] == "a_transcrever"
+    assert resposta.json()["audio_guardado"] is True
+    assert client.post(url, headers=_auth(token)).status_code == 202
+    db.refresh(ata)
+    db.refresh(job)
+    assert ata.transcricao == "Transcrição já guardada antes da falha do rascunho."
+    assert job.estado == models.EstadoJob.pendente
+    assert job.tentativas == 0
+    assert job.request_id == resposta.headers["X-Request-ID"]
+    assert db.query(models.Ata).filter_by(reuniao_id=reuniao_id).count() == 1
+    assert db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata_id}").count() == 1
+    assert (tmp_path / ata.audio_path).read_bytes() == _wav()
+
+    residente = _residente(db, db.get(models.Condominio, admin.condominio_id))
+    _, outro_admin = _admin(db)
+    assert client.post(url, headers=_auth(residente)).status_code == 403
+    assert client.post(url, headers=_auth(outro_admin)).status_code == 404
+    assert client.post(url).status_code == 401
+
+
+def test_repetir_recusa_ata_aprovada_sem_falha_ou_audio(client, db, tmp_path, monkeypatch):
+    monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
+    _, token = _admin(db)
+    reuniao_id = _agendar(client, token).json()["id"]
+    url = f"/reunioes/{reuniao_id}/ata/repetir"
+    assert client.post(url, headers=_auth(token)).status_code == 404
+    ata_id = _enviar(client, reuniao_id, token).json()["id"]
+    ata = db.get(models.Ata, ata_id)
+    ata.estado = models.EstadoAta.pendente_revisao
+    db.commit()
+    assert client.post(url, headers=_auth(token)).json()["codigo"] == "ata_nao_falhou"
+    ata.estado = models.EstadoAta.falhou_transcricao
+    db.commit()
+    (tmp_path / ata.audio_path).unlink()
+    assert client.post(url, headers=_auth(token)).json()["codigo"] == "audio_em_falta"
+    ata.estado = models.EstadoAta.aprovada
+    db.commit()
+    assert client.post(url, headers=_auth(token)).json()["codigo"] == "ata_ja_aprovada"
+
+
 def test_audio_aprovado_nao_pode_ser_substituido(client, db, tmp_path, monkeypatch):
     monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
     _, token = _admin(db)

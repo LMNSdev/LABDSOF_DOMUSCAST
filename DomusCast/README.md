@@ -70,6 +70,7 @@ A base de dados é criada e as migrações correm automaticamente.
 | `GET  /fracoes/{id}/identidades` | Listar os residentes ativos de uma fração (administrador) |
 | `DELETE /identidades/{id}` | Remover a identidade de um residente (administrador) |
 | `POST /reunioes/{id}/ata/audio` | Enviar áudio para transcrição assíncrona (administrador; MP3, M4A ou WAV até 200 MB) |
+| `POST /reunioes/{id}/ata/repetir` | Repetir uma transcrição falhada com o áudio já guardado, sem novo upload |
 | `GET /reunioes/{id}/ata` | Consultar estado, transcrição e rascunho privados |
 | `GET /reunioes/{id}/ata/audio` | Consultar o áudio original antes da aprovação (administrador) |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
@@ -296,7 +297,7 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 - Custo estimado: cerca de US$ 0,27 por ata de 1 hora de áudio (preços consultados a 2026-10-23; detalhe em [docs/sprintA/sprintA.md, secção 7.4](../docs/sprintA/sprintA.md#74-abordagem-de-avaliação)).
 - O áudio da assembleia é enviado à OpenAI; por isso usamos gravações sintéticas nos testes e avisamos os presentes antes de gravar.
 - A IA não publica nem decide nada: o rascunho fica "gerado por IA, pendente de revisão" até o administrador o aprovar. Sem IA, o administrador escreve a ata à mão.
-- Na app, o administrador abre **Reuniões**, ativa **Mostrar reuniões passadas**, escolhe a assembleia e envia o áudio. O ecrã mostra o estado e atualiza-o periodicamente; uma falha permite selecionar e reenviar o mesmo ficheiro, sem criar outra ata ou job. O áudio original fica guardado em caso de falha.
+- Na app, o administrador abre **Reuniões**, ativa **Mostrar reuniões passadas**, escolhe a assembleia e envia o áudio. O ecrã mostra o estado e atualiza-o periodicamente; uma falha permite repetir a partir do áudio guardado, sem selecionar o ficheiro outra vez nem criar outra ata ou job.
 - A aprovação e publicação pertencem à US-24; quando essa história marcar a ata como aprovada, o Worker elimina o original e os dados intermédios, mesmo após reinício. O fallback manual pertence à US-25. As escolhas de 200 MB e MP3/M4A/WAV ainda aguardam confirmação da equipa. Ver [implementação e validação da US-10](../docs/sprintB/US10-implementacao.md).
 - Detalhe e justificação: [docs/sprintA/sprintA.md, secção 7](../docs/sprintA/sprintA.md#7-responsible-ai-opportunity-assessment).
 

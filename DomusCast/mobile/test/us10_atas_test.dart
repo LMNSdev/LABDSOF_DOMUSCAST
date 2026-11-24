@@ -100,26 +100,32 @@ void main() {
     expect(find.text('Enviar áudio'), findsNothing);
   });
 
-  testWidgets('falha preserva áudio e permite reenviar o mesmo ficheiro',
+  testWidgets('falha preserva áudio e permite repetir sem escolher ficheiro',
       (tester) async {
     var envios = 0;
+    var escolhas = 0;
     final api = ApiService(client: MockClient((req) async {
       if (req.method == 'GET') return _json(_ata('falhou_transcricao'), 200);
+      expect(req.url.path, '/reunioes/8/ata/repetir');
       envios++;
       return _json(_ata('a_transcrever'), 202);
     }));
-    await tester.pumpWidget(_ecra(api));
+    await tester.pumpWidget(_ecra(api, escolherAudio: () async {
+      escolhas++;
+      return _audio;
+    }));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('O áudio continua guardado'), findsOneWidget);
-    await tester.tap(find.text('Escolher áudio MP3, M4A ou WAV'));
-    await tester.pumpAndSettle();
+    expect(find.textContaining('enviará o áudio'), findsOneWidget);
+    expect(find.text('Escolher áudio MP3, M4A ou WAV'), findsNothing);
     await tester.ensureVisible(find.text('Tentar transcrição novamente'));
     await tester.tap(find.text('Tentar transcrição novamente'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(envios, 1);
+    expect(escolhas, 0);
     expect(find.textContaining('A transcrever.'), findsOneWidget);
   });
 
@@ -128,8 +134,9 @@ void main() {
     final urls = <Uri>[];
     final api = ApiService(client: MockClient((req) async {
       urls.add(req.url);
-      if (req.url.path.endsWith('/ata'))
+      if (req.url.path.endsWith('/ata')) {
         return _json({'codigo': 'nao_encontrada'}, 404);
+      }
       return _json([_reuniao], 200);
     }));
     await tester.pumpWidget(

@@ -5,7 +5,7 @@ Issue [#88](https://github.com/LMNSdev/LABDSOF_DOMUSCAST/issues/88). A implement
 ## Percurso
 
 1. O administrador abre uma reunião, incluindo reuniões passadas, e vê o aviso de transferência do áudio e da transcrição à OpenAI antes de escolher o ficheiro.
-2. `POST /reunioes/{id}/ata/audio` valida a reunião, o formato e o tamanho, grava o original no volume partilhado e cria a ata e um job na mesma transação. Responde `202` com `a_transcrever`. Um reenvio do mesmo ficheiro reutiliza a ata e o job; após uma falha, repõe o job como pendente.
+2. `POST /reunioes/{id}/ata/audio` valida a reunião, o formato e o tamanho, grava o original no volume partilhado e cria a ata e um job na mesma transação. Responde `202` com `a_transcrever`. Um reenvio do mesmo ficheiro reutiliza a ata e o job. Após uma falha, `POST /reunioes/{id}/ata/repetir` repõe o mesmo job com o áudio guardado, sem novo upload. Uma repetição enquanto já processa devolve o estado atual.
 3. O Worker reserva jobs `transcrever` por `FOR UPDATE SKIP LOCKED`, normaliza o áudio com FFmpeg, chama `gpt-transcribe` e usa `gpt-4o-mini` para propor a ata. O rascunho exige excertos literais da transcrição para as decisões e marca incerteza como «por confirmar». O áudio nunca é enviado para o modelo de redação.
 4. `GET /reunioes/{id}/ata` mostra estado e resultado apenas ao administrador do condomínio. A app atualiza o estado a cada 15 segundos enquanto processa. O original pode ser obtido por `GET /reunioes/{id}/ata/audio`, também restrito ao administrador e sem cache.
 5. Após cinco tentativas sem sucesso, o estado é `falhou_transcricao` e o original continua guardado. Uma resposta tardia do Worker não altera uma ata já aprovada ou manual. Quando a US-24 gravar o estado `aprovada`, deve manter `audio_path` até o Worker eliminar o original e os dados intermédios. A limpeza é retomada depois de uma interrupção.
@@ -26,12 +26,12 @@ O processamento não cria uma fila offline para áudio no dispositivo: a US-18 t
 
 ## Validação realizada
 
-- `pytest tests/ -q`: 153 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, idempotência, falha, cinco tentativas, proteção de ata aprovada, limpeza retomável, consulta privada do original e contrato HTTP com a OpenAI simulado.
+- `pytest tests/ -q`: 155 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, repetição sem upload, idempotência, falha, cinco tentativas, proteção de ata aprovada, limpeza retomável, consulta privada do original e contrato HTTP com a OpenAI simulado.
 - `ruff check .`: passou.
 - `flutter test`: 132 testes passaram, incluindo upload multipart, aviso de privacidade, estados, falhas, reuniões passadas e semântica de acessibilidade.
 - Alembic em PostgreSQL real: `upgrade head`, `downgrade base`, `upgrade head` passaram em base isolada.
 - Docker Compose: API e Worker arrancaram com health checks saudáveis; FFmpeg transcodificou áudio WAV sintético.
-- Emulador Android 15: seleção e upload do WAV sintético, estado `a_transcrever`, cinco tentativas reais do Worker sem chave (tempos de espera adiantados apenas na base de teste), `falhou_transcricao`, áudio original presente no volume e reenvio do mesmo ficheiro com uma única ata e um único job.
+- Emulador Android 15: seleção e upload do WAV sintético, estado `a_transcrever`, cinco tentativas reais do Worker sem chave (tempos de espera adiantados apenas na base de teste), `falhou_transcricao` e áudio original presente no volume. O botão de repetição sem seleção voltou ao estado `a_transcrever` com uma única ata e um único job; a captura 04 mostra o botão antes da repetição.
 
 ## Evidência visual no emulador
 

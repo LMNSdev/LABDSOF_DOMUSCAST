@@ -171,13 +171,48 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _repetir() async {
+    if (_aEnviar) return;
+    setState(() {
+      _aEnviar = true;
+      _erro = null;
+    });
+    try {
+      final ata =
+          await widget.api.repetirTranscricaoAta(_reuniaoId, widget.credencial);
+      if (!mounted) return;
+      setState(() {
+        _ata = ata;
+        _aEnviar = false;
+      });
+      _agendarConsulta();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erro = _mensagemErro(e);
+        _aEnviar = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _erro =
+            'Não foi possível repetir a transcrição. Verifique a rede e tente novamente.';
+        _aEnviar = false;
+      });
+    }
+  }
+
   String _mensagemErro(ApiException erro) => switch (erro.statusCode) {
         401 => 'A sessão expirou. Entre novamente na app.',
         403 => 'Só um administrador pode consultar esta ata.',
         404 => 'A reunião não foi encontrada.',
         409 => erro.codigo == 'ata_ja_aprovada'
             ? 'A ata já foi aprovada.'
-            : 'Esta reunião já tem outro áudio. Consulte a ata existente.',
+            : erro.codigo == 'audio_em_falta'
+                ? 'O áudio original não está disponível. Contacte o administrador do sistema.'
+                : erro.codigo == 'ata_nao_falhou'
+                    ? 'A ata já não está em falha. Atualize o estado.'
+                    : 'Esta reunião já tem outro áudio. Consulte a ata existente.',
         413 => 'O áudio excede o limite de 200 MB.',
         415 => 'Formato não aceite. Use MP3, M4A ou WAV.',
         422 => 'O áudio é inválido. Escolha outro ficheiro.',
@@ -188,7 +223,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final estado = _ata?['estado'] as String?;
-    final podeEnviar = estado == null || estado == 'falhou_transcricao';
+    final podeEnviar = estado == null;
     return Scaffold(
       appBar: AppBar(title: const Text('Ata da reunião')),
       body: RefreshIndicator(
@@ -224,7 +259,19 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               Semantics(
                   liveRegion: true,
                   child: const Text(
-                      'A transcrição falhou após várias tentativas. O áudio continua guardado. Selecione o mesmo ficheiro para tentar novamente.')),
+                      'A transcrição falhou após várias tentativas. O áudio continua guardado. Pode tentar novamente sem selecionar o ficheiro.')),
+            if (estado == 'falhou_transcricao') ...[
+              const SizedBox(height: 16),
+              const Text(
+                  'Uma nova tentativa enviará o áudio e a transcrição à OpenAI.'),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: _aEnviar ? null : _repetir,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar transcrição novamente'),
+              ),
+              if (_aEnviar) const Center(child: CircularProgressIndicator()),
+            ],
             if (estado == 'pendente_revisao') ...[
               Semantics(
                   liveRegion: true,
@@ -256,9 +303,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               FilledButton.icon(
                 onPressed: _audio == null || _aEnviar ? null : _enviar,
                 icon: const Icon(Icons.upload_file),
-                label: Text(estado == 'falhou_transcricao'
-                    ? 'Tentar transcrição novamente'
-                    : 'Enviar áudio'),
+                label: const Text('Enviar áudio'),
               ),
               if (_aEnviar) const Center(child: CircularProgressIndicator()),
             ],
