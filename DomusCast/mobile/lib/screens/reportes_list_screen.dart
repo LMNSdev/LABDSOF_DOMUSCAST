@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../local/queue_db.dart';
 import '../services/api_service.dart';
 import '../widgets/aviso_popup.dart';
+import '../widgets/estado_badge.dart';
 import 'novo_reporte_screen.dart';
 import 'reporte_detalhe_screen.dart';
 
@@ -27,6 +28,9 @@ class ReportesListScreen extends StatefulWidget {
   final VoidCallback? onAcessoRemovido;
   final ValueListenable<bool>? ativo;
 
+  /// US-05: o administrador pode mudar o estado a partir do detalhe.
+  final bool podeMudarEstado;
+
   const ReportesListScreen({
     super.key,
     this.api,
@@ -36,6 +40,7 @@ class ReportesListScreen extends StatefulWidget {
     this.fila,
     this.onAcessoRemovido,
     this.ativo,
+    this.podeMudarEstado = false,
   });
 
   @override
@@ -219,6 +224,7 @@ class _ReportesListScreenState extends State<ReportesListScreen>
           credencial: widget.credencial,
           reporteId: reporte['id'] as int,
           onAcessoRemovido: widget.onAcessoRemovido,
+          podeMudarEstado: widget.podeMudarEstado,
         ),
       ),
     );
@@ -245,31 +251,6 @@ class _ReportesListScreenState extends State<ReportesListScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Sem ligação. A mostrar a última lista.')),
     );
-  }
-
-  ({Color bg, Color fg, String label, IconData icon}) _estadoStyle(
-    String estado,
-  ) {
-    return switch (estado) {
-      'resolvido' => (
-        bg: const Color(0xFFE8F5E9),
-        fg: const Color(0xFF2E7D32),
-        label: 'Resolvido',
-        icon: Icons.check_circle_outline,
-      ),
-      'em_curso' => (
-        bg: const Color(0xFFFFF3E0),
-        fg: const Color(0xFFE65100),
-        label: 'Em curso',
-        icon: Icons.autorenew,
-      ),
-      _ => (
-        bg: const Color(0xFFFFEBEE),
-        fg: const Color(0xFFC62828),
-        label: 'Aberto',
-        icon: Icons.error_outline,
-      ),
-    };
   }
 
   String _formatDate(String? iso) {
@@ -444,7 +425,6 @@ class _ReportesListScreenState extends State<ReportesListScreen>
 
   Widget _buildCard(Map<String, dynamic> r) {
     final estado = r['estado'] as String? ?? 'aberto';
-    final style = _estadoStyle(estado);
     final data = _formatDate(r['criado_em'] as String?);
     final atualizacao = _formatDate(r['atualizado_em'] as String?);
     final nomeVisivelAoAdmin =
@@ -511,31 +491,7 @@ class _ReportesListScreenState extends State<ReportesListScreen>
                     ),
                   ],
                   const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: style.bg,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(style.icon, size: 13, color: style.fg),
-                        const SizedBox(width: 4),
-                        Text(
-                          style.label,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: style.fg,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  EstadoBadge(estado),
                 ],
               ),
               const SizedBox(height: 6),

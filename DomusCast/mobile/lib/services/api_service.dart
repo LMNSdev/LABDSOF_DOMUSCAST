@@ -62,6 +62,24 @@ class ApiService {
     return _corpo(r, 200) as Map<String, dynamic>;
   }
 
+  /// US-05: o administrador avança o estado e regista uma nota (1 a 500 caracteres).
+  /// Devolve o detalhe atualizado, com o histórico.
+  /// Erros: 403 residente, 404 reporte de outro condomínio, 409 com `codigo`
+  /// `transicao_invalida` ou `reporte_resolvido`, 422 nota inválida, 503 base de dados.
+  Future<Map<String, dynamic>> mudarEstado({
+    required String credencial,
+    required int reporteId,
+    required String estado,
+    required String nota,
+  }) async {
+    final r = await _client.patch(
+      Uri.parse('$baseUrl/reportes/$reporteId/estado'),
+      headers: {..._auth(credencial), 'Content-Type': 'application/json'},
+      body: jsonEncode({'estado': estado, 'nota': nota}),
+    );
+    return _corpo(r, 200) as Map<String, dynamic>;
+  }
+
   Future<Uint8List> getReporteFoto(int id, {String? credencial}) async {
     final r = await _client.get(
       Uri.parse('$baseUrl/reportes/$id/foto'),
