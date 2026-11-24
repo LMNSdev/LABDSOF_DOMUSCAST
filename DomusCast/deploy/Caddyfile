@@ -1,4 +1,12 @@
 # HTTPS automático (Let's Encrypt) para o endereço da VM; reencaminha para a API.
 {$DOMAIN} {
+	@ata_audio {
+		method POST
+		path_regexp ^/reunioes/[0-9]+/ata/audio$
+	}
+	# O multipart acrescenta cabeçalhos ao limite de 200 MB do ficheiro.
+	request_body @ata_audio {
+		max_size 201MB
+	}
 	reverse_proxy api:8000
 }
