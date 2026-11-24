@@ -298,7 +298,7 @@ A IA faz uma só coisa: transformar a gravação de uma assembleia num **rascunh
 - O áudio da assembleia é enviado à OpenAI; por isso usamos gravações sintéticas nos testes e avisamos os presentes antes de gravar.
 - A IA não publica nem decide nada: o rascunho fica "gerado por IA, pendente de revisão" até o administrador o aprovar. Sem IA, o administrador escreve a ata à mão.
 - Na app, o administrador abre **Reuniões**, ativa **Mostrar reuniões passadas**, escolhe a assembleia e envia o áudio. O ecrã mostra o estado e atualiza-o periodicamente; uma falha permite repetir a partir do áudio guardado, sem selecionar o ficheiro outra vez nem criar outra ata ou job.
-- A aprovação e publicação pertencem à US-24; quando essa história marcar a ata como aprovada, o Worker elimina o original e os dados intermédios, mesmo após reinício. O fallback manual pertence à US-25. As escolhas de 200 MB e MP3/M4A/WAV ainda aguardam confirmação da equipa. Ver [implementação e validação da US-10](../docs/sprintB/US10-implementacao.md).
+- A aprovação e publicação pertencem à US-24; quando essa história marcar a ata como aprovada, o Worker elimina o original e os dados intermédios, mesmo após reinício. O fallback manual pertence à US-25. As escolhas de 200 MB e MP3/M4A/WAV ainda aguardam confirmação da equipa. Ver [implementação e validação da US-10](../docs/sprintB/us-10.md).
 - Detalhe e justificação: [docs/sprintA/sprintA.md, secção 7](../docs/sprintA/sprintA.md#7-responsible-ai-opportunity-assessment).
 
 ---
