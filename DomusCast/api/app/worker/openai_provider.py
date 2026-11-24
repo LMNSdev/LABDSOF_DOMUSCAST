@@ -13,6 +13,7 @@ import httpx
 
 MAX_PARTE_BYTES = 25_000_000
 MAX_DURACAO_S = 3 * 60 * 60
+DURACAO_PARTE_S = 15 * 60
 MODELO_TRANSCRICAO = "gpt-transcribe"
 MODELO_RASCUNHO = "gpt-4o-mini"
 
@@ -91,17 +92,17 @@ def _partes(caminho: Path, pasta: Path) -> list[Path]:
     duracao = _duracao(caminho)
     normalizado = pasta / "normalizado.mp3"
     _transcodificar(caminho, normalizado, duracao)
-    if normalizado.stat().st_size <= MAX_PARTE_BYTES:
+    if duracao <= DURACAO_PARTE_S and normalizado.stat().st_size <= MAX_PARTE_BYTES:
         return [normalizado]
     partes = []
-    for indice, inicio in enumerate(range(0, int(duracao) + 1, 15 * 60)):
+    for indice, inicio in enumerate(range(0, int(duracao) + 1, DURACAO_PARTE_S)):
         if inicio >= duracao:
             break
         parte = pasta / f"parte-{indice:03}.mp3"
         try:
             subprocess.run(  # noqa: S603
                 [_executavel("ffmpeg"), "-nostdin", "-v", "error", "-y",
-                 "-ss", str(inicio), "-t", str(min(15 * 60, duracao - inicio)),
+                 "-ss", str(inicio), "-t", str(min(DURACAO_PARTE_S, duracao - inicio)),
                  "-i", str(normalizado), "-c:a", "copy", str(parte)],
                 check=True, capture_output=True, timeout=120,
             )

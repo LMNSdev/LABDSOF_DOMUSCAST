@@ -16,7 +16,7 @@ Issue [#88](https://github.com/LMNSdev/LABDSOF_DOMUSCAST/issues/88). A implement
 |---|---|---|
 | Formatos e tamanho total | MP3, M4A e WAV; 200 MB | A confirmar pela equipa, conforme o refinamento |
 | Duração | Até 3 horas | O Technical Design usa 60 minutos como amostra de avaliação, não como limite da assembleia; o original é preservado se exceder |
-| Partes enviadas à OpenAI | Até 25 MB por pedido | Limite da integração externa |
+| Partes enviadas à OpenAI | Até 15 minutos e 25 MB por pedido | Reduz o risco de timeout e o custo de repetir uma parte; o tamanho continua limitado pela integração externa |
 | Tentativas | 5 no total, com esperas de 1, 2, 4 e 8 minutos | O refinamento também enumera 16 minutos: esse quinto intervalo só caberia entre seis tentativas. Confirmar com a equipa |
 | Chave da OpenAI | `OPENAI_API_KEY` só no Worker | Definir em `DomusCast/.env` no desenvolvimento ou `/opt/domuscast/.env` na VM; nunca versionar |
 

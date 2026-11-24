@@ -103,3 +103,21 @@ def test_assembleia_de_mais_de_uma_hora_cabe_no_limite(tmp_path, monkeypatch):
     duracao = 3 * 60 * 60 + 1
     with pytest.raises(FalhaProvider, match="duracao_audio_invalida"):
         openai_provider._duracao(tmp_path / "audio.wav")
+
+
+def test_audio_longo_e_dividido_mesmo_abaixo_de_25_mb(tmp_path, monkeypatch):
+    monkeypatch.setattr(openai_provider, "_duracao", lambda _: 70 * 60)
+    monkeypatch.setattr(openai_provider, "_transcodificar",
+                        lambda _origem, destino, _duracao: destino.write_bytes(b"audio-curto"))
+    monkeypatch.setattr(openai_provider, "_executavel", lambda _: "ffmpeg")
+    comandos = []
+
+    def dividir(comando, **_kwargs):
+        comandos.append(comando)
+        openai_provider.Path(comando[-1]).write_bytes(b"parte")
+
+    monkeypatch.setattr(openai_provider.subprocess, "run", dividir)
+    partes = openai_provider._partes(tmp_path / "origem.wav", tmp_path)
+    assert len(partes) == 5
+    assert [int(comando[comando.index("-ss") + 1]) for comando in comandos] == [0, 900, 1800, 2700, 3600]
+    assert all(parte.stat().st_size <= openai_provider.MAX_PARTE_BYTES for parte in partes)
