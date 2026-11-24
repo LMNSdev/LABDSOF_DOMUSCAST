@@ -1,4 +1,4 @@
-# US-10 — Implementação e validação
+# US-10: Implementação e validação
 
 Issue [#88](https://github.com/LMNSdev/LABDSOF_DOMUSCAST/issues/88). A implementação segue o [Product Backlog](../backlog.md), o [refinamento do Sprint B](refinamento.md#us-10-transcrição-de-ata-por-ia), o [Technical Design](../sprintA/sprintA.md#71-fluxo-assistido-por-ia) e o [wireframe](design/us-10.html).
 
@@ -45,4 +45,4 @@ As capturas usam o condomínio local `TesteUS10` e um WAV sintético. A última 
 | Falha com áudio preservado | [04-falhou-audio-preservado.png](screenshots/us-10/04-falhou-audio-preservado.png) |
 | Rascunho privado pendente de revisão | [05-rascunho-sintetico.png](screenshots/us-10/05-rascunho-sintetico.png) |
 
-Os testes do Provider usam respostas simuladas e áudio sintético. Uma transcrição real com chave OpenAI e a avaliação de qualidade das gravações sintéticas de 10–15 e 60 minutos previstas em [7.4](../sprintA/sprintA.md#74-abordagem-de-avaliação) ainda dependem de uma chave e da amostra da equipa.
+Os testes do Provider usam respostas simuladas e áudio sintético. Uma transcrição real com chave OpenAI e a avaliação de qualidade das gravações sintéticas de 10 a 15 e 60 minutos previstas em [7.4](../sprintA/sprintA.md#74-abordagem-de-avaliação) ainda dependem de uma chave e da amostra da equipa.

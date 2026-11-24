@@ -133,7 +133,7 @@ def _formatar_rascunho(dados: dict, transcricao: str) -> str:
         excerto = decisao.get("excerto")
         if not isinstance(excerto, str) or not excerto.strip() or excerto not in transcricao:
             raise FalhaProvider("excerto_sem_suporte")
-        etiqueta = " — por confirmar" if decisao.get("por_confirmar") else ""
+        etiqueta = ": por confirmar" if decisao.get("por_confirmar") else ""
         linhas.append(f"{indice}. {decisao['texto'].strip()}{etiqueta}\n   Excerto: «{excerto}»")
     pontos = dados.get("pontos_por_confirmar")
     if not isinstance(pontos, list) or any(not isinstance(p, str) for p in pontos):
