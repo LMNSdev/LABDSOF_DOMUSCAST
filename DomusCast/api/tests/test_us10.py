@@ -91,7 +91,11 @@ def test_repetir_a_partir_do_audio_guardado_sem_novo_upload(client, db, tmp_path
     ata.transcricao = "Transcrição já guardada antes da falha do rascunho."
     job.estado = models.EstadoJob.falhou
     job.tentativas = 5
+    job.erro = "duracao_audio_invalida"
     db.commit()
+
+    consulta = client.get(f"/reunioes/{reuniao_id}/ata", headers=_auth(token))
+    assert consulta.json()["erro_transcricao"] == "duracao_audio_invalida"
 
     url = f"/reunioes/{reuniao_id}/ata/repetir"
     resposta = client.post(url, headers=_auth(token))

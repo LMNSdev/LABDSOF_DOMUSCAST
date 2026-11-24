@@ -129,6 +129,15 @@ void main() {
     expect(find.textContaining('A transcrever.'), findsOneWidget);
   });
 
+  testWidgets('falha de duração mostra motivo específico', (tester) async {
+    final ata = _ata('falhou_transcricao')
+      ..['erro_transcricao'] = 'duracao_audio_invalida';
+    final api = ApiService(client: MockClient((_) async => _json(ata, 200)));
+    await tester.pumpWidget(_ecra(api));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('excede o limite de 3 horas'), findsOneWidget);
+  });
+
   testWidgets('reuniões passadas ficam acessíveis ao administrador',
       (tester) async {
     final urls = <Uri>[];

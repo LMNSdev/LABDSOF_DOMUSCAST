@@ -76,13 +76,16 @@ def _guardar_audio(audio: UploadFile) -> tuple[str, Path, str]:
         audio.file.close()
 
 
-def _resposta(ata: models.Ata) -> dict:
+def _resposta(ata: models.Ata, db: Session) -> dict:
+    job = (db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata.id}").first()
+           if ata.estado == models.EstadoAta.falhou_transcricao else None)
     return {
         "id": ata.id,
         "reuniao_id": ata.reuniao_id,
         "estado": ata.estado,
         "origem": ata.origem,
         "audio_guardado": ata.audio_path is not None,
+        "erro_transcricao": job.erro if job else None,
         "transcricao": ata.transcricao,
         "rascunho": ata.rascunho,
         "texto_aprovado": ata.texto_aprovado,
@@ -144,7 +147,7 @@ def carregar_audio(
             if ata.estado == models.EstadoAta.falhou_transcricao:
                 _repor_job(db, ata, request.state.request_id)
                 db.commit()
-            return _resposta(ata)
+            return _resposta(ata, db)
 
         ata = models.Ata(
             reuniao_id=reuniao_id,
@@ -163,7 +166,7 @@ def carregar_audio(
         ))
         db.commit()
         manter_ficheiro = True
-        return _resposta(ata)
+        return _resposta(ata, db)
     except OperationalError as exc:
         db.rollback()
         raise _indisponivel() from exc
@@ -195,7 +198,7 @@ def repetir_transcricao(
         if ata.estado == models.EstadoAta.aprovada:
             raise ErroApi(409, "ata_ja_aprovada", "A ata já foi aprovada.")
         if ata.estado == models.EstadoAta.a_transcrever:
-            return _resposta(ata)
+            return _resposta(ata, db)
         if ata.estado != models.EstadoAta.falhou_transcricao or ata.origem != models.OrigemAta.ia:
             raise ErroApi(409, "ata_nao_falhou", "Esta ata não está em falha de transcrição.")
         raiz = MEDIA_ROOT.resolve()
@@ -204,7 +207,7 @@ def repetir_transcricao(
             raise ErroApi(409, "audio_em_falta", "O áudio original não está disponível.")
         _repor_job(db, ata, request.state.request_id)
         db.commit()
-        return _resposta(ata)
+        return _resposta(ata, db)
     except OperationalError as exc:
         db.rollback()
         raise _indisponivel() from exc
@@ -227,7 +230,7 @@ def consultar_ata(
     if ata is None:
         raise HTTPException(status_code=404, detail="Ata não encontrada.")
     response.headers["Cache-Control"] = "private, no-store"
-    return _resposta(ata)
+    return _resposta(ata, db)
 
 
 @router.get("/{reuniao_id}/ata/audio")

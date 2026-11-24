@@ -53,6 +53,20 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
 
   int get _reuniaoId => widget.reuniao['id'] as int;
 
+  String _motivoFalha(String? codigo) => switch (codigo) {
+        'duracao_audio_invalida' =>
+          'O áudio excede o limite de 3 horas. Escolha uma gravação mais curta.',
+        'audio_invalido' =>
+          'O áudio não pôde ser lido. Escolha outro ficheiro.',
+        'chave_ia_ausente' =>
+          'A transcrição por IA não está configurada. Contacte o administrador do sistema.',
+        'credito_ia_esgotado' =>
+          'A transcrição por IA está sem créditos. Tente novamente depois de repor o saldo.',
+        'ferramenta_audio_indisponivel' =>
+          'O processamento de áudio está indisponível. Contacte o administrador do sistema.',
+        _ => 'A transcrição falhou após várias tentativas.',
+      };
+
   @override
   void initState() {
     super.initState();
@@ -258,8 +272,8 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
             if (estado == 'falhou_transcricao')
               Semantics(
                   liveRegion: true,
-                  child: const Text(
-                      'A transcrição falhou após várias tentativas. O áudio continua guardado. Pode tentar novamente sem selecionar o ficheiro.')),
+                  child: Text(
+                      '${_motivoFalha(_ata?['erro_transcricao'] as String?)} O áudio continua guardado. Pode tentar novamente sem selecionar o ficheiro.')),
             if (estado == 'falhou_transcricao') ...[
               const SizedBox(height: 16),
               const Text(

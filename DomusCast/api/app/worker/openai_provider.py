@@ -179,6 +179,15 @@ class OpenAIProvider:
                         )
                     resposta.raise_for_status()
                     texto = resposta.json().get("text", "").strip()
+                except httpx.HTTPStatusError as exc:
+                    if exc.response.status_code == 429:
+                        try:
+                            codigo = exc.response.json().get("error", {}).get("code")
+                        except ValueError:
+                            codigo = None
+                        if codigo == "credit_balance_exhausted":
+                            raise FalhaProvider("credito_ia_esgotado") from exc
+                    raise FalhaProvider("falha_transcricao") from exc
                 except (httpx.HTTPError, ValueError) as exc:
                     raise FalhaProvider("falha_transcricao") from exc
                 if not texto:

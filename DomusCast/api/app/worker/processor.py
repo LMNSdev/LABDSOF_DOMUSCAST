@@ -20,6 +20,10 @@ MAX_TENTATIVAS = 5
 # Cinco tentativas totais dão quatro intervalos. O quinto valor (16 min) do
 # refinamento só seria usado se a equipa aprovasse uma sexta tentativa.
 ESPERAS_MINUTOS = (1, 2, 4, 8)
+FALHAS_DEFINITIVAS = {
+    "chave_ia_ausente", "credito_ia_esgotado", "ferramenta_audio_indisponivel",
+    "audio_invalido", "duracao_audio_invalida", "audio_em_falta",
+}
 logger = logging.getLogger("domuscast.worker")
 
 
@@ -171,9 +175,10 @@ def _registar_falha(job_id: int, codigo: str, sessoes: SessionFactory) -> None:
         db.refresh(ata, with_for_update=True)
         if _concluido_sem_alterar(ata):
             job.estado = models.EstadoJob.concluido
-        elif job.tentativas >= MAX_TENTATIVAS:
+        elif codigo in FALHAS_DEFINITIVAS or job.tentativas >= MAX_TENTATIVAS:
             job.estado = models.EstadoJob.falhou
             ata.estado = models.EstadoAta.falhou_transcricao
+            job.proxima_tentativa_em = None
         else:
             job.estado = models.EstadoJob.pendente
             espera = ESPERAS_MINUTOS[job.tentativas - 1]

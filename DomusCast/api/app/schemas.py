@@ -190,6 +190,7 @@ class AtaOut(BaseModel):
     estado: EstadoAta
     origem: OrigemAta
     audio_guardado: bool
+    erro_transcricao: str | None = None
     transcricao: str | None = None
     rascunho: str | None = None
     texto_aprovado: str | None = None

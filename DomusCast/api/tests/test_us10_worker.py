@@ -113,6 +113,24 @@ def test_worker_falha_apos_cinco_tentativas_sem_apagar_audio(trabalho):
     assert (raiz / "ata.wav").exists()
 
 
+def test_falha_definitiva_nao_gasta_cinco_tentativas(trabalho):
+    sessoes, job_id, ata_id, raiz = trabalho
+
+    class AudioLongo(ProviderFalso):
+        def transcrever(self, _caminho):
+            raise FalhaProvider("duracao_audio_invalida")
+
+    assert reservar_job(sessoes) == job_id
+    processar_job(job_id, AudioLongo(), sessoes, raiz)
+    with sessoes() as db:
+        job = db.get(models.Job, job_id)
+        assert job.estado == models.EstadoJob.falhou
+        assert job.tentativas == 1
+        assert job.erro == "duracao_audio_invalida"
+        assert db.get(models.Ata, ata_id).estado == models.EstadoAta.falhou_transcricao
+    assert reservar_job(sessoes) is None
+
+
 def test_retry_reutiliza_transcricao_ja_guardada(trabalho):
     sessoes, job_id, ata_id, raiz = trabalho
     provider = ProviderFalso(falhar_rascunho=True)

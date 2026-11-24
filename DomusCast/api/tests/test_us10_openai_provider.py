@@ -121,3 +121,20 @@ def test_audio_longo_e_dividido_mesmo_abaixo_de_25_mb(tmp_path, monkeypatch):
     assert len(partes) == 5
     assert [int(comando[comando.index("-ss") + 1]) for comando in comandos] == [0, 900, 1800, 2700, 3600]
     assert all(parte.stat().st_size <= openai_provider.MAX_PARTE_BYTES for parte in partes)
+
+
+def test_saldo_esgotado_e_identificado_sem_guardar_resposta(tmp_path, monkeypatch):
+    parte = tmp_path / "parte.mp3"
+    parte.write_bytes(b"audio-sintetico")
+    monkeypatch.setattr(openai_provider, "_partes", lambda _caminho, _pasta: [parte])
+
+    def responder(_pedido):
+        return httpx.Response(429, json={"error": {
+            "code": "credit_balance_exhausted", "type": "insufficient_quota",
+        }})
+
+    with httpx.Client(base_url="https://api.openai.com/v1",
+                      transport=httpx.MockTransport(responder)) as cliente:
+        provider = OpenAIProvider(chave="chave-de-teste", cliente=cliente)
+        with pytest.raises(FalhaProvider, match="credito_ia_esgotado"):
+            provider.transcrever(parte)
