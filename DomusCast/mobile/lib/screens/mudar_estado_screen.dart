@@ -45,6 +45,7 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
   final _form = GlobalKey<FormState>();
   final _notaCtrl = TextEditingController();
   bool _aEnviar = false;
+  bool _validarAoEscrever = false;
 
   /// Erro corrigível no formulário (422).
   String? _erroFormulario;
@@ -60,7 +61,13 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
 
   Future<void> _guardar() async {
     final novo = proximoEstado(widget.estadoAtual);
-    if (_aEnviar || novo == null || !_form.currentState!.validate()) return;
+    if (_aEnviar || novo == null) return;
+    if (!_form.currentState!.validate()) {
+      // A partir daqui o formulário volta a validar a cada tecla: o aviso
+      // «Escreva uma nota» desaparece (e deixa de ser lido) quando se escreve.
+      setState(() => _validarAoEscrever = true);
+      return;
+    }
     setState(() {
       _aEnviar = true;
       _erroFormulario = null;
@@ -120,31 +127,28 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
   static const _borda = Color(0xFFC6CFDF);
   static const _secundario = TextStyle(fontSize: 13, color: Color(0xFF5F6B7A));
 
-  /// Caixa branca com borda dos ecrãs 2 e 4 do wireframe. Com [erro], fica a
-  /// vermelho. O texto e a região ativa ficam no mesmo nó, para o TalkBack ler a
-  /// mensagem quando aparece.
-  Widget _caixaMensagem(ColorScheme scheme, String texto, {bool erro = false}) =>
-      MergeSemantics(
-        child: Semantics(
-          liveRegion: true,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: erro ? scheme.errorContainer : Colors.white,
-              border: Border.all(color: erro ? scheme.error : _borda),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              texto,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: erro ? scheme.onErrorContainer : null,
-              ),
-            ),
-          ),
-        ),
-      );
+  /// Caixa branca com borda dos ecrãs 2 e 4 do wireframe. Com [erro], fica a vermelho.
+  Widget _caixa(ColorScheme scheme, String texto, {bool erro = false}) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: erro ? scheme.errorContainer : Colors.white,
+      border: Border.all(color: erro ? scheme.error : _borda),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      texto,
+      style: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: erro ? scheme.onErrorContainer : null,
+      ),
+    ),
+  );
+
+  /// Junta tudo num só nó com região ativa, para o TalkBack ler a mensagem
+  /// inteira, sozinho, quando aparece.
+  Widget _anunciar(Widget child) =>
+      MergeSemantics(child: Semantics(liveRegion: true, child: child));
 
   Widget _rotulo(String texto) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
@@ -159,9 +163,15 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
   Widget _ecraFalha(ColorScheme scheme) => ListView(
     padding: const EdgeInsets.all(20),
     children: [
-      _caixaMensagem(scheme, 'Não foi possível guardar a alteração.'),
-      const SizedBox(height: 12),
-      Text(_falha!, style: _secundario),
+      // A causa entra no mesmo anúncio: sem ela, o TalkBack só lia o título.
+      _anunciar(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _caixa(scheme, 'Não foi possível guardar a alteração.'),
+          const SizedBox(height: 12),
+          Text(_falha!, style: _secundario),
+        ],
+      )),
       const SizedBox(height: 20),
       FilledButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -174,11 +184,12 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
     final novo = proximoEstado(widget.estadoAtual);
     return Form(
       key: _form,
+      autovalidateMode: _validarAoEscrever ? AutovalidateMode.always : AutovalidateMode.disabled,
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           if (_erroFormulario != null) ...[
-            _caixaMensagem(scheme, _erroFormulario!, erro: true),
+            _anunciar(_caixa(scheme, _erroFormulario!, erro: true)),
             const SizedBox(height: 16),
           ],
           // Só há um estado seguinte possível; mostra-o sem permitir escolher outro.

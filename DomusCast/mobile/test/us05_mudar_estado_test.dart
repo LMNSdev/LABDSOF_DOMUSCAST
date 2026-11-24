@@ -91,6 +91,9 @@ void main() {
     expect(pedidos.where((p) => p.method == 'PATCH'), isEmpty);
 
     await tester.enterText(find.byType(TextFormField), '  Técnico contactado ');
+    await tester.pumpAndSettle();
+    // O aviso desaparece ao escrever, para o leitor de ecrã não continuar a lê-lo.
+    expect(find.text('Escreva uma nota'), findsNothing);
     await tester.tap(find.text('Guardar alteração'));
     await tester.pumpAndSettle();
 
@@ -258,9 +261,12 @@ void main() {
     await tester.tap(find.text('Guardar alteração'));
     await tester.pumpAndSettle();
 
+    // O título e a causa são anunciados juntos, numa só região ativa.
+    final anuncio = tester.getSemantics(find.text('Não foi possível guardar a alteração.'));
+    expect(anuncio, isSemantics(isLiveRegion: true));
     expect(
-      tester.getSemantics(find.text('Não foi possível guardar a alteração.')),
-      matchesSemantics(isLiveRegion: true, label: 'Não foi possível guardar a alteração.'),
+      anuncio.label,
+      allOf(contains('Não foi possível guardar a alteração.'), contains('serviço está indisponível')),
     );
     semantics.dispose();
   });
