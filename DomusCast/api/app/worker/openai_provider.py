@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 from tempfile import TemporaryDirectory
@@ -127,14 +128,19 @@ def _formatar_rascunho(dados: dict, transcricao: str) -> str:
     if not isinstance(dados.get("resumo"), str) or not isinstance(dados.get("decisoes"), list):
         raise FalhaProvider("rascunho_invalido")
     linhas = ["Gerado por IA. Pendente de revisão.", "", dados["resumo"].strip(), "", "Decisões propostas:"]
+    transcricao_normalizada = f" {re.sub(r'[^\w]+', ' ', transcricao.casefold()).strip()} "
     for indice, decisao in enumerate(dados["decisoes"], 1):
         if not isinstance(decisao, dict) or not isinstance(decisao.get("texto"), str):
             raise FalhaProvider("rascunho_invalido")
         excerto = decisao.get("excerto")
-        if not isinstance(excerto, str) or not excerto.strip() or excerto not in transcricao:
-            raise FalhaProvider("excerto_sem_suporte")
-        etiqueta = ": por confirmar" if decisao.get("por_confirmar") else ""
-        linhas.append(f"{indice}. {decisao['texto'].strip()}{etiqueta}\n   Excerto: «{excerto}»")
+        excerto_normalizado = (re.sub(r"[^\w]+", " ", excerto.casefold()).strip()
+                               if isinstance(excerto, str) else "")
+        suportado = bool(excerto_normalizado and
+                         f" {excerto_normalizado} " in transcricao_normalizada)
+        etiqueta = ": por confirmar" if decisao.get("por_confirmar") or not suportado else ""
+        evidencia = (f"Excerto: «{excerto}»" if suportado else
+                     "Excerto não encontrado na transcrição; confirmar antes de aprovar.")
+        linhas.append(f"{indice}. {decisao['texto'].strip()}{etiqueta}\n   {evidencia}")
     pontos = dados.get("pontos_por_confirmar")
     if not isinstance(pontos, list) or any(not isinstance(p, str) for p in pontos):
         raise FalhaProvider("rascunho_invalido")

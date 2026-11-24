@@ -230,7 +230,7 @@ def test_arranque_recupera_job_interrompido(trabalho):
         assert db.get(models.Job, job_id).tentativas == 2
 
 
-def test_decisoes_exigem_excerto_literal():
+def test_decisoes_sem_excerto_confirmado_ficam_para_revisao():
     dados = {"resumo": "Reparação", "decisoes": [
         {"texto": "Reparar a entrada", "excerto": "Decidiram reparar a entrada",
          "por_confirmar": True},
@@ -238,6 +238,12 @@ def test_decisoes_exigem_excerto_literal():
     texto = _formatar_rascunho(dados, "Decidiram reparar a entrada hoje.")
     assert "por confirmar" in texto
     assert "Excerto: «Decidiram reparar a entrada»" in texto
+    dados["decisoes"][0]["por_confirmar"] = False
+    dados["decisoes"][0]["excerto"] = "Decidiram reparar, a entrada"
+    texto = _formatar_rascunho(dados, "Decidiram reparar a entrada hoje.")
+    assert "Excerto: «Decidiram reparar, a entrada»" in texto
     dados["decisoes"][0]["excerto"] = "Decidiram aprovar 5000 euros"
-    with pytest.raises(FalhaProvider, match="excerto_sem_suporte"):
-        _formatar_rascunho(dados, "Decidiram reparar a entrada hoje.")
+    texto = _formatar_rascunho(dados, "Decidiram reparar a entrada hoje.")
+    assert "Reparar a entrada: por confirmar" in texto
+    assert "Excerto não encontrado na transcrição" in texto
+    assert "5000" not in texto
