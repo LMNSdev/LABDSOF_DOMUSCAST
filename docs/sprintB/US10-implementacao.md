@@ -24,7 +24,7 @@ O processamento não cria uma fila offline para áudio no dispositivo: a US-18 t
 
 ## Validação realizada
 
-- `pytest tests/ -q`: 147 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, idempotência, falha, cinco tentativas, proteção de ata aprovada e consulta privada do original.
+- `pytest tests/ -q`: 151 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, idempotência, falha, cinco tentativas, proteção de ata aprovada, limpeza retomável, consulta privada do original e contrato HTTP com a OpenAI simulado.
 - `ruff check .`: passou.
 - `flutter test`: 132 testes passaram, incluindo upload multipart, aviso de privacidade, estados, falhas, reuniões passadas e semântica de acessibilidade.
 - Alembic em PostgreSQL real: `upgrade head`, `downgrade base`, `upgrade head` passaram em base isolada.

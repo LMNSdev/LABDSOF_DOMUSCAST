@@ -51,7 +51,13 @@ def limpar_audios_aprovados(
                 return removidos
             caminho = (raiz / ata.audio_path).resolve()
             if caminho.is_relative_to(raiz):
-                caminho.unlink(missing_ok=True)
+                try:
+                    caminho.unlink(missing_ok=True)
+                except OSError:
+                    # Um erro no volume não deve impedir outros jobs do Worker.
+                    logger.warning(json.dumps({"componente": "worker", "evento": "audio_aprovado_pendente",
+                                               "ata_id": ata.id}))
+                    return removidos
             ata.audio_path = None
             ata.audio_sha256 = None
             ata.transcricao = None

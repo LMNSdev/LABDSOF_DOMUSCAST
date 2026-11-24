@@ -322,7 +322,7 @@ class ApiService {
       'wav' => 'wav',
       _ => throw ArgumentError('Use um ficheiro MP3, M4A ou WAV.'),
     };
-    if (audio.tamanho == 0 || audio.tamanho > 200 * 1024 * 1024) {
+    if (audio.tamanho == 0 || audio.tamanho > 200000000) {
       throw ArgumentError('O áudio deve ter entre 1 byte e 200 MB.');
     }
     final request = http.MultipartRequest(

@@ -19,7 +19,7 @@ from ..security import admin_do_pedido
 
 router = APIRouter()
 MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", "media"))
-MAX_AUDIO_BYTES = 200 * 1024 * 1024
+MAX_AUDIO_BYTES = 200_000_000
 EXTENSOES = {".mp3", ".m4a", ".wav"}
 BLOCO = 1024 * 1024
 JOB_TRANSCRICAO = "transcrever"

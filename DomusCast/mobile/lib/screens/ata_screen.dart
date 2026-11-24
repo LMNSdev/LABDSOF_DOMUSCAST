@@ -242,7 +242,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
             if (podeEnviar && !_aCarregar) ...[
               const SizedBox(height: 20),
               const Text(
-                  'Antes de enviar: o áudio e a transcrição serão enviados à OpenAI para gerar um rascunho. Apenas administradores podem aceder ao áudio e ao rascunho. A ata só é publicada após revisão e aprovação.'),
+                  'Antes de enviar: o áudio e a transcrição serão enviados à OpenAI para gerar um rascunho. Avise os presentes antes de gravar. Apenas administradores podem aceder ao áudio e ao rascunho. A ata só é publicada após revisão e aprovação.'),
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: _aEnviar ? null : _selecionar,
@@ -251,7 +251,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               ),
               if (_audio != null)
                 Text(
-                    '${_audio!.nome} · ${(_audio!.tamanho / (1024 * 1024)).toStringAsFixed(1)} MB'),
+                    '${_audio!.nome} · ${(_audio!.tamanho / 1000000).toStringAsFixed(1)} MB'),
               const SizedBox(height: 8),
               FilledButton.icon(
                 onPressed: _audio == null || _aEnviar ? null : _enviar,

@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine
@@ -159,6 +160,27 @@ def test_resposta_tardia_nao_substitui_ata_aprovada(trabalho):
         assert ata.rascunho is None
         assert ata.texto_aprovado == "Texto confirmado pelo administrador"
     assert not (raiz / "ata.wav").exists()
+
+
+def test_falha_ao_apagar_audio_nao_perde_referencia(trabalho, monkeypatch):
+    sessoes, _, ata_id, raiz = trabalho
+    with sessoes() as db:
+        ata = db.get(models.Ata, ata_id)
+        ata.estado = models.EstadoAta.aprovada
+        ata.texto_aprovado = "Texto aprovado"
+        db.commit()
+
+    def falhar_unlink(_caminho, **_kwargs):
+        raise OSError("volume indisponível")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "unlink", falhar_unlink)
+        assert limpar_audios_aprovados(sessoes, raiz) == 0
+
+    with sessoes() as db:
+        assert db.get(models.Ata, ata_id).audio_path == "ata.wav"
+    assert (raiz / "ata.wav").exists()
+    assert limpar_audios_aprovados(sessoes, raiz) == 1
 
 
 def test_arranque_recupera_job_interrompido(trabalho):
