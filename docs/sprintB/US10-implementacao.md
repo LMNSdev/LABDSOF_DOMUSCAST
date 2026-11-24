@@ -24,10 +24,23 @@ O processamento não cria uma fila offline para áudio no dispositivo: a US-18 t
 
 ## Validação realizada
 
-- `pytest tests/ -q`: 151 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, idempotência, falha, cinco tentativas, proteção de ata aprovada, limpeza retomável, consulta privada do original e contrato HTTP com a OpenAI simulado.
+- `pytest tests/ -q`: 153 testes passaram, incluindo autorização, condomínio alheio, 413/415/422/503, idempotência, falha, cinco tentativas, proteção de ata aprovada, limpeza retomável, consulta privada do original e contrato HTTP com a OpenAI simulado.
 - `ruff check .`: passou.
 - `flutter test`: 132 testes passaram, incluindo upload multipart, aviso de privacidade, estados, falhas, reuniões passadas e semântica de acessibilidade.
 - Alembic em PostgreSQL real: `upgrade head`, `downgrade base`, `upgrade head` passaram em base isolada.
 - Docker Compose: API e Worker arrancaram com health checks saudáveis; FFmpeg transcodificou áudio WAV sintético.
+- Emulador Android 15: seleção e upload do WAV sintético, estado `a_transcrever`, cinco tentativas reais do Worker sem chave (tempos de espera adiantados apenas na base de teste), `falhou_transcricao`, áudio original presente no volume e reenvio do mesmo ficheiro com uma única ata e um único job.
+
+## Evidência visual no emulador
+
+As capturas usam o condomínio local `TesteUS10` e um WAV sintético. A última mostra texto sintético inserido na base de teste para verificar o ecrã; não é uma resposta da OpenAI.
+
+| Estado | Captura |
+|---|---|
+| Aviso antes do envio | [01-envio.png](screenshots/us-10/01-envio.png) |
+| Ficheiro selecionado | [02-ficheiro-selecionado.png](screenshots/us-10/02-ficheiro-selecionado.png) |
+| Processamento assíncrono | [03-a-transcrever.png](screenshots/us-10/03-a-transcrever.png) |
+| Falha com áudio preservado | [04-falhou-audio-preservado.png](screenshots/us-10/04-falhou-audio-preservado.png) |
+| Rascunho privado pendente de revisão | [05-rascunho-sintetico.png](screenshots/us-10/05-rascunho-sintetico.png) |
 
 Os testes do Provider usam respostas simuladas e áudio sintético. Uma transcrição real com chave OpenAI e a avaliação de qualidade das gravações sintéticas de 10–15 e 60 minutos previstas em [7.4](../sprintA/sprintA.md#74-abordagem-de-avaliação) ainda dependem de uma chave e da amostra da equipa.
