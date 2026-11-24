@@ -129,7 +129,9 @@ def _concluido_sem_alterar(ata: models.Ata) -> bool:
 def _gravar_transcricao(job_id: int, texto: str, sessoes: SessionFactory) -> bool:
     with sessoes() as db:
         ata, job = _ata_e_job(db, job_id)
-        db.query(models.Ata).filter_by(id=ata.id).with_for_update().first()
+        # Recarregar depois de adquirir o lock: a aprovação pode ter sido
+        # gravada por outra transação depois da primeira leitura da ata.
+        db.refresh(ata, with_for_update=True)
         if _concluido_sem_alterar(ata):
             job.estado = models.EstadoJob.concluido
             db.commit()
@@ -142,7 +144,7 @@ def _gravar_transcricao(job_id: int, texto: str, sessoes: SessionFactory) -> boo
 def _gravar_rascunho(job_id: int, texto: str, sessoes: SessionFactory) -> None:
     with sessoes() as db:
         ata, job = _ata_e_job(db, job_id)
-        db.query(models.Ata).filter_by(id=ata.id).with_for_update().first()
+        db.refresh(ata, with_for_update=True)
         if not _concluido_sem_alterar(ata):
             ata.rascunho = texto
             ata.estado = models.EstadoAta.pendente_revisao
@@ -154,7 +156,19 @@ def _gravar_rascunho(job_id: int, texto: str, sessoes: SessionFactory) -> None:
 
 def _registar_falha(job_id: int, codigo: str, sessoes: SessionFactory) -> None:
     with sessoes() as db:
-        ata, job = _ata_e_job(db, job_id)
+        job = db.get(models.Job, job_id)
+        if job is None:
+            return
+        try:
+            ata, _ = _ata_e_job(db, job_id)
+        except FalhaProvider:
+            # Um payload inválido não deve derrubar o processo nem bloquear a fila.
+            job.estado = models.EstadoJob.falhou
+            job.erro = codigo
+            db.commit()
+            _log("transcricao_falhou", job, codigo=codigo, tentativas=job.tentativas)
+            return
+        db.refresh(ata, with_for_update=True)
         if _concluido_sem_alterar(ata):
             job.estado = models.EstadoJob.concluido
         elif job.tentativas >= MAX_TENTATIVAS:

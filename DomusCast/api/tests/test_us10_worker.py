@@ -162,6 +162,44 @@ def test_resposta_tardia_nao_substitui_ata_aprovada(trabalho):
     assert not (raiz / "ata.wav").exists()
 
 
+def test_transcricao_tardia_nao_escreve_sobre_ata_aprovada(trabalho):
+    sessoes, job_id, ata_id, raiz = trabalho
+
+    class AprovacaoDuranteTranscricao(ProviderFalso):
+        def transcrever(self, caminho):
+            with sessoes() as db:
+                ata = db.get(models.Ata, ata_id)
+                ata.estado = models.EstadoAta.aprovada
+                ata.texto_aprovado = "Texto confirmado"
+                db.commit()
+            return super().transcrever(caminho)
+
+    assert reservar_job(sessoes) == job_id
+    provider = AprovacaoDuranteTranscricao()
+    processar_job(job_id, provider, sessoes, raiz)
+    with sessoes() as db:
+        ata = db.get(models.Ata, ata_id)
+        assert ata.estado == models.EstadoAta.aprovada
+        assert ata.texto_aprovado == "Texto confirmado"
+        assert ata.transcricao is None
+        assert ata.rascunho is None
+        assert db.get(models.Job, job_id).estado == models.EstadoJob.concluido
+    assert provider.chamadas_rascunho == 0
+
+
+def test_job_com_payload_invalido_nao_derruba_worker(trabalho):
+    sessoes, job_id, _, raiz = trabalho
+    with sessoes() as db:
+        db.get(models.Job, job_id).payload = "{invalido"
+        db.commit()
+    assert reservar_job(sessoes) == job_id
+    processar_job(job_id, ProviderFalso(), sessoes, raiz)
+    with sessoes() as db:
+        job = db.get(models.Job, job_id)
+        assert job.estado == models.EstadoJob.falhou
+        assert job.erro == "job_invalido"
+
+
 def test_falha_ao_apagar_audio_nao_perde_referencia(trabalho, monkeypatch):
     sessoes, _, ata_id, raiz = trabalho
     with sessoes() as db:
