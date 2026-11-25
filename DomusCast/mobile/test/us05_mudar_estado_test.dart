@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:domuscast/local/queue_db.dart';
@@ -246,6 +247,125 @@ void main() {
 
     expect(find.textContaining('entre 1 e 500 caracteres'), findsOneWidget);
     expect(find.text('Guardar alteração'), findsOneWidget);
+  });
+
+  Future<void> guardarNota(WidgetTester tester) async {
+    await tester.tap(find.widgetWithText(FilledButton, 'Mudar estado'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), 'Nota');
+    await tester.tap(find.text('Guardar alteração'));
+  }
+
+  testWidgets('resposta que não é JSON mostra a falha em vez de ficar a carregar', (tester) async {
+    // Ex.: um proxy ou portal Wi-Fi que devolve HTML com 200.
+    final api = ApiService(client: MockClient((request) async {
+      if (request.method == 'PATCH') return http.Response('<html>Login</html>', 200);
+      return jsonResponse(reporte('aberto'));
+    }));
+    await abrirDetalhe(tester, api);
+    await guardarNota(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Não foi possível guardar a alteração.'), findsOneWidget);
+    expect(find.textContaining('Sem ligação'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('pedido sem resposta acaba em timeout e mostra a falha', (tester) async {
+    final semResposta = Completer<http.Response>();
+    final api = ApiService(client: MockClient((request) async {
+      if (request.method == 'PATCH') return semResposta.future;
+      return jsonResponse(reporte('aberto'));
+    }));
+    await abrirDetalhe(tester, api);
+    await guardarNota(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(ApiService.timeoutMudarEstado);
+    await tester.pump();
+    expect(find.text('Não foi possível guardar a alteração.'), findsOneWidget);
+    expect(find.textContaining('Sem ligação'), findsOneWidget);
+  });
+
+  testWidgets('401 diz que a sessão deixou de ser válida', (tester) async {
+    final api = ApiService(client: MockClient((request) async {
+      if (request.method == 'PATCH') {
+        return jsonResponse({'codigo': 'nao_autenticado', 'mensagem': 'x', 'request_id': 'r'}, 401);
+      }
+      return jsonResponse(reporte('aberto'));
+    }));
+    await abrirDetalhe(tester, api);
+    await guardarNota(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('A sua sessão já não é válida.'), findsOneWidget);
+    expect(find.textContaining('Só o administrador'), findsNothing);
+  });
+
+  testWidgets('voltar do segundo plano com o formulário aberto não duplica o timer', (tester) async {
+    var gets = 0;
+    final api = ApiService(client: MockClient((request) async {
+      gets++;
+      return jsonResponse(reporte('aberto'));
+    }));
+    await abrirDetalhe(tester, api);
+    await tester.tap(find.widgetWithText(FilledButton, 'Mudar estado'));
+    await tester.pumpAndSettle();
+
+    // A app vai para segundo plano e volta, pela ordem que o Flutter exige.
+    for (final estado in [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+      AppLifecycleState.hidden,
+      AppLifecycleState.inactive,
+      AppLifecycleState.resumed,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(estado);
+    }
+    await tester.pump();
+    final antesDeFechar = gets;
+    await tester.pump(const Duration(seconds: 31));
+    expect(gets, antesDeFechar, reason: 'o detalhe não atualiza por baixo do formulário');
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    final depoisDeFechar = gets;
+    await tester.pump(const Duration(seconds: 30));
+    expect(gets, depoisDeFechar + 1, reason: 'um só timer de 30 s');
+
+    // Ao fechar o detalhe, nenhum timer continua a pedir o reporte.
+    await tester.pumpWidget(const SizedBox.shrink());
+    final fechado = gets;
+    await tester.pump(const Duration(seconds: 90));
+    expect(gets, fechado);
+  });
+
+  testWidgets('confirmação anterior desaparece quando a alteração seguinte falha', (tester) async {
+    var patches = 0;
+    var semRede = false;
+    final api = ApiService(client: MockClient((request) async {
+      if (semRede) throw http.ClientException('sem rede');
+      if (request.method == 'PATCH') {
+        patches++;
+        return jsonResponse(reporte('em_curso'));
+      }
+      return jsonResponse(reporte(patches == 0 ? 'aberto' : 'em_curso'));
+    }));
+    await abrirDetalhe(tester, api);
+    await guardarNota(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Alteração guardada. O histórico não pode ser editado.'), findsOneWidget);
+
+    semRede = true;
+    await guardarNota(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Voltar ao detalhe'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alteração guardada. O histórico não pode ser editado.'), findsNothing);
+    expect(find.widgetWithText(EstadoBadge, 'Em curso'), findsOneWidget);
   });
 
   testWidgets('erros são anunciados ao leitor de ecrã', (tester) async {

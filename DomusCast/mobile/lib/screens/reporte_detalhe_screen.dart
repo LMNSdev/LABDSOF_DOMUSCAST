@@ -43,11 +43,14 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   /// Ecrã 3 do wireframe: confirmação depois de a API guardar a alteração.
   bool _alteracaoGuardada = false;
 
+  /// «Atualizar reporte» está aberto por cima deste ecrã.
+  bool _formularioAberto = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    _iniciarTimer();
     _load();
   }
 
@@ -55,10 +58,17 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _timer?.cancel();
     _timer = null;
-    if (state == AppLifecycleState.resumed) {
-      _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    // Com «Atualizar reporte» aberto por cima, o detalhe não atualiza: o timer
+    // volta a ser criado quando o formulário fecha.
+    if (state == AppLifecycleState.resumed && !_formularioAberto) {
+      _iniciarTimer();
       _load();
     }
+  }
+
+  void _iniciarTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
   }
 
   @override
@@ -144,6 +154,10 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   Future<void> _mudarEstado(Map<String, dynamic> reporte) async {
     _timer?.cancel();
     _timer = null;
+    _formularioAberto = true;
+    // A confirmação anterior deixa de valer: só volta a aparecer se a API
+    // confirmar esta nova alteração.
+    setState(() => _alteracaoGuardada = false);
     final atualizado = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
         builder: (_) => MudarEstadoScreen(
@@ -154,8 +168,9 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
         ),
       ),
     );
+    _formularioAberto = false;
     if (!mounted) return;
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    _iniciarTimer();
     if (atualizado == null) {
       await _load();
       return;

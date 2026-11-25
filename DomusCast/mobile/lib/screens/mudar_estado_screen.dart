@@ -90,7 +90,9 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
       _mostrar(falha: switch (e.statusCode) {
         409 => 'O reporte pode ter sido atualizado noutro dispositivo. '
             'Volte a carregar o detalhe antes de tentar novamente.',
-        401 || 403 => 'Só o administrador pode mudar o estado de um reporte.',
+        // 401: a credencial deixou de ser aceite (ex.: administrador removido).
+        401 => 'A sua sessão já não é válida.',
+        403 => 'Só o administrador pode mudar o estado de um reporte.',
         404 => 'O reporte já não existe.',
         _ => 'O serviço está indisponível. Volte ao detalhe e tente daqui a pouco.',
       });
@@ -99,6 +101,12 @@ class _MudarEstadoScreenState extends State<MudarEstadoScreen> {
     } on SocketException {
       _mostrar(falha: _semLigacao);
     } on TimeoutException {
+      _mostrar(falha: _semLigacao);
+    } catch (_) {
+      // Qualquer outra falha sem confirmação da API (ex.: HandshakeException num
+      // Wi-Fi com portal, ou um proxy que devolve HTML e o jsonDecode falha):
+      // a alteração pode ou não ter ficado guardada, e o botão não pode ficar
+      // preso no indicador de carregamento.
       _mostrar(falha: _semLigacao);
     }
   }

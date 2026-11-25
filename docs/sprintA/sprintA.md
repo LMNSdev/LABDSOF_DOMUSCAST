@@ -698,7 +698,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; exige o cabeçalho `Idempotency-Key`, única por autor, que a fila local reutiliza nos reenvios (um reenvio devolve 200 com o reporte já criado) |
 | `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
 | `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
-| `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`; cria entrada no histórico; se `resolvido`, arquiva o aviso ligado (US-14) |
+| `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`, com a nota de 1 a 500 caracteres; só avança Aberto -> Em curso -> Resolvido; cria entrada no histórico e devolve o detalhe; 409 com `codigo` `transicao_invalida` ou `reporte_resolvido`. O arquivo do aviso ligado, quando o reporte fica `resolvido`, é feito pela US-14 |
 | `POST /reportes/{id}/duplicado` | admin | US-22: `{original_id}`; fecha e adiciona co-reporter |
 | `PUT /reportes/{id}/oculto` | admin | `{oculto: true\|false}`: oculta ou repõe um reporte com dados de terceiros ([10.6](#106-modelo-de-ameaças-inicial)); a ação fica no histórico |
 | `POST /reportes/{id}/seguir`, `DELETE .../seguir` | residente | US-17 |
@@ -711,7 +711,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |
 | `GET /health`, `GET /metrics` | operação | [8.7](#87-observabilidade) |
 
-Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem, request_id}`: 401 sem credencial, 403 sem permissão, 404 para recursos de outro condomínio (sem revelar que existem), 409 para nome duplicado na fração, 503 com `Retry-After` quando a base de dados está em baixo.
+Quando algo corre mal, a resposta tem sempre o mesmo formato, `{codigo, mensagem, request_id}`: 401 sem credencial, 403 sem permissão, 404 para recursos de outro condomínio (sem revelar que existem), 409 para nome duplicado na fração ou mudança de estado inválida, 503 com `Retry-After` quando a base de dados está em baixo.
 
 ### 8.5 Workflow assíncrono
 

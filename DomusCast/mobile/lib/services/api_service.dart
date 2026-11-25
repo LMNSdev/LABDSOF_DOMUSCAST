@@ -72,13 +72,20 @@ class ApiService {
     required String estado,
     required String nota,
   }) async {
-    final r = await _client.patch(
-      Uri.parse('$baseUrl/reportes/$reporteId/estado'),
-      headers: {..._auth(credencial), 'Content-Type': 'application/json'},
-      body: jsonEncode({'estado': estado, 'nota': nota}),
-    );
+    final r = await _client
+        .patch(
+          Uri.parse('$baseUrl/reportes/$reporteId/estado'),
+          headers: {..._auth(credencial), 'Content-Type': 'application/json'},
+          body: jsonEncode({'estado': estado, 'nota': nota}),
+        )
+        // Numa rede que não responde, o pedido não fica pendurado: a app mostra
+        // que a alteração não foi confirmada (TimeoutException).
+        .timeout(timeoutMudarEstado);
     return _corpo(r, 200) as Map<String, dynamic>;
   }
+
+  /// Tempo máximo à espera da confirmação de `mudarEstado`.
+  static const timeoutMudarEstado = Duration(seconds: 15);
 
   Future<Uint8List> getReporteFoto(int id, {String? credencial}) async {
     final r = await _client.get(
