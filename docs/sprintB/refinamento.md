@@ -148,3 +148,32 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
 
 **Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar os contratos, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
+
+## Proposta de DoR: US-05 (para aprovação)
+
+**Estado:** proposta preparada a 2026-11-25 por Pedro Costa, para a equipa aprovar. A [sessão de 2026-11-19](#us-05-mudar-estado--histórico) aprovou o wireframe, mas deixou as regras abaixo como proposta. A implementação (PR da issue #82) seguiu esta proposta. Se a equipa decidir outra coisa, a US volta a ser alterada antes do merge.
+
+**Aprovação:** `[A PREENCHER PELA EQUIPA: data, participantes e quem aprovou]`
+
+### Regras a aprovar
+
+1. **Transições:** só se avança Aberto -> Em curso -> Resolvido, um passo de cada vez. Não se recua, não se repete o estado e não se reabre um reporte resolvido. Reabrir precisa de uma história própria. A API responde `409` com `codigo` `transicao_invalida` ou `reporte_resolvido`.
+2. **Nota:** obrigatória em todas as mudanças, com 1 a 500 caracteres depois de retirados os espaços nas pontas. Fora destes limites, a API responde `422`. O backlog pedia uma nota, mas não dizia se era obrigatória nem o limite.
+3. **Histórico:** só de inserção. Cada mudança grava o estado anterior e o novo, a nota, a data e o administrador (`autor_id`). Não há forma de alterar nem apagar entradas. Por agora, a app não mostra o nome do administrador.
+4. **Quem pode mudar:** só o administrador do condomínio do reporte. Um residente recebe `403`, e um reporte de outro condomínio dá `404`.
+5. **Sem confirmação, sem sucesso:** não há fila offline (a US-18 não abrange esta alteração). Sem ligação, sem resposta em 15 segundos ou com qualquer outra falha, a app não diz que guardou e só oferece «Voltar ao detalhe», sem reenviar o pedido.
+6. **Fora de âmbito:** o arquivo do aviso ligado quando o reporte fica Resolvido (US-14) e a notificação aos residentes (US-11).
+
+### Critérios da DoR
+
+| Critério | Proposta |
+|---|---|
+| Valor e âmbito claros | Sim: o administrador torna o tratamento auditável. Fora de âmbito: editar ou apagar o histórico, reabrir, US-11 e US-14. 2 SP. |
+| Percurso completo | Sim: detalhe -> «Atualizar reporte» -> `PATCH /reportes/{id}/estado` -> `reporte` e `reporte_historico` -> `GET /reportes/{id}` (US-03). |
+| Comportamento definido | Depende da aprovação das regras 1 a 5. |
+| Desenho da interface | Sim: [wireframe](design/us-05.html) aprovado por Pedro Soares a 2026-11-19. As diferenças da implementação estão em [us-05.md](us-05.md#desenho-da-interface), para aprovar na revisão do PR (DoD). |
+| Contrato técnico conhecido | Sim: `PATCH /reportes/{id}/estado` no [8.4](../sprintA/sprintA.md#84-api-esboço), com os códigos `409` acima. |
+| Dependências tratadas | Sim: US-03 concluída. A US-22 fica para depois e reutiliza o registo no histórico. |
+| Validação planeada | Sim: testes de API e da app, e TalkBack em PT-PT. Os resultados estão em [us-05.md](us-05.md). |
+
+Depois da aprovação: preencher a linha «Aprovação» acima, mudar a DoR da US-05 no [Sprint Backlog](backlog.md) para «Sim (<data>)» e retirar o «para aprovar» do us-05.md.
