@@ -705,7 +705,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
 | `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
-| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano) |
+| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`), para a sincronização em segundo plano. Muda `atualizado_em` quem altera a reunião: o Worker ao publicá-la (US-28) e a aprovação da ata (US-24), senão a app não vê a mudança |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |
