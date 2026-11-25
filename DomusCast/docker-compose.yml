@@ -28,11 +28,12 @@ services:
       postgres:
         condition: service_healthy
 
-  # US-28: publica as reuniões no calendário externo (consome a tabela job).
+  # US-28: publica as reuniões no calendário externo (jobs publicar_calendario).
   # Mesma imagem da API, outro comando; as migrações correm no arranque da API.
-  worker:
+  # Processo próprio para uma transcrição longa (worker da US-10) não o atrasar.
+  worker-calendario:
     build: ./api
-    command: ["python", "-m", "app.worker"]
+    command: ["python", "-m", "app.worker.calendario"]
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://condoapp:condoapp@postgres:5432/condoapp
@@ -46,6 +47,11 @@ services:
         condition: service_started
       calendario:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   # Simulador do serviço de calendário externo (8.6). Falhas com POST /_chaos.
   calendario:

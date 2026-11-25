@@ -1,6 +1,4 @@
-"""Worker: consome os jobs da tabela `job` (outbox, 8.5 e ADR-005).
-
-Por agora trata o job `publicar_calendario` (US-28): publica a reunião no serviço de
+"""Worker do job `publicar_calendario` (US-28): publica a reunião no serviço de
 calendário externo e atualiza `reuniao.estado_sync`.
 
 - Sucesso: `sincronizada`, com `calendario_externo_id`.
@@ -9,7 +7,9 @@ calendário externo e atualiza `reuniao.estado_sync`.
 - Ao fim de 5 tentativas falhadas: job `falhou` e reunião `alternativo` (fica no feed
   iCal, US-29).
 
-Arranque: `python -m app.worker` (container `worker` no docker-compose.yml).
+Corre num processo próprio, para uma transcrição longa (US-10) não atrasar a publicação:
+`python -m app.worker.calendario` (serviço `worker-calendario` no docker-compose.yml).
+`GET /health` na porta `WORKER_HEALTH_PORT` (8082) verifica a base de dados.
 """
 
 import json
@@ -17,22 +17,24 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import or_, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from . import models
-from .calendario import CalendarProvider, FalhaCalendario, ServicoCalendarioProvider
-from .database import SessionLocal
-from .routers.reunioes import JOB_PUBLICAR
+from .. import models
+from ..database import SessionLocal
+from ..routers.reunioes import JOB_PUBLICAR
+from .calendario_provider import CalendarProvider, FalhaCalendario, ServicoCalendarioProvider
 
 MAX_TENTATIVAS = 5
 # Espera depois da 1.ª, 2.ª, 3.ª e 4.ª falha (8.5); a 5.ª falha termina o job.
 ESPERAS = (1, 2, 4, 8)
 INTERVALO_S = 2.0
 
-log = logging.getLogger("domuscast.worker")
+log = logging.getLogger("domuscast.worker.calendario")
 
 
 def _registar(nivel: int, evento: str, **campos) -> None:
@@ -51,10 +53,17 @@ def _registar(nivel: int, evento: str, **campos) -> None:
 
 
 def repor_jobs_interrompidos(db: Session) -> int:
-    """Jobs `em_curso` de um Worker que caiu voltam a `pendente` (há um só Worker)."""
+    """Jobs de publicação `em_curso` de um Worker que caiu voltam a `pendente`.
+
+    Só os deste tipo: os de transcrição (US-10) são de outro processo e podem estar a
+    correr nesse momento.
+    """
     resultado = db.execute(
         update(models.Job)
-        .where(models.Job.estado == models.EstadoJob.em_curso)
+        .where(
+            models.Job.tipo == JOB_PUBLICAR,
+            models.Job.estado == models.EstadoJob.em_curso,
+        )
         .values(estado=models.EstadoJob.pendente)
     )
     db.commit()
@@ -157,9 +166,46 @@ def executar_um(
     return True
 
 
+def estado_saude(db: Session) -> dict:
+    """Corpo de `GET /health`: a base de dados responde e quantos jobs esperam."""
+    db.execute(text("SELECT 1"))
+    pendentes = (
+        db.query(models.Job)
+        .filter_by(tipo=JOB_PUBLICAR, estado=models.EstadoJob.pendente)
+        .count()
+    )
+    return {"status": "ok", "db": "ok", "jobs_pendentes": pendentes}
+
+
+class _Saude(BaseHTTPRequestHandler):  # pragma: no cover (servidor do container)
+    def do_GET(self):  # noqa: N802 (nome do método do http.server)
+        if self.path != "/health":
+            self.send_error(404)
+            return
+        try:
+            with SessionLocal() as db:
+                corpo, codigo = estado_saude(db), 200
+        except SQLAlchemyError:
+            corpo, codigo = {"status": "erro", "db": "indisponivel"}, 503
+        dados = json.dumps(corpo).encode()
+        self.send_response(codigo)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(dados)))
+        self.end_headers()
+        self.wfile.write(dados)
+
+    def log_message(self, formato, *args):
+        # O healthcheck corre de 10 em 10 s; não enche o log.
+        return
+
+
 def main() -> None:  # pragma: no cover (ciclo do container)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    porta = int(os.getenv("WORKER_HEALTH_PORT", "8082"))
+    # Só o healthcheck do Docker lhe chega: o serviço não publica portas.
+    servidor = ThreadingHTTPServer(("0.0.0.0", porta), _Saude)  # noqa: S104
+    Thread(target=servidor.serve_forever, daemon=True).start()
     provider = ServicoCalendarioProvider(os.environ["CALENDARIO_URL"])
     # Só para demonstrações: 1 faz as esperas de 1, 2, 4 e 8 segundos em vez de minutos.
     unidade = float(os.getenv("WORKER_BACKOFF_UNIDADE_S", "60"))

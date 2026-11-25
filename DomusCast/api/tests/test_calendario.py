@@ -10,9 +10,18 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import models
-from app.calendario import FalhaCalendario, ServicoCalendarioProvider, validar_resposta
 from app.security import hash_token
-from app.worker import executar_um, processar_job, repor_jobs_interrompidos
+from app.worker.calendario import (
+    estado_saude,
+    executar_um,
+    processar_job,
+    repor_jobs_interrompidos,
+)
+from app.worker.calendario_provider import (
+    FalhaCalendario,
+    ServicoCalendarioProvider,
+    validar_resposta,
+)
 from simulador.main import app as simulador_app
 from simulador.main import estado as estado_simulador
 
@@ -371,6 +380,34 @@ def test_worker_que_caiu_depois_de_publicar_nao_duplica_o_evento(
     assert reuniao.estado_sync == models.EstadoSyncReuniao.sincronizada
     assert reuniao.calendario_externo_id == f"domuscast{reuniao.id}"
     assert len(_eventos(simulador, reuniao)) == 1
+
+
+def test_reinicio_so_repoe_jobs_de_publicacao(db, simulador, provider, sem_outros_jobs):
+    _, job = _reuniao(db)
+    job.estado = models.EstadoJob.em_curso
+    # Transcrição (US-10) a correr noutro processo: não pode ser reposta.
+    transcricao = models.Job(
+        tipo="transcrever",
+        chave_idempotencia=f"transcrever:{uuid4().hex}",
+        payload="{}",
+        estado=models.EstadoJob.em_curso,
+    )
+    db.add(transcricao)
+    db.commit()
+
+    repor_jobs_interrompidos(db)
+
+    db.refresh(job)
+    db.refresh(transcricao)
+    assert job.estado == models.EstadoJob.pendente
+    assert transcricao.estado == models.EstadoJob.em_curso
+
+
+def test_saude_conta_os_jobs_de_publicacao_pendentes(db, sem_outros_jobs):
+    _reuniao(db)
+    _reuniao(db)
+
+    assert estado_saude(db) == {"status": "ok", "db": "ok", "jobs_pendentes": 2}
 
 
 def test_job_de_reuniao_ja_sincronizada_nao_chama_o_servico(db, simulador, provider):

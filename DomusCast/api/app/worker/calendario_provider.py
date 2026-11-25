@@ -10,7 +10,7 @@ from typing import Protocol
 
 import httpx
 
-from . import models
+from .. import models
 
 TIMEOUT_S = 10.0
 DURACAO_REUNIAO = timedelta(hours=2)
