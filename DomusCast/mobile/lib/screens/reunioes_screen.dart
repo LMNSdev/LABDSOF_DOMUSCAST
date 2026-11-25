@@ -13,21 +13,24 @@ import 'nova_reuniao_screen.dart';
 ///
 /// Administrador (com [credencial]): lista das reuniões de hoje em diante, com o
 /// estado da publicação no calendário (US-28), e "Agendar reunião" (US-13). Se a
-/// API não responder, mostra a última lista guardada no telemóvel ([cache]).
+/// API não responder, mostra a última lista do seu condomínio ([condominioId])
+/// guardada no telemóvel ([cache]).
 /// Residente: por agora só o aviso; ver as reuniões é a US-27.
 class ReunioesScreen extends StatelessWidget {
   final ApiService? api;
   final String? credencial;
+  final int? condominioId;
   final CacheReunioes? cache;
 
-  const ReunioesScreen({super.key, this.api, this.credencial, this.cache});
+  const ReunioesScreen({super.key, this.api, this.credencial, this.condominioId, this.cache});
 
   @override
   Widget build(BuildContext context) {
     final api = this.api;
     final credencial = this.credencial;
     if (api != null && credencial != null) {
-      return _ReunioesAdmin(api: api, credencial: credencial, cache: cache);
+      return _ReunioesAdmin(
+          api: api, credencial: credencial, condominioId: condominioId, cache: cache);
     }
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(
@@ -74,15 +77,19 @@ bool _publicacaoPendente(Map<String, dynamic> r) =>
 class _ReunioesAdmin extends StatefulWidget {
   final ApiService api;
   final String credencial;
+
+  /// Sem condomínio não se guarda nem se mostra nenhuma lista do telemóvel.
+  final int? condominioId;
   final CacheReunioes? cache;
 
-  const _ReunioesAdmin({required this.api, required this.credencial, this.cache});
+  const _ReunioesAdmin(
+      {required this.api, required this.credencial, this.condominioId, this.cache});
 
   @override
   State<_ReunioesAdmin> createState() => _ReunioesAdminState();
 }
 
-class _ReunioesAdminState extends State<_ReunioesAdmin> {
+class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObserver {
   late final CacheReunioes _cache = widget.cache ?? SqliteCacheReunioes();
   List<Map<String, dynamic>> _reunioes = [];
   bool _aCarregar = true;
@@ -92,16 +99,32 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
   bool _guardadas = false;
   Timer? _atualizacao;
 
+  /// Em segundo plano não se pede a lista; ao voltar, pede-se logo.
+  bool _pausada = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _carregar();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _atualizacao?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _pausada = true;
+      _atualizacao?.cancel();
+    } else if (state == AppLifecycleState.resumed && _pausada) {
+      _pausada = false;
+      _carregar(silencioso: true);
+    }
   }
 
   Future<void> _carregar({bool silencioso = false}) async {
@@ -121,7 +144,8 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
         _erro = null;
         _aCarregar = false;
       });
-      await _cache.guardar(reunioes);
+      final condominio = widget.condominioId;
+      if (condominio != null) await _cache.guardar(condominio, reunioes);
     } on http.ClientException {
       await _semApi();
     } on SocketException {
@@ -132,14 +156,23 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
       } else {
         _mostrarErro();
       }
+    } on TimeoutException {
+      await _semApi();
+    } on TlsException {
+      // Ex.: HandshakeException num Wi-Fi com portal; o http não a converte.
+      await _semApi();
+    } on FormatException {
+      // Resposta que não é JSON (ex.: página HTML de um proxy).
+      await _semApi();
     }
-    if (mounted && (_guardadas || _reunioes.any(_publicacaoPendente))) {
+    if (mounted && !_pausada && (_guardadas || _reunioes.any(_publicacaoPendente))) {
       _atualizacao = Timer(intervaloAtualizacao, () => _carregar(silencioso: true));
     }
   }
 
   Future<void> _semApi() async {
-    final guardadas = await _cache.ler();
+    final condominio = widget.condominioId;
+    final guardadas = condominio == null ? null : await _cache.ler(condominio);
     if (!mounted) return;
     if (guardadas == null || guardadas.isEmpty) {
       _mostrarErro();

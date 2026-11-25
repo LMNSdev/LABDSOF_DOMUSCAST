@@ -1,5 +1,7 @@
 // US-28: estado da publicação no calendário externo e lista guardada no dispositivo.
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:domuscast/local/reunioes_cache.dart';
 import 'package:domuscast/screens/reunioes_screen.dart';
@@ -24,8 +26,14 @@ Map<String, dynamic> _reuniao(int id, {String estado = 'pendente', String local 
       'atualizado_em': '2026-11-24T10:00:00Z',
     };
 
-Widget _lista(ApiService api, CacheReunioes cache) =>
-    MaterialApp(home: ReunioesScreen(api: api, credencial: 'cred-123', cache: cache));
+const _condominio = 7;
+
+Widget _lista(ApiService api, CacheReunioes cache, {int condominioId = _condominio}) => MaterialApp(
+    home: ReunioesScreen(api: api, credencial: 'cred-123', condominioId: condominioId, cache: cache));
+
+/// Cache com a lista [reunioes] guardada para o condomínio dos testes.
+MemoriaCacheReunioes _guardada(List<Map<String, dynamic>> reunioes) =>
+    MemoriaCacheReunioes({_condominio: reunioes});
 
 ApiService _api(Future<http.Response> Function(http.Request) tratar) =>
     ApiService(client: MockClient(tratar));
@@ -67,11 +75,13 @@ void main() {
         _api((_) async => _json([_reuniao(1, estado: 'sincronizada')], 200)), cache));
     await tester.pumpAndSettle();
 
-    expect(cache.lista, [_reuniao(1, estado: 'sincronizada')]);
+    expect(cache.listas, {
+      _condominio: [_reuniao(1, estado: 'sincronizada')],
+    });
   });
 
   testWidgets('4. sem ligação mostra a lista guardada, sem estado, com o aviso', (tester) async {
-    final cache = MemoriaCacheReunioes([_reuniao(1, local: 'Garagem')]);
+    final cache = _guardada([_reuniao(1, local: 'Garagem')]);
     await tester.pumpWidget(_lista(_api((_) async => throw http.ClientException('sem rede')), cache));
     await tester.pumpAndSettle();
 
@@ -83,11 +93,58 @@ void main() {
   });
 
   testWidgets('API indisponível (503) também mostra a lista guardada', (tester) async {
-    final cache = MemoriaCacheReunioes([_reuniao(1)]);
+    final cache = _guardada([_reuniao(1)]);
     await tester.pumpWidget(_lista(_api((_) async => _json({'codigo': 'servico_indisponivel'}, 503)), cache));
     await tester.pumpAndSettle();
 
     expect(find.text(_avisoGuardadas), findsOneWidget);
+  });
+
+  testWidgets('a lista guardada de outro condomínio não aparece', (tester) async {
+    final cache = MemoriaCacheReunioes({99: [_reuniao(1, local: 'Outro prédio')]});
+    await tester.pumpWidget(_lista(_api((_) async => throw http.ClientException('sem rede')), cache));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Outro prédio'), findsNothing);
+    expect(find.text('Não foi possível carregar as reuniões.'), findsOneWidget);
+  });
+
+  for (final (nome, erro) in [
+    ('timeout', TimeoutException('lento')),
+    ('TLS', const HandshakeException('portal Wi-Fi')),
+    ('resposta que não é JSON', const FormatException('<html>')),
+  ]) {
+    testWidgets('erro inesperado ($nome) mostra a lista guardada e não fica a carregar',
+        (tester) async {
+      await tester.pumpWidget(_lista(_api((_) async => throw erro), _guardada([_reuniao(1)])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text(_avisoGuardadas), findsOneWidget);
+    });
+  }
+
+  testWidgets('em segundo plano não volta a pedir; ao voltar pede logo', (tester) async {
+    var pedidos = 0;
+    final api = _api((_) async {
+      pedidos++;
+      return _json([_reuniao(1)], 200);
+    });
+    await tester.pumpWidget(_lista(api, MemoriaCacheReunioes()));
+    await tester.pumpAndSettle();
+    expect(pedidos, 1);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump(intervaloAtualizacao * 3);
+    expect(pedidos, 1);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(pedidos, 2);
   });
 
   testWidgets('sem ligação e sem lista guardada mostra o erro', (tester) async {
@@ -100,7 +157,7 @@ void main() {
   });
 
   testWidgets('erro que não é de ligação (403) não usa a lista guardada', (tester) async {
-    final cache = MemoriaCacheReunioes([_reuniao(1)]);
+    final cache = _guardada([_reuniao(1)]);
     await tester.pumpWidget(_lista(_api((_) async => _json({'codigo': 'sem_permissao'}, 403)), cache));
     await tester.pumpAndSettle();
 
@@ -136,7 +193,7 @@ void main() {
       if (pedidos == 1) throw http.ClientException('sem rede');
       return _json([_reuniao(1, estado: 'sincronizada')], 200);
     });
-    await tester.pumpWidget(_lista(api, MemoriaCacheReunioes([_reuniao(1)])));
+    await tester.pumpWidget(_lista(api, _guardada([_reuniao(1)])));
     await tester.pumpAndSettle();
     expect(find.text(_avisoGuardadas), findsOneWidget);
 
