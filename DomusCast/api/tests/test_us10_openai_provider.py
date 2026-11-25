@@ -138,3 +138,27 @@ def test_saldo_esgotado_e_identificado_sem_guardar_resposta(tmp_path, monkeypatc
         provider = OpenAIProvider(chave="chave-de-teste", cliente=cliente)
         with pytest.raises(FalhaProvider, match="credito_ia_esgotado"):
             provider.transcrever(parte)
+
+
+@pytest.mark.parametrize("campo,valor", [
+    ("code", "credit_balance_exhausted"),
+    ("code", "insufficient_quota"),
+    ("type", "insufficient_quota"),
+])
+@pytest.mark.parametrize("etapa", ["transcricao", "rascunho"])
+def test_quota_esgotada_e_definitiva_nas_duas_etapas(tmp_path, monkeypatch, campo, valor, etapa):
+    parte = tmp_path / "parte.mp3"
+    parte.write_bytes(b"audio-sintetico")
+    monkeypatch.setattr(openai_provider, "_partes", lambda _caminho, _pasta: [parte])
+
+    def responder(_pedido):
+        return httpx.Response(429, json={"error": {campo: valor}})
+
+    with httpx.Client(base_url="https://api.openai.com/v1",
+                      transport=httpx.MockTransport(responder)) as cliente:
+        provider = OpenAIProvider(chave="chave-de-teste", cliente=cliente)
+        with pytest.raises(FalhaProvider, match="credito_ia_esgotado"):
+            if etapa == "transcricao":
+                provider.transcrever(parte)
+            else:
+                provider.gerar_rascunho("Texto sintético")

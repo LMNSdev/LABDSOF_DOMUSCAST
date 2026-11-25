@@ -52,6 +52,17 @@ class FalhaProvider(Exception):
     """Erro de rede, de áudio ou resposta inválida; nunca inclui conteúdo pessoal."""
 
 
+def _falha_http(exc: httpx.HTTPStatusError, codigo_padrao: str) -> FalhaProvider:
+    if exc.response.status_code == 429:
+        try:
+            erro = exc.response.json().get("error", {})
+            if erro.get("code") in {"credit_balance_exhausted", "insufficient_quota"} or erro.get("type") == "insufficient_quota":
+                return FalhaProvider("credito_ia_esgotado")
+        except (ValueError, AttributeError):
+            pass
+    return FalhaProvider(codigo_padrao)
+
+
 def _executavel(nome: str) -> str:
     caminho = shutil.which(nome)
     if caminho is None:
@@ -180,14 +191,7 @@ class OpenAIProvider:
                     resposta.raise_for_status()
                     texto = resposta.json().get("text", "").strip()
                 except httpx.HTTPStatusError as exc:
-                    if exc.response.status_code == 429:
-                        try:
-                            codigo = exc.response.json().get("error", {}).get("code")
-                        except ValueError:
-                            codigo = None
-                        if codigo == "credit_balance_exhausted":
-                            raise FalhaProvider("credito_ia_esgotado") from exc
-                    raise FalhaProvider("falha_transcricao") from exc
+                    raise _falha_http(exc, "falha_transcricao") from exc
                 except (httpx.HTTPError, ValueError) as exc:
                     raise FalhaProvider("falha_transcricao") from exc
                 if not texto:
@@ -211,6 +215,8 @@ class OpenAIProvider:
             )
             resposta.raise_for_status()
             dados = json.loads(_texto_resposta(resposta.json()))
+        except httpx.HTTPStatusError as exc:
+            raise _falha_http(exc, "falha_rascunho") from exc
         except (httpx.HTTPError, ValueError, KeyError) as exc:
             raise FalhaProvider("falha_rascunho") from exc
         return _formatar_rascunho(dados, transcricao)
