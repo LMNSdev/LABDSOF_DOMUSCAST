@@ -293,6 +293,13 @@ class Reuniao(Base):
     criado_em = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    # Muda quando o Worker publica a reunião (US-28); GET /reunioes?desde= usa-a.
+    atualizado_em = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
     condominio = relationship("Condominio", back_populates="reunioes")
     atas = relationship("Ata", back_populates="reuniao")

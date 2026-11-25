@@ -148,3 +148,21 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
 
 **Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar os contratos, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
+
+## 2026-11-24
+
+**Participantes:** Pedro Soares, Luis Santos, Pedro Costa, Marco Garcia e Leonardo Costa.
+
+**Objetivo:** fechar os dois pontos que a sessão de 2026-11-19 deixou por confirmar na US-28 e validar as decisões tomadas durante a implementação.
+
+### US-28: Publicar reunião no calendário externo
+
+- **`400` do simulador:** conta como falha normal, com nova tentativa e backoff.
+- **`429` com `Retry-After`:** conta como tentativa; a seguinte fica agendada para o maior entre o backoff e o `Retry-After`, mantendo o limite de 5.
+- **Tentativas:** 5 tentativas com esperas de 1, 2, 4 e 8 minutos; com 5 tentativas só há 4 esperas, por isso os 16 minutos de 8.5 não se usam.
+- **Sem duplicar eventos:** o Worker escolhe o id do evento (`domuscast<reuniao_id>`); o `409` do simulador conta como já publicado. Acrescentado ao contrato de 8.6, com o modo `limite` do `/_chaos` para provocar o `429`.
+- **Dados locais:** a app guarda a última lista de reuniões por condomínio e mostra-a quando a API não responde (ecrã 4 do wireframe). A fila de reuniões criadas sem internet continua a ser a US-18.
+- **Fallback iCal:** a US-28 garante que a reunião fica guardada e marcada `alternativo`; verificar que aparece no feed é critério da US-29 (#92).
+- **Diferenças ao wireframe:** ícones nos estados, título "Assembleia de condóminos" e ano nos cartões, botão "Agendar reunião" fixo no fundo (como na US-13).
+
+**Resultado:** DoR da US-28 cumprida, validada por todos os participantes.

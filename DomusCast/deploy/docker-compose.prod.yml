@@ -65,6 +65,34 @@ services:
       retries: 12
     restart: unless-stopped
 
+  # US-28: Worker do calendário e simulador, com a mesma imagem da API e outro
+  # comando. Nenhum tem portas publicadas; as falhas do simulador mudam-se com
+  # `docker compose exec calendario` (ver DomusCast/README.md).
+  worker-calendario:
+    image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
+    command: ["python", "-m", "app.worker.calendario"]
+    environment:
+      DATABASE_URL: postgresql://condoapp:${POSTGRES_PASSWORD}@postgres:5432/condoapp
+      CALENDARIO_URL: http://calendario:8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+      calendario:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  calendario:
+    image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
+    command: ["uvicorn", "simulador.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    restart: unless-stopped
+
   caddy:
     image: caddy:2.11.9
     environment:

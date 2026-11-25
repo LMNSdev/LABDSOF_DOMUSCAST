@@ -81,7 +81,7 @@ def listar_reunioes(
 
     Sem filtros, as de hoje em diante (dia de Portugal continental). O admin
     usa `incluir_passadas` para anexar o áudio após a assembleia. Com `desde`,
-    as criadas desde essa data, para a app sincronizar só o que mudou (8.4).
+    as criadas ou alteradas desde essa data (US-28).
     """
     consulta = db.query(models.Reuniao).filter(
         models.Reuniao.condominio_id == _condominio_de(quem)
@@ -92,7 +92,7 @@ def listar_reunioes(
         hoje = datetime.now(FUSO).replace(hour=0, minute=0, second=0, microsecond=0)
         consulta = consulta.filter(models.Reuniao.data_hora >= hoje.astimezone(timezone.utc))
     elif desde is not None:
-        consulta = consulta.filter(models.Reuniao.criado_em >= desde.astimezone(timezone.utc))
+        consulta = consulta.filter(models.Reuniao.atualizado_em >= desde.astimezone(timezone.utc))
     try:
         return consulta.order_by(models.Reuniao.data_hora, models.Reuniao.id).all()
     except OperationalError as exc:

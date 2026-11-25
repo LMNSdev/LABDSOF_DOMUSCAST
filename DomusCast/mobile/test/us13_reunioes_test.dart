@@ -74,10 +74,8 @@ void main() {
 
       expect(authorization, 'Bearer cred-123');
       expect(find.text('Assembleia de condóminos'), findsOneWidget);
-      expect(
-        find.text('25/11/2030 às 19:00\nSala do condomínio\nPublicação no calendário pendente'),
-        findsOneWidget,
-      );
+      expect(find.text('25/11/2030 às 19:00\nSala do condomínio'), findsOneWidget);
+      expect(find.text('Publicação pendente'), findsOneWidget);
       expect(find.widgetWithText(FilledButton, 'Agendar reunião'), findsOneWidget);
     });
 
@@ -89,8 +87,8 @@ void main() {
       await tester.pumpWidget(_lista(api));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Publicada no calendário'), findsOneWidget);
-      expect(find.textContaining('só no feed iCal'), findsOneWidget);
+      expect(find.text('Sincronizada com o calendário'), findsOneWidget);
+      expect(find.text('Serviço externo indisponível. Disponível no feed iCal.'), findsOneWidget);
     });
 
     testWidgets('3. estado vazio convida a agendar', (tester) async {

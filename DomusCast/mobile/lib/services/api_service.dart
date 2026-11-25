@@ -272,7 +272,7 @@ class ApiService {
 
   // --- US-13: reuniões -------------------------------------------------------
 
-  /// Reuniões de hoje em diante, por data: `{id, data_hora, local, estado_sync, criado_em}`.
+  /// Reuniões por data, com `criado_em` e `atualizado_em`.
   Future<List<Map<String, dynamic>>> getReunioes(String credencial,
       {bool incluirPassadas = false}) async {
     final r = await _client.get(
