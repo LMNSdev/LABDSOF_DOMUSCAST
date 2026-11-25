@@ -707,7 +707,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
 | `POST /reunioes`, `GET /reunioes?desde=&incluir_passadas=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano); `incluir_passadas` permite ao administrador abrir assembleias concluídas para tratar a ata (US-10) |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
-| `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
+| `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever`; `409 audio_diferente` antes de uma falha, mas após `falhou_transcricao` com origem IA um novo ficheiro substitui o original e reutiliza a ata e o job |
 | `POST /reunioes/{id}/ata/repetir` | admin | US-10: repõe o job falhado usando o áudio guardado, sem novo upload |
 | `GET /reunioes/{id}/ata/audio` | admin | US-10: consulta privada do original antes da aprovação, sem cache |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |
