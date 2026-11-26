@@ -263,12 +263,19 @@ class ApiService {
   /// Reuniões de hoje em diante, por data:
   /// `{id, data_hora, local, estado_sync, criado_em, atualizado_em}`.
   Future<List<Map<String, dynamic>>> getReunioes(String credencial) async {
-    final r = await _client.get(
-      Uri.parse('$baseUrl/reunioes'),
-      headers: _auth(credencial),
-    );
+    final r = await _client
+        .get(
+          Uri.parse('$baseUrl/reunioes'),
+          headers: _auth(credencial),
+        )
+        // Uma API que não responde (em vez de recusar a ligação) não deixa o
+        // ecrã a carregar: lança TimeoutException e a app mostra a lista guardada.
+        .timeout(timeoutReunioes);
     return (_corpo(r, 200) as List<dynamic>).cast<Map<String, dynamic>>();
   }
+
+  /// Tempo máximo à espera de `getReunioes` (US-28).
+  static const timeoutReunioes = Duration(seconds: 15);
 
   /// Agenda uma reunião (administrador). [dataHora] é enviada em UTC, com fuso.
   /// Erros: 403 residente, 422 data no passado ou local inválido, 503 base de dados.

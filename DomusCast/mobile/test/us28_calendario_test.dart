@@ -124,6 +124,21 @@ void main() {
     });
   }
 
+  testWidgets('API que não responde: ao fim do timeout mostra a lista guardada', (tester) async {
+    // O pedido fica pendurado, como num servidor que aceita a ligação e não responde.
+    final api = _api((_) => Completer<http.Response>().future);
+    await tester.pumpWidget(_lista(api, _guardada([_reuniao(1, local: 'Garagem')])));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(ApiService.timeoutReunioes);
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text(_avisoGuardadas), findsOneWidget);
+    expect(find.text('25/11/2030 às 19:00\nGaragem'), findsOneWidget);
+  });
+
   testWidgets('em segundo plano não volta a pedir; ao voltar pede logo', (tester) async {
     var pedidos = 0;
     final api = _api((_) async {
