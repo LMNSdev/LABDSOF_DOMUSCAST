@@ -151,6 +151,36 @@ def test_audio_invalido_pode_ser_substituido_apos_falha(client, db, tmp_path, mo
     assert db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata_id}").count() == 1
 
 
+def test_reenvio_do_mesmo_audio_recupera_ficheiro_em_falta(client, db, tmp_path, monkeypatch):
+    monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
+    _, token = _admin(db)
+    reuniao_id = _agendar(client, token).json()["id"]
+    ata_id = _enviar(client, reuniao_id, token).json()["id"]
+    ata = db.get(models.Ata, ata_id)
+    caminho_antigo = tmp_path / ata.audio_path
+    job = db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata_id}").one()
+    ata.estado = models.EstadoAta.falhou_transcricao
+    job.estado = models.EstadoJob.falhou
+    job.erro = "audio_em_falta"
+    db.commit()
+    caminho_antigo.unlink()
+
+    resposta = _enviar(client, reuniao_id, token)
+
+    assert resposta.status_code == 202
+    assert resposta.json()["id"] == ata_id
+    assert resposta.json()["estado"] == "a_transcrever"
+    db.refresh(ata)
+    db.refresh(job)
+    assert (tmp_path / ata.audio_path).read_bytes() == _wav()
+    assert tmp_path / ata.audio_path != caminho_antigo
+    assert job.estado == models.EstadoJob.pendente
+    assert job.tentativas == 0
+    assert job.erro is None
+    assert db.query(models.Ata).filter_by(reuniao_id=reuniao_id).count() == 1
+    assert db.query(models.Job).filter_by(chave_idempotencia=f"transcrever:{ata_id}").count() == 1
+
+
 def test_repetir_recusa_ata_aprovada_sem_falha_ou_audio(client, db, tmp_path, monkeypatch):
     monkeypatch.setattr(atas, "MEDIA_ROOT", tmp_path)
     _, token = _admin(db)

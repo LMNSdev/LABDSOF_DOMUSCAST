@@ -145,10 +145,12 @@ def carregar_audio(
             if ata.estado == models.EstadoAta.aprovada:
                 raise ErroApi(409, "ata_ja_aprovada", "A ata já foi aprovada.")
             if ata.estado == models.EstadoAta.falhou_transcricao and ata.origem == models.OrigemAta.ia:
-                if ata.audio_sha256 != digest:
-                    raiz = MEDIA_ROOT.resolve()
-                    anterior = (raiz / (ata.audio_path or "")).resolve()
-                    caminho_anterior_valido = bool(ata.audio_path and anterior.is_relative_to(raiz))
+                raiz = MEDIA_ROOT.resolve()
+                anterior = (raiz / (ata.audio_path or "")).resolve()
+                caminho_anterior_valido = bool(ata.audio_path and anterior.is_relative_to(raiz))
+                if ata.audio_sha256 != digest or not (
+                    caminho_anterior_valido and anterior.is_file()
+                ):
                     ata.audio_path = caminho_relativo
                     ata.audio_sha256 = digest
                     ata.transcricao = None
