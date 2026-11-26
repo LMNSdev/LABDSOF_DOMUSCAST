@@ -59,7 +59,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
         'audio_invalido' =>
           'O áudio não pôde ser lido. Escolha outro ficheiro.',
         'audio_em_falta' =>
-          'O áudio original não está disponível. Selecione novamente a gravação.',
+          'O áudio original não está disponível. Selecione novamente a gravação para a substituir.',
         'chave_ia_ausente' =>
           'A transcrição por IA não está configurada. Contacte o administrador do sistema.',
         'credito_ia_esgotado' =>
@@ -225,7 +225,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
         409 => erro.codigo == 'ata_ja_aprovada'
             ? 'A ata já foi aprovada.'
             : erro.codigo == 'audio_em_falta'
-                ? 'O áudio original não está disponível. Contacte o administrador do sistema.'
+                ? 'O áudio original não está disponível. Selecione novamente a gravação.'
                 : erro.codigo == 'ata_nao_falhou'
                     ? 'A ata já não está em falha. Atualize o estado.'
                     : 'Esta reunião já tem outro áudio. Consulte a ata existente.',
@@ -278,8 +278,9 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
             if (estado == 'falhou_transcricao')
               Semantics(
                   liveRegion: true,
-                  child: Text(
-                      '${_motivoFalha(motivo)} ${motivo == 'audio_em_falta' ? '' : 'O áudio continua guardado. '}${podeSubstituir ? 'Selecione um ficheiro para o substituir.' : 'Pode tentar novamente sem selecionar o ficheiro.'}')),
+                  child: Text(motivo == 'audio_em_falta'
+                      ? _motivoFalha(motivo)
+                      : '${_motivoFalha(motivo)} O áudio continua guardado. ${podeSubstituir ? 'Selecione um ficheiro para o substituir.' : 'Pode tentar novamente sem selecionar o ficheiro.'}')),
             if (estado == 'falhou_transcricao' && !podeSubstituir) ...[
               const SizedBox(height: 16),
               const Text(
