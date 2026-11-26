@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-14 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.field small{display:block;color:#667}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn2{border:1px solid #0F3478;color:#0F3478;border-radius:10px;padding:9px;text-align:center;font-weight:600;background:#fff}
+.danger{background:#B3261E}
+.note{font-size:11px;color:#667}
+.err{background:#FDECEA;color:#8C1D18;border-radius:10px;padding:10px}
+.ok{background:#E6F4EA;color:#1E4620;border-radius:10px;padding:10px}
+.tag{display:inline-block;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:700;background:#E3E8F2;color:#0F3478}
+.tag.red{background:#FDECEA;color:#8C1D18}.tag.green{background:#E6F4EA;color:#1E4620}.tag.orange{background:#FFF1E0;color:#7A4100}.tag.grey{background:#E6E6E6;color:#444}
+.tabs{display:flex;gap:6px}.tabs span{flex:1;text-align:center;padding:6px;border-radius:8px;background:#fff;color:#0F3478;font-weight:600}.tabs span.on{background:#0F3478;color:#fff}
+.nav{display:flex;justify-content:space-around;background:#fff;border-top:1px solid #c6cfdf;padding:8px 4px;font-size:10px;color:#667}.nav b{color:#0F3478}
+.sheet{background:#fff;border-radius:14px 14px 0 0;padding:12px;margin-top:auto;box-shadow:0 -2px 6px rgba(0,0,0,.15)}
+.notif{color:#1b1b1b;background:#fff;border-radius:12px;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.dim{background:#3a3f4a;color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.big{font-size:22px;font-weight:700;color:#0F3478}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+.body>.tag{align-self:flex-start}
+</style>
+</head>
+<body>
+<h1>US-14: aviso ligado a um reporte</h1>
+<p class="subtitle">Wireframe do refinamento de 2026-11-26. No detalhe de um reporte por resolver, o administrador cria um aviso de risco com assunto e local. O aviso aparece no quadro (US-06) sem identificar reporters nem co-reporters e é arquivado automaticamente quando o reporte passa a Resolvido.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Reporte #12</div><div class="body"><span class="tag orange">Em curso</span><div class="card">Buraco no chão junto à porta da garagem.</div><div class="card"><b>Histórico</b><div class="note">28/11 Aberto, estado inicial</div></div><div class="btn2">Criar aviso de risco</div><div class="btn">Mudar estado</div></div></div><div class="cap"><b>1. Detalhe (administrador)</b>Ação nova, só com o reporte por resolver e sem aviso ativo.</div></div>
+<div><div class="phone"><div class="bar">Aviso de risco</div><div class="body"><div class="note">Ligado ao reporte #12</div><div class="field"><small>Assunto</small>Buraco no chão</div><div class="field"><small>Local</small>Porta da garagem, piso -1</div><div class="field" style="min-height:60px"><small>Texto</small>Cuidado ao passar. Já foi pedida a reparação.</div><div class="note">Não identifica quem reportou.</div><div class="btn">Publicar</div></div></div><div class="cap"><b>2. Formulário</b>Local obrigatório (1 a 200 caracteres); título e texto com os limites da US-06.</div></div>
+<div><div class="phone"><div class="bar">Avisos</div><div class="body"><div class="tabs"><span class="on">Ativos</span><span>Histórico</span></div><div class="card"><span class="tag red">Risco</span> <b>Buraco no chão</b><div class="note">Porta da garagem, piso -1</div>Cuidado ao passar.<div class="note">Reporte #12</div></div></div><div class="nav"><span>Reportes</span><span>Reuniões</span><b>Avisos</b></div></div><div class="cap"><b>3. Quadro do residente</b>Etiqueta «Risco», assunto e local; nenhum nome nem fração.</div></div>
+<div><div class="phone"><div class="bar">Avisos</div><div class="body"><div class="tabs"><span>Ativos</span><span class="on">Histórico</span></div><div class="card"><span class="tag green">Resolvido</span> <b>Buraco no chão</b><div class="note">Arquivado a 05/12/2026 quando o reporte #12 foi resolvido</div></div></div></div><div class="cap"><b>4. Arquivo automático</b>Ao resolver o reporte (ou fechá-lo como duplicado) o aviso passa ao Histórico.</div></div>
+<div><div class="phone"><div class="bar">Aviso de risco</div><div class="body"><div class="err">Este reporte já tem um aviso ativo.</div><div class="note">Também: «O reporte já está resolvido.»</div><div class="btn">Voltar ao reporte</div></div></div><div class="cap"><b>5. Conflitos</b>409 <code>aviso_ja_existe</code> ou <code>reporte_resolvido</code>, com a mensagem própria.</div></div>
+</div>
+</body>
+</html>
