@@ -174,10 +174,11 @@ class ReuniaoOut(BaseModel):
     local: str
     estado_sync: EstadoSyncReuniao
     criado_em: datetime
+    atualizado_em: datetime
 
     model_config = {"from_attributes": True}
 
-    @field_validator("data_hora", "criado_em")
+    @field_validator("data_hora", "criado_em", "atualizado_em")
     @classmethod
     def com_fuso(cls, value: datetime) -> datetime:
         # O SQLite devolve datas sem fuso; os valores gravados estão em UTC.

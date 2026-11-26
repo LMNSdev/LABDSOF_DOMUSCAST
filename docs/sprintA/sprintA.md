@@ -639,7 +639,7 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-22, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
-| `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-28); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)) |
+| `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em, atualizado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-28); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)). `atualizado_em` muda quando o Worker altera o `estado_sync`; `GET /reunioes?desde=` filtra por ela (US-28) |
 | `ata` | id, reuniao_id, audio_path, transcricao, rascunho, texto_aprovado, origem, estado, aprovada_em, aprovada_por | `estado`: `a_transcrever`, `pendente_revisao`, `falhou_transcricao`, `aprovada`; só se publica com `aprovada` (US-10, US-24). `origem`: `ia` ou `manual` (US-25); `aprovada_por` identifica o administrador que aprovou (US-24) |
 | `job` | id, tipo, chave_idempotencia, payload, estado, tentativas, proxima_tentativa_em, erro, criado_em | Outbox consumido pelo Worker ([8.5](#85-workflow-assíncrono)); `chave_idempotencia` única por tipo |
 
@@ -705,7 +705,7 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
 | `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
-| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou com ata aprovada desde essa data (sincronização em segundo plano) |
+| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`), para a sincronização em segundo plano. Muda `atualizado_em` quem altera a reunião: o Worker ao publicá-la (US-28) e a aprovação da ata (US-24), senão a app não vê a mudança |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |
@@ -743,8 +743,9 @@ O sistema tem duas integrações externas, ambas chamadas só pelo Worker: o **s
 
 **Contrato do simulador.** Para ser "realista", imita um subconjunto da API de eventos do Google Calendar em vez de inventar um formato próprio:
 
-- `POST /calendars/{calendarId}/events` com `{summary, location, start: {dateTime}, end: {dateTime}}` devolve `200 {id, status: "confirmed", start, end}`; respostas de erro `400`, `429` (com `Retry-After`) e `503`;
-- `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento: `ok`, `indisponivel`, `lento`, `incompleto`, `invalido`.
+- `POST /calendars/{calendarId}/events` com `{id, summary, location, start: {dateTime}, end: {dateTime}}` devolve `200 {id, status: "confirmed", start, end}`; respostas de erro `400`, `409` (já existe um evento com esse `id`), `429` (com `Retry-After`) e `503`. O `id` é escolhido pelo Worker (`domuscast<reuniao_id>`), como o Google Calendar permite: se o Worker cair depois de publicar, a nova tentativa recebe `409` e conta como já publicada, sem duplicar o evento (US-28);
+- `GET /calendars/{calendarId}/events` lista os eventos (um calendário por condomínio);
+- `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento: `ok`, `indisponivel`, `lento`, `incompleto`, `invalido` e `limite` (`429` com `Retry-After`).
 
 O Worker chama o serviço de IA e uma interface `CalendarProvider`. Para o calendário há três níveis:
 
@@ -757,7 +758,7 @@ O Worker chama o serviço de IA e uma interface `CalendarProvider`. Para o calen
 | Condição | Modo do simulador | Deteção | Tratamento |
 |---|---|---|---|
 | Indisponível | `indisponivel` (503) ou container parado | Erro de ligação ou 5xx | Retry com backoff ao nível do job, até 5 tentativas; depois passa ao feed iCal (`alternativo`) |
-| Atrasado | `lento` (resposta depois de `atraso_ms`) ou `429` | Timeout de 10 s; `429` respeita `Retry-After` | Conta como falha; mesmo retry e mesma passagem ao nível seguinte |
+| Atrasado | `lento` (resposta depois de `atraso_ms`) ou `limite` (`429`) | Timeout de 10 s; `429` respeita `Retry-After` | Conta como falha; a tentativa seguinte espera o maior entre o backoff e o `Retry-After`, e o mesmo limite de 5 tentativas |
 | Incompleto | `incompleto` (200 sem `id` ou sem `start`) | Validação dos campos obrigatórios | Conta como falha |
 | Inválido | `invalido` (200 com datas mal formadas ou `end` antes de `start`) | Validação de formato e de coerência das datas | Conta como falha |
 
