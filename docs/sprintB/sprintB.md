@@ -39,3 +39,10 @@ Sem alterações. O problema identificado foi de organização do trabalho e nã
 ## Develop user stories from sprint backlog (ensuring Definition of Done)
 
 ## Create Sprint C backlog (ensuring Definition of Ready)
+
+O [Sprint C Backlog](../sprintC/backlog.md) foi criado na [sessão de refinamento de 2026-11-26](../sprintC/refinamento.md#2026-11-26), com toda a equipa. Todos os itens cumprem a [Definition of Ready](../sprintA/sprintA.md#definition-of-ready-dor), com wireframe, contrato técnico e validação planeada.
+
+- **Datas:** o Sprint C decorre de 2026-12-07 a 2027-01-03. O Sprint B acaba a 2026-12-06 e a review com os docentes é a 2026-12-10.
+- **Seleção:** a equipa compromete-se a fechar todo o Sprint B Backlog, por isso nenhuma história transita. Entram as histórias que o [plano de release](../backlog.md#2-plano-de-release-inicial-visão-multi-sprint) atribui ao Sprint C: 7 Should (11 SP) e 7 Could (7 SP). Juntam-se 5 itens técnicos (12 SP) para os [objetivos do Sprint C](../sprintA/sprintA.md#61-objetivos-dos-sprints): avaliação formal da IA, resiliência, carga e dashboard.
+- **Compromisso:** 23 SP (Should e itens técnicos); as Could entram por prioridade, como esforço adicional.
+- **Responsáveis:** um por item, de ponta a ponta, com 5 a 7 SP por pessoa ([distribuição](../sprintC/refinamento.md#2026-11-26)).
