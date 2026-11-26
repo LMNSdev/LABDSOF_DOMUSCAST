@@ -140,6 +140,21 @@ void main() {
     expect(find.text('Tentar transcrição novamente'), findsNothing);
   });
 
+  testWidgets('áudio em falta pede reenvio sem afirmar que está guardado',
+      (tester) async {
+    final ata = _ata('falhou_transcricao')
+      ..['erro_transcricao'] = 'audio_em_falta';
+    final api = ApiService(client: MockClient((_) async => _json(ata, 200)));
+    await tester.pumpWidget(_ecra(api));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('não está disponível'), findsOneWidget);
+    expect(
+        find.textContaining('Selecione novamente a gravação'), findsOneWidget);
+    expect(find.textContaining('O áudio continua guardado'), findsNothing);
+    expect(find.text('Substituir áudio'), findsOneWidget);
+  });
+
   testWidgets('reuniões passadas ficam acessíveis ao administrador',
       (tester) async {
     final urls = <Uri>[];

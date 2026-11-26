@@ -59,7 +59,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
         'audio_invalido' =>
           'O áudio não pôde ser lido. Escolha outro ficheiro.',
         'audio_em_falta' =>
-          'O áudio original não está disponível. Escolha outro ficheiro.',
+          'O áudio original não está disponível. Selecione novamente a gravação.',
         'chave_ia_ausente' =>
           'A transcrição por IA não está configurada. Contacte o administrador do sistema.',
         'credito_ia_esgotado' =>
@@ -279,7 +279,7 @@ class _AtaScreenState extends State<AtaScreen> with WidgetsBindingObserver {
               Semantics(
                   liveRegion: true,
                   child: Text(
-                      '${_motivoFalha(motivo)} O áudio continua guardado. ${podeSubstituir ? 'Escolha outro ficheiro para o substituir.' : 'Pode tentar novamente sem selecionar o ficheiro.'}')),
+                      '${_motivoFalha(motivo)} ${motivo == 'audio_em_falta' ? '' : 'O áudio continua guardado. '}${podeSubstituir ? 'Selecione um ficheiro para o substituir.' : 'Pode tentar novamente sem selecionar o ficheiro.'}')),
             if (estado == 'falhou_transcricao' && !podeSubstituir) ...[
               const SizedBox(height: 16),
               const Text(
