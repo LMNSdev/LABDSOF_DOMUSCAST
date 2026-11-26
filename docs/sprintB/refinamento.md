@@ -72,7 +72,7 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 
 **Distribuição end-to-end:** US-05 e US-22 com Pedro Costa; US-13 e US-28 com Pedro Soares; US-24 e US-25 com Marco Garcia; US-10 com Leonardo Costa. O Luis Santos fica com a US-20 e a US-23. Cada US tem uma pessoa responsável pelo percurso completo, sem divisão por camada. (Corrigido a 2026-11-21: o primeiro registo desta linha não correspondia à distribuição acordada na sessão.)
 
-**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os sete wireframes foram revistos e aprovados por Pedro Soares. Os contratos e limites seguintes continuam a ser propostas preparadas para validação da equipa, exceto os da US-13, aprovados nesta sessão, e os da US-10, cujo acordo anterior foi confirmado e registado retroativamente em 2026-11-26. As restantes linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md).
+**Estado:** a seleção, os participantes e a distribuição acima foram confirmados. Os sete wireframes foram revistos e aprovados por Pedro Soares. Os contratos e limites seguintes continuam a ser propostas preparadas para validação da equipa, não decisões aprovadas, exceto os da US-13, aprovados na sessão. Por isso, as linhas mantêm a DoR pendente no [Sprint Backlog](backlog.md), exceto a US-13 (Sim, 2026-11-19).
 
 **Acessibilidade:** para cada US com interface, a validação planeada inclui TalkBack em PT-PT, com teste de gestos, ativação e anúncio de erro.
 
@@ -113,12 +113,10 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 [Wireframe](design/us-10.html) ([PNG](design/us-10.png)) aprovado.
 
 - **Privacidade:** antes do upload, informar que áudio e transcrição são enviados à OpenAI. Áudio, transcrição e rascunho ficam acessíveis só aos administradores; só a ata aprovada é visível aos residentes.
-- **Processamento:** `POST /reunioes/{id}/ata/audio` aceita multipart, guarda o áudio e enfileira um job. Responde `202` com `a_transcrever`; `GET /reunioes/{id}/ata` mostra estado e resultado. O Worker faz até 5 tentativas, com 4 esperas de 1, 2, 4 e 8 minutos para falhas transitórias; ao esgotá-las, usa `falhou_transcricao`. Um reenvio depois de falha reutiliza o job, sem duplicar.
+- **Processamento:** `POST /reunioes/{id}/ata/audio` aceita multipart, guarda o áudio e enfileira um job. Responde `202` com `a_transcrever`; `GET /reunioes/{id}/ata` mostra estado e resultado. O Worker faz até 5 tentativas com backoff de 1, 2, 4, 8 e 16 minutos; ao falhar, usa `falhou_transcricao`. Um reenvio depois de falha reutiliza o job, sem duplicar.
 - **Dados preservados:** áudio permanece guardado mesmo após falha e só é apagado após aprovação; o rascunho nunca é publicado automaticamente e uma resposta tardia não substitui ata aprovada.
-- **Decisão confirmada:** a equipa aprovou MP3, M4A e WAV até 200 MB, gravações até 3 horas, partes de até 15 minutos e 25 MB, e 5 tentativas totais com 4 esperas (1, 2, 4 e 8 minutos). O quinto intervalo de 16 minutos não se aplica. Os limites não tinham sido fixados pela arquitetura; `413` e `415` já constavam do contrato.
+- **Pontos por decidir:** a implementação propõe MP3, M4A e WAV até 200 MB, gravações até 3 horas e partes de até 15 minutos e 25 MB. O limite e os formatos não foram fixados pela arquitetura; `413` e `415` já constavam do contrato. Cinco tentativas totais permitem quatro esperas (1, 2, 4 e 8 minutos); o quinto intervalo de 16 minutos escrito acima só caberia antes de uma sexta tentativa. A equipa ainda tem de confirmar estas escolhas para fechar a DoR.
 - **Validação:** estados assíncronos, formato/tamanho após decisão, falha após 5 tentativas, áudio preservado, reenvio idempotente, isolamento por papel, anúncio de estados/erros com TalkBack e aviso de privacidade.
-
-**Registo da aprovação da US-10:** em 2026-11-26, foi confirmado que toda a equipa do Sprint B aprovou estas decisões na reunião de **2026-11-05**, incluindo as diferenças entre o [wireframe](design/us-10.html) e a interface implementada, descritas em [us-10.md](us-10.md#desenho-da-interface). A DoR da US-10 fica cumprida; a validação auditiva com TalkBack continua uma atividade de teste da implementação.
 
 ### US-24: Rever e aprovar a ata
 
@@ -150,6 +148,16 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Validação:** sucesso sem job duplicado, cada modo de falha, estado visível ao administrador, fallback iCal e ausência de perda da reunião. Validar rótulos e erros com TalkBack.
 
 **Sincronização documental:** o Product Backlog mantém os critérios de aceitação existentes; esta sessão acrescenta detalhes técnicos, sem os substituir. Foram atualizados o Sprint Backlog e o modelo `ata` do Technical Design. US-18 e US-29 continuam dependências por refinar para fechar o percurso offline e o fallback iCal. Depois de a equipa aprovar os contratos, atualizar também as issues GitHub das sete US para manter os registos consistentes. As colunas DoR permanecem por confirmar até essa validação.
+
+## 2026-11-19: aprovação da US-10 (adenda registada em 2026-11-26)
+
+**Participantes e aprovação:** Pedro Costa, Pedro Soares, Luis Santos, Leonardo Costa e Marco Garcia aprovaram as decisões abaixo na sessão de 2026-11-19. Leonardo Costa confirmou em 2026-11-26 a participação e a decisão dos cinco. O registo inicial da sessão mencionava apenas os três primeiros participantes e deixava estes pontos como propostas; o texto original acima foi preservado para tornar a correção visível.
+
+- **Formatos e limites:** MP3, M4A e WAV, até 200 MB e 3 horas por gravação. O Worker envia à OpenAI partes de até 15 minutos e 25 MB.
+- **Tentativas:** até 5 tentativas no total para falhas transitórias, com 4 esperas de 1, 2, 4 e 8 minutos. A espera de 16 minutos da proposta inicial não se aplica. Falhas definitivas terminam sem novas tentativas.
+- **Diferenças ao wireframe:** aprovados o aviso sobre o envio à OpenAI antes da escolha do ficheiro, a consulta de reuniões passadas, a repetição sem novo upload e a substituição de áudio inválido ou em falta. Estas diferenças estão descritas nas [evidências da US-10](us-10.md#desenho-da-interface).
+
+**Resultado:** DoR da US-10 cumprida em 2026-11-19. A escuta dos anúncios do TalkBack em PT-PT foi confirmada separadamente em 2026-11-26 nas [evidências da US-10](us-10.md#talkback).
 
 ## 2026-11-24
 
