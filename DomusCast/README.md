@@ -53,6 +53,30 @@ docker compose up --build
 Aguarda a mensagem `Uvicorn running on http://0.0.0.0:8000`.  
 A base de dados é criada e as migrações correm automaticamente.
 
+O compose arranca quatro containers, os três últimos com a mesma imagem da API:
+
+| Container | Para quê |
+|---|---|
+| `postgres` | Base de dados (porta 5433 no PC) |
+| `api` | API em http://localhost:8000; corre as migrações ao arrancar |
+| `worker-calendario` | US-28: publica as reuniões no calendário externo (job `publicar_calendario`); healthcheck em `/health`, porta 8082 interna |
+| `calendario` | Simulador do serviço de calendário externo ([8.6](../docs/sprintA/sprintA.md#86-integração-externa)), em http://localhost:8001 |
+
+#### Calendário externo: provocar falhas (US-28)
+
+O simulador começa no modo `ok`. Cada modo é uma das condições de falha de 8.6:
+
+```powershell
+# indisponivel (503), lento (responde depois de atraso_ms; o Worker desiste aos 10 s),
+# incompleto (200 sem id), invalido (200 com datas mal formadas), limite (429 com Retry-After: 30), ok
+Invoke-RestMethod -Method Post http://localhost:8001/_chaos -ContentType 'application/json' -Body '{"modo":"indisponivel"}'
+Invoke-RestMethod http://localhost:8001/_chaos                                   # modo atual
+Invoke-RestMethod http://localhost:8001/calendars/condominio<id>/events          # eventos publicados
+docker logs domuscast-worker-calendario-1                                        # tentativas e falhas (JSON)
+```
+
+Cada falha conta como uma tentativa. O Worker volta a tentar ao fim de 1, 2, 4 e 8 minutos (com `429`, espera pelo menos o `Retry-After`); à 5.ª falha a reunião fica `alternativo`. Para uma demonstração em segundos, arranca com `$env:WORKER_BACKOFF_UNIDADE_S = "1"; docker compose up --build`. Na VM, o simulador não tem porta publicada: `docker compose -f docker-compose.prod.yml exec calendario python -c "import httpx; print(httpx.post('http://localhost:8001/_chaos', json={'modo': 'indisponivel'}).json())"`.
+
 | Endpoint | Descrição |
 |---|---|
 | `GET  /health` | Estado da API e da base de dados |
@@ -219,7 +243,7 @@ DomusCast/
     Dockerfile
     .dockerignore        ← Exclui .env, testes e ficheiros de desenvolvimento da imagem
     requirements.txt    ← Dependências de produção (imagem Docker)
-    requirements-dev.txt ← + pytest, ruff, httpx, pip-audit (testes, lint e segurança)
+    requirements-dev.txt ← + pytest, ruff, pip-audit (testes, lint e segurança)
     ruff.toml            ← Regras de lint e segurança (bandit)
   mobile/
     lib/
@@ -274,6 +298,8 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `GET /fracoes/{id}/identidades` | US-23: residentes ativos `{id, nome, criado_em}`; 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `DELETE /identidades/{id}` | US-23: apaga o nome, preenche `removida_em` e `removida_por` (migração `0007`) e devolve 204; a credencial removida recebe 401 e os reportes ficam como "Residente removido" (o administrador recebe `autor_removido` e a fração); 404 se já foi removida ou é de outro condomínio |
 | `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
+| Worker do calendário (`python -m app.worker.calendario`) | US-28: consome o job `publicar_calendario` criado por `POST /reunioes` e publica a reunião no simulador com o id `domuscast<reuniao_id>` (repetir não duplica o evento: `409` conta como já publicado); timeout de 10 s, 5 tentativas com esperas de 1, 2, 4 e 8 min, `Retry-After` respeitado; `estado_sync` passa a `sincronizada` ou, à 5.ª falha, a `alternativo` |
+| `GET /reunioes?desde=` | US-28: devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`, migração `0008`), para a app ver a mudança de `estado_sync` |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |
 | Swagger UI | Documentação interativa automática em `/docs` |
 

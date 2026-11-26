@@ -1,25 +1,36 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../local/reunioes_cache.dart';
 import '../services/api_service.dart';
+import '../theme.dart';
 import 'nova_reuniao_screen.dart';
 
 /// Separador "Reuniões".
 ///
 /// Administrador (com [credencial]): lista das reuniões de hoje em diante, com o
-/// estado da publicação no calendário, e "Agendar reunião" (US-13).
+/// estado da publicação no calendário (US-28), e "Agendar reunião" (US-13). Se a
+/// API não responder, mostra a última lista do seu condomínio ([condominioId])
+/// guardada no telemóvel ([cache]).
 /// Residente: por agora só o aviso; ver as reuniões é a US-27.
 class ReunioesScreen extends StatelessWidget {
   final ApiService? api;
   final String? credencial;
+  final int? condominioId;
+  final CacheReunioes? cache;
 
-  const ReunioesScreen({super.key, this.api, this.credencial});
+  const ReunioesScreen({super.key, this.api, this.credencial, this.condominioId, this.cache});
 
   @override
   Widget build(BuildContext context) {
     final api = this.api;
     final credencial = this.credencial;
     if (api != null && credencial != null) {
-      return _ReunioesAdmin(api: api, credencial: credencial);
+      return _ReunioesAdmin(
+          api: api, credencial: credencial, condominioId: condominioId, cache: cache);
     }
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(
@@ -51,51 +62,137 @@ String formatarReuniao(String iso) {
 
 /// Estado da publicação no calendário externo (US-28), visível ao administrador.
 String estadoPublicacao(String? estado) => switch (estado) {
-      'sincronizada' => 'Publicada no calendário',
-      'alternativo' => 'Calendário externo indisponível: só no feed iCal',
-      _ => 'Publicação no calendário pendente',
+      'sincronizada' => 'Sincronizada com o calendário',
+      'alternativo' => 'Serviço externo indisponível. Disponível no feed iCal.',
+      _ => 'Publicação pendente',
     };
+
+/// Enquanto houver reuniões pendentes ou a API não responder, a lista volta a
+/// ser pedida com este intervalo.
+const intervaloAtualizacao = Duration(seconds: 30);
+
+bool _publicacaoPendente(Map<String, dynamic> r) =>
+    !const {'sincronizada', 'alternativo'}.contains(r['estado_sync']);
 
 class _ReunioesAdmin extends StatefulWidget {
   final ApiService api;
   final String credencial;
 
-  const _ReunioesAdmin({required this.api, required this.credencial});
+  /// Sem condomínio não se guarda nem se mostra nenhuma lista do telemóvel.
+  final int? condominioId;
+  final CacheReunioes? cache;
+
+  const _ReunioesAdmin(
+      {required this.api, required this.credencial, this.condominioId, this.cache});
 
   @override
   State<_ReunioesAdmin> createState() => _ReunioesAdminState();
 }
 
-class _ReunioesAdminState extends State<_ReunioesAdmin> {
+class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObserver {
+  late final CacheReunioes _cache = widget.cache ?? SqliteCacheReunioes();
   List<Map<String, dynamic>> _reunioes = [];
   bool _aCarregar = true;
   String? _erro;
 
+  /// A API não respondeu e a lista vem do telemóvel (ecrã 4 do wireframe).
+  bool _guardadas = false;
+  Timer? _atualizacao;
+
+  /// Em segundo plano não se pede a lista; ao voltar, pede-se logo.
+  bool _pausada = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _carregar();
   }
 
-  Future<void> _carregar() async {
-    setState(() {
-      _aCarregar = true;
-      _erro = null;
-    });
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _atualizacao?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _pausada = true;
+      _atualizacao?.cancel();
+    } else if (state == AppLifecycleState.resumed && _pausada) {
+      _pausada = false;
+      _carregar(silencioso: true);
+    }
+  }
+
+  Future<void> _carregar({bool silencioso = false}) async {
+    _atualizacao?.cancel();
+    if (!silencioso) {
+      setState(() {
+        _aCarregar = true;
+        _erro = null;
+      });
+    }
     try {
       final reunioes = await widget.api.getReunioes(widget.credencial);
       if (!mounted) return;
       setState(() {
         _reunioes = reunioes;
+        _guardadas = false;
+        _erro = null;
         _aCarregar = false;
       });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _erro = 'Não foi possível carregar as reuniões.';
-        _aCarregar = false;
-      });
+      final condominio = widget.condominioId;
+      if (condominio != null) await _cache.guardar(condominio, reunioes);
+    } on http.ClientException {
+      await _semApi();
+    } on SocketException {
+      await _semApi();
+    } on ApiException catch (e) {
+      if (e.statusCode >= 500) {
+        await _semApi();
+      } else {
+        _mostrarErro();
+      }
+    } on TimeoutException {
+      await _semApi();
+    } on TlsException {
+      // Ex.: HandshakeException num Wi-Fi com portal; o http não a converte.
+      await _semApi();
+    } on FormatException {
+      // Resposta que não é JSON (ex.: página HTML de um proxy).
+      await _semApi();
     }
+    if (mounted && !_pausada && (_guardadas || _reunioes.any(_publicacaoPendente))) {
+      _atualizacao = Timer(intervaloAtualizacao, () => _carregar(silencioso: true));
+    }
+  }
+
+  Future<void> _semApi() async {
+    final condominio = widget.condominioId;
+    final guardadas = condominio == null ? null : await _cache.ler(condominio);
+    if (!mounted) return;
+    if (guardadas == null || guardadas.isEmpty) {
+      _mostrarErro();
+      return;
+    }
+    setState(() {
+      _reunioes = guardadas;
+      _guardadas = true;
+      _erro = null;
+      _aCarregar = false;
+    });
+  }
+
+  void _mostrarErro() {
+    if (!mounted) return;
+    setState(() {
+      _erro = 'Não foi possível carregar as reuniões.';
+      _guardadas = false;
+      _aCarregar = false;
+    });
   }
 
   Future<void> _agendar() async {
@@ -106,6 +203,31 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reunião agendada.')));
     await _carregar();
   }
+
+  Widget _caixa(IconData icone, String texto, Color fundo, Color cor) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(color: fundo, borderRadius: BorderRadius.circular(8)),
+        child: Row(children: [
+          Icon(icone, size: 18, color: cor),
+          const SizedBox(width: 8),
+          Expanded(child: Text(texto, style: TextStyle(color: cor))),
+        ]),
+      );
+
+  Widget _estado(String? estado) => switch (estado) {
+        'sincronizada' =>
+          _caixa(Icons.event_available, estadoPublicacao(estado), sucessoFundo, sucessoTexto),
+        'alternativo' =>
+          _caixa(Icons.warning_amber_rounded, estadoPublicacao(estado), avisoFundo, avisoTexto),
+        _ => _caixa(Icons.schedule, estadoPublicacao(estado), avisoFundo, avisoTexto),
+      };
+
+  Widget _nota(ColorScheme scheme, String texto) => Padding(
+        padding: const EdgeInsets.only(top: 4, bottom: 8),
+        child: Text(texto, style: TextStyle(color: scheme.onSurfaceVariant)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -139,20 +261,39 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            if (_guardadas)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _caixa(
+                  Icons.cloud_off,
+                  'Não foi possível atualizar. A mostrar dados guardados no dispositivo.',
+                  avisoFundo,
+                  avisoTexto,
+                ),
+              ),
             for (final r in _reunioes)
               Card(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  title: const Text('Assembleia de condóminos',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(
-                    '${formatarReuniao(r['data_hora'] as String)}\n'
-                    '${r['local']}\n'
-                    '${estadoPublicacao(r['estado_sync'] as String?)}',
-                  ),
-                  isThreeLine: true,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Assembleia de condóminos',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text('${formatarReuniao(r['data_hora'] as String)}\n${r['local']}',
+                        style: TextStyle(color: scheme.onSurfaceVariant)),
+                    // Com a lista guardada, o estado pode já não ser o atual.
+                    if (!_guardadas) _estado(r['estado_sync'] as String?),
+                  ]),
                 ),
               ),
+            if (_guardadas)
+              _nota(scheme, 'A sincronização será tentada quando houver ligação.')
+            else ...[
+              if (_reunioes.any(_publicacaoPendente)) _nota(scheme, 'A sincronização é automática.'),
+              if (_reunioes.any((r) => r['estado_sync'] == 'alternativo'))
+                _nota(scheme, 'A API mantém os dados da reunião.'),
+            ],
           ],
         ),
       );
