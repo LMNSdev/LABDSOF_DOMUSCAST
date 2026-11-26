@@ -681,8 +681,8 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | Método e rota | Quem | User Story |
 |---|---|---|
 | `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio e frações (A, B, C…); devolve a credencial do primeiro administrador; máximo de 200 frações e de 5 criações por hora por IP ([10.6](#106-modelo-de-ameaças-inicial)) |
-| `GET /condominios/{id}/calendario` | admin / residente (do condomínio) | US-29: `{url}`, o link de subscrição do feed iCal, com o token; pode ser mostrado sempre, porque o token é derivado da versão; 403 para outro condomínio |
-| `POST /condominios/{id}/calendario/regenerar` | admin | US-29: incrementa `calendario_token_versao` e devolve o novo `{url}`; o token anterior deixa de funcionar |
+| `GET /condominios/{id}/calendario` | admin / residente (do condomínio) | US-29: `{url}`, o link de subscrição do feed iCal, com o token; pode ser mostrado sempre, porque o token é derivado da versão; 404 para outro condomínio |
+| `POST /condominios/{id}/calendario/regenerar` | admin | US-29: incrementa `calendario_token_versao` e devolve o novo `{url}`; o token anterior deixa de funcionar; 404 para outro condomínio |
 | `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
 | `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
 | `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19, US-30: lista e remove; 409 ao tentar remover o último |
