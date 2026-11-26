@@ -168,3 +168,31 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Diferenças ao wireframe:** ícones nos estados, título "Assembleia de condóminos" e ano nos cartões, botão "Agendar reunião" fixo no fundo (como na US-13).
 
 **Resultado:** DoR da US-28 cumprida, validada por todos os participantes.
+
+## 2026-11-26
+
+**Participantes:** Pedro Costa e Pedro Soares.
+
+**Objetivo:** aprovar a DoR da US-05, preparada a 2026-11-25 depois da implementação (PR da issue #82), e as diferenças da implementação face ao wireframe. A [sessão de 2026-11-19](#us-05-mudar-estado--histórico) tinha aprovado o wireframe, mas deixou as regras abaixo como proposta.
+
+### US-05: Regras aprovadas e DoR
+
+1. **Transições:** só se avança Aberto -> Em curso -> Resolvido, um passo de cada vez. Não se recua, não se repete o estado e não se reabre um reporte resolvido. Reabrir precisa de uma história própria. A API responde `409` com `codigo` `transicao_invalida` ou `reporte_resolvido`.
+2. **Nota:** obrigatória em todas as mudanças, com 1 a 500 caracteres depois de retirados os espaços nas pontas. Fora destes limites, a API responde `422`. O backlog pedia uma nota, mas não dizia se era obrigatória nem o limite.
+3. **Histórico:** só de inserção. Cada mudança grava o estado anterior e o novo, a nota, a data e o administrador (`autor_id`). Não há forma de alterar nem apagar entradas. Por agora, a app não mostra o nome do administrador.
+4. **Quem pode mudar:** só o administrador do condomínio do reporte. Um residente recebe `403`, e um reporte de outro condomínio dá `404`.
+5. **Sem confirmação, sem sucesso:** não há fila offline (a US-18 não abrange esta alteração). Sem ligação, sem resposta em 15 segundos ou com qualquer outra falha, a app não diz que guardou e só oferece «Voltar ao detalhe», sem reenviar o pedido.
+6. **Fora de âmbito:** o arquivo do aviso ligado quando o reporte fica Resolvido (US-14) e a notificação aos residentes (US-11).
+7. **Diferenças ao wireframe:** aprovadas as que estão em [us-05.md](us-05.md#desenho-da-interface): cores e ícones do estado iguais aos da lista, «Novo estado» só de leitura, botão «Mudar estado» fixo no fundo (como na US-13), cartão com o autor e as datas, nota numa linha própria no histórico, contador de caracteres e confirmação por baixo do histórico.
+
+| Critério da DoR | Resultado |
+|---|---|
+| Valor e âmbito claros | Sim: o administrador torna o tratamento auditável. Fora de âmbito: editar ou apagar o histórico, reabrir, US-11 e US-14. 2 SP. |
+| Percurso completo | Sim: detalhe -> «Atualizar reporte» -> `PATCH /reportes/{id}/estado` -> `reporte` e `reporte_historico` -> `GET /reportes/{id}` (US-03). |
+| Comportamento definido | Sim: regras 1 a 6 acima. |
+| Desenho da interface | Sim: [wireframe](design/us-05.html) aprovado a 2026-11-19 e diferenças aprovadas nesta sessão (ponto 7). |
+| Contrato técnico conhecido | Sim: `PATCH /reportes/{id}/estado` no [8.4](../sprintA/sprintA.md#84-api-esboço), com os códigos `409` acima. |
+| Dependências tratadas | Sim: US-03 concluída. A US-22 fica para depois e reutiliza o registo no histórico. |
+| Validação planeada | Sim: testes de API e da app, e TalkBack em PT-PT. Os resultados estão em [us-05.md](us-05.md). |
+
+**Resultado:** DoR da US-05 cumprida e diferenças ao wireframe aprovadas, por Pedro Soares. A DoR foi registada depois da implementação, que já seguia estas regras; nenhuma alteração ao código foi necessária.

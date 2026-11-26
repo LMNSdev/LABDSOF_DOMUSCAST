@@ -1,5 +1,7 @@
 """US-02/US-09: reportes de avarias com as regras de visibilidade do autor (10.2).
 
+US-03 consulta-os e a US-05 permite ao administrador mudar o estado com histórico.
+
 O administrador vê sempre o nome e a fração do autor. Os residentes nunca recebem
 a fração e só recebem o nome quando o autor escolheu mostrá-lo nesse reporte.
 """
@@ -16,6 +18,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session, joinedload
 from starlette.datastructures import UploadFile
@@ -24,7 +27,8 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .. import models, schemas
 from ..database import get_db
-from ..security import residente_atual, utilizador_atual
+from ..erros import ErroApi
+from ..security import admin_do_pedido, residente_atual, utilizador_atual
 
 router = APIRouter()
 
@@ -358,7 +362,97 @@ def obter_reporte(
     quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    reporte = _reporte_do_condominio(db, reporte_id, quem)
+    return _detalhe(_reporte_do_condominio(db, reporte_id, quem), quem)
+
+
+# US-05: só se avança um passo de cada vez, sem regressões nem repetir o estado.
+PROXIMO_ESTADO = {
+    models.EstadoReporte.aberto: models.EstadoReporte.em_curso,
+    models.EstadoReporte.em_curso: models.EstadoReporte.resolvido,
+}
+NOMES_ESTADO = {
+    models.EstadoReporte.aberto: "Aberto",
+    models.EstadoReporte.em_curso: "Em curso",
+    models.EstadoReporte.resolvido: "Resolvido",
+}
+
+
+def registar_mudanca_estado(
+    db: Session,
+    reporte_id: int,
+    estado_anterior: models.EstadoReporte,
+    estado_novo: models.EstadoReporte,
+    nota: str,
+    admin: models.Administrador,
+) -> bool:
+    """Muda o estado só se ainda for `estado_anterior` e acrescenta a entrada ao histórico.
+
+    O update condicional impede que dois administradores (US-19) gravem a mesma
+    mudança duas vezes. Devolve `False` se outro pedido mudou o estado entretanto.
+    Não faz commit, para a US-22 a poder usar na sua própria transação. O histórico
+    é só de inserção: nunca se altera nem apaga uma entrada.
+    """
+    alterados = (
+        db.query(models.Reporte)
+        .filter(models.Reporte.id == reporte_id, models.Reporte.estado == estado_anterior)
+        .update(
+            {models.Reporte.estado: estado_novo, models.Reporte.atualizado_em: func.now()},
+            synchronize_session=False,
+        )
+    )
+    if alterados == 0:
+        return False
+    db.add(models.ReporteHistorico(
+        reporte_id=reporte_id,
+        estado_anterior=estado_anterior,
+        estado_novo=estado_novo,
+        nota=nota,
+        autor_tipo="administrador",
+        autor_id=admin.id,
+    ))
+    return True
+
+
+def _conflito(estado_atual: models.EstadoReporte) -> ErroApi:
+    if estado_atual == models.EstadoReporte.resolvido:
+        return ErroApi(409, "reporte_resolvido", "O reporte já está resolvido e não pode mudar de estado.")
+    proximo = NOMES_ESTADO[PROXIMO_ESTADO[estado_atual]]
+    return ErroApi(
+        409,
+        "transicao_invalida",
+        f"O reporte está {NOMES_ESTADO[estado_atual]}; só pode passar para {proximo}.",
+    )
+
+
+@router.patch("/{reporte_id}/estado", response_model=schemas.ReporteDetalheOut)
+def mudar_estado(
+    reporte_id: int,
+    dados: schemas.MudarEstadoIn,
+    admin: Annotated[models.Administrador, Depends(admin_do_pedido)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """US-05: o administrador avança o estado e regista uma nota no histórico."""
+    reporte = _reporte_do_condominio(db, reporte_id, admin)
+    atual = reporte.estado
+    if PROXIMO_ESTADO.get(atual) != dados.estado:
+        raise _conflito(atual)
+    try:
+        if not registar_mudanca_estado(db, reporte.id, atual, dados.estado, dados.nota, admin):
+            # Outro administrador mudou o estado entre a leitura e o update.
+            db.rollback()
+            db.refresh(reporte)
+            raise _conflito(reporte.estado)
+        db.commit()
+    except OperationalError as exc:
+        db.rollback()
+        raise _indisponivel() from exc
+    db.expire(reporte)
+    return _detalhe(_reporte_do_condominio(db, reporte_id, admin), admin)
+
+
+def _detalhe(
+    reporte: models.Reporte, quem: models.Administrador | models.Identidade
+) -> schemas.ReporteDetalheOut:
     historico = [schemas.ReporteHistoricoOut.model_validate({
         "estado_anterior": h.estado_anterior, "estado_novo": h.estado_novo,
         "nota": h.nota, "autor_tipo": h.autor_tipo, "criado_em": h.criado_em,

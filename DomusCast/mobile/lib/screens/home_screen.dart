@@ -70,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             credencial: widget.sessao?.credencial ?? widget.sessaoResidente?.credencial,
             nomeResidente: widget.sessaoResidente?.nome,
             podeReportar: widget.sessao == null,
+            podeMudarEstado: widget.sessao != null,
             fila: widget.fila,
             onAcessoRemovido: widget.sessao == null ? _acessoRemovido : null,
             ativo: _reportesAtivos,
