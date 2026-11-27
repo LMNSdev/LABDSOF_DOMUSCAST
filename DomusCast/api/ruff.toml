@@ -10,3 +10,4 @@ ignore = [
 [lint.per-file-ignores]
 # assert é o idioma normal dos testes
 "tests/**" = ["S101"]
+"tests_e2e/**" = ["S101"]

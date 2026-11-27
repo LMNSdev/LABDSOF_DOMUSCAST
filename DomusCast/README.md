@@ -180,6 +180,22 @@ pytest tests/ -v
 # com cobertura (como na CI): pytest tests/ --cov=app --cov-report=term
 ```
 
+### End-to-end (T-06, com a stack em Docker)
+
+Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
+
+```powershell
+cd DomusCast
+$env:WORKER_BACKOFF_UNIDADE_S = "1"   # novas tentativas em segundos e não em minutos
+docker compose up --build -d
+cd api
+$env:E2E_API_URL = "http://localhost:8000"
+$env:E2E_CALENDARIO_URL = "http://localhost:8001"
+pytest tests_e2e/ -v
+```
+
+Cada execução cria um condomínio novo; `POST /condominios` aceita 5 por hora por IP, por isso, ao repetir muitas vezes, reinicia a API (`docker compose restart api`).
+
 ### Flutter
 
 ```powershell
@@ -214,7 +230,7 @@ Jobs do workflow 1:
 | `Segurança: segredos no histórico (gitleaks)` | `gitleaks` (credenciais nos commits) |
 | `Pipeline: testes dos scripts` | `.github/scripts/tests.sh` (versão, deploy, regras dos PRs e resumo dos testes) |
 
-**Relatórios dos testes (T-08):** cada run mostra no separador **Summary** um resumo por conjunto de testes (total, passados, falhados, ignorados, duração e, na API, a cobertura de linhas), e guarda os relatórios como artefactos (`api-testes`, `api-testes-postgres`, `mobile-testes`), para descarregar no fundo da página do run. São publicados também quando os testes falham, com a lista do que falhou. O resumo é feito por `.github/scripts/resumo-testes.py`, testado em `tests.sh`.
+**Relatórios dos testes (T-08):** cada run mostra no separador **Summary** um resumo por conjunto de testes (total, passados, falhados, ignorados, duração e, na API, a cobertura de linhas), e guarda os relatórios como artefactos (`api-testes`, `api-testes-postgres`, `api-testes-e2e`, `mobile-testes`), para descarregar no fundo da página do run. São publicados também quando os testes falham, com a lista do que falhou. O resumo é feito por `.github/scripts/resumo-testes.py`, testado em `tests.sh`.
 
 A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA do commit e o Dependabot (`.github/dependabot.yml`) propõe atualizações semanais. A imagem da API corre como utilizador não-root, sem o `pip` (só é preciso no build), e o PostgreSQL só escuta em `127.0.0.1`.
 
@@ -226,7 +242,7 @@ Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `ma
 |---|---|---|
 | 2 | `Convenções: branch, título e commits` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
 | 3 | `API: migrações e testes em PostgreSQL` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
-| | `Docker: arranque, testes end-to-end e Trivy` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
+| | `Docker: arranque, testes end-to-end e Trivy` | `docker compose up --build` (com `WORKER_BACKOFF_UNIDADE_S=1`), `/health` com a base de dados ligada, testes end-to-end (`pytest tests_e2e/`, com o relatório no Summary e no artefacto `api-testes-e2e`, e os logs dos containers se falharem) e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
 | | `Produção: compose e Caddyfile válidos` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
 | | `App: build do APK` | `flutter build apk --release`, o mesmo comando do release |
 
@@ -254,6 +270,7 @@ DomusCast/
         reportes.py     ← POST e GET /reportes
     alembic/            ← Migrações de base de dados
     tests/              ← 4 testes automatizados
+    tests_e2e/          ← Testes end-to-end contra a stack em Docker (T-06)
     Dockerfile
     .dockerignore        ← Exclui .env, testes e ficheiros de desenvolvimento da imagem
     requirements.txt    ← Dependências de produção (imagem Docker)
