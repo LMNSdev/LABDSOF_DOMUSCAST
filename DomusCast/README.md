@@ -92,6 +92,7 @@ Cada falha conta como uma tentativa. O Worker volta a tentar ao fim de 1, 2, 4 e
 | `GET  /fracoes/{id}/identidades` | Listar os residentes ativos de uma fração (administrador) |
 | `DELETE /identidades/{id}` | Remover a identidade de um residente (administrador) |
 | `GET  /docs` | Documentação interativa (Swagger UI) |
+| `GET  /metrics` | Métricas Prometheus da API (o worker do calendário tem as suas em `:8082/metrics`, só dentro do Compose) |
 
 ### App Flutter
 
@@ -181,7 +182,7 @@ pytest tests/ -v
 
 ### End-to-end (T-06, com a stack em Docker)
 
-Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
+Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta); e que o `/metrics` da API conta os pedidos (T-07). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
 
 ```powershell
 cd DomusCast
@@ -315,6 +316,8 @@ docs/                              ← Documentação do projeto (Sprint A, back
 | `GET /fracoes/{id}/identidades` | US-23: residentes ativos `{id, nome, criado_em}`; 401 sem credencial, 403 residente, 404 fração inexistente ou de outro condomínio |
 | `DELETE /identidades/{id}` | US-23: apaga o nome, preenche `removida_em` e `removida_por` (migração `0007`) e devolve 204; a credencial removida recebe 401 e os reportes ficam como "Residente removido" (o administrador recebe `autor_removido` e a fração); 404 se já foi removida ou é de outro condomínio |
 | `GET /health` | Verifica ligação à BD; devolve `{"status":"ok","db":"ok"}` ou 503 em modo degradado |
+| `GET /metrics` | T-07: métricas Prometheus (`pedidos_total{metodo, rota, codigo}`, `pedido_duracao_segundos{metodo, rota}`, `erros_total`). O worker do calendário tem o seu em `:8082/metrics` (`jobs_pendentes`, `jobs_falhados_total`, `job_duracao_segundos`, `integracao_falhas_total{provider, motivo}`). Só na rede interna: o Caddy responde 404 a `/metrics` |
+| Logs | T-07: uma linha JSON por pedido em stdout (`timestamp`, `nivel`, `componente`, `request_id`, `metodo`, `rota` com o modelo e não o caminho, `status`, `duracao_ms`, `identidade_id` ou `administrador_id`), sem nomes, tokens nem query string; exceções não tratadas com stack trace. O `X-Request-ID` da app é reutilizado se for válido. Ver com `docker compose logs -f api` |
 | Worker do calendário (`python -m app.worker.calendario`) | US-28: consome o job `publicar_calendario` criado por `POST /reunioes` e publica a reunião no simulador com o id `domuscast<reuniao_id>` (repetir não duplica o evento: `409` conta como já publicado); timeout de 10 s, 5 tentativas com esperas de 1, 2, 4 e 8 min, `Retry-After` respeitado; `estado_sync` passa a `sincronizada` ou, à 5.ª falha, a `alternativo` |
 | `GET /reunioes?desde=` | US-28: devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`, migração `0008`), para a app ver a mudança de `estado_sync` |
 | Migrações Alembic | `0001_initial` - cria tabela `reporte` + enum `estado_reporte` no PostgreSQL |

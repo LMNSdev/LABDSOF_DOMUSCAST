@@ -1,16 +1,17 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from uuid import uuid4
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from .database import get_db
 from .erros import ErroApi, tratar_erro_api
+from .observabilidade import configurar_logs, middleware_observabilidade
 from .routers import condominios, fracoes, identidades, qr, reportes, reunioes
 
 
@@ -19,15 +20,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
+configurar_logs()
+
 app = FastAPI(title="DomusCast API", version="0.1.0", lifespan=lifespan)
 
-
-@app.middleware("http")
-async def request_id_middleware(request: Request, call_next):
-    request.state.request_id = str(uuid4())
-    response = await call_next(request)
-    response.headers["X-Request-ID"] = request.state.request_id
-    return response
+# T-07: request_id (do cabeçalho X-Request-ID, se válido), log JSON e métricas por pedido.
+app.middleware("http")(middleware_observabilidade)
 
 
 def _erro(request: Request, codigo: str, mensagem: str, status_code: int, headers=None):
@@ -94,3 +92,9 @@ def health(db: Annotated[Session, Depends(get_db)]):
             detail="A base de dados está temporariamente indisponível.",
             headers={"Retry-After": "5"},
         ) from exc
+
+
+@app.get("/metrics", tags=["infra"], include_in_schema=False)
+def metrics():
+    """Métricas Prometheus (8.7). Só na rede interna: o Caddy responde 404 a /metrics."""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
