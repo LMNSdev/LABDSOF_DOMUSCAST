@@ -4,7 +4,7 @@ import hashlib
 import secrets
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -48,6 +48,7 @@ def _identidade_por_credencial(db: Session, credencial: str) -> models.Identidad
 
 
 def utilizador_atual(
+    request: Request,
     cred: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
     db: Annotated[Session, Depends(get_db)],
 ) -> models.Administrador | models.Identidade:
@@ -59,6 +60,9 @@ def utilizador_atual(
     )
     if utilizador is None:
         raise HTTPException(status_code=401, detail=CREDENCIAL_INVALIDA)
+    # Só o id entra no log do pedido (8.7), nunca o nome.
+    chave = "administrador_id" if isinstance(utilizador, models.Administrador) else "identidade_id"
+    request.state.utilizador = {chave: utilizador.id}
     return utilizador
 
 
