@@ -179,6 +179,22 @@ pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
+### End-to-end (T-06, com a stack em Docker)
+
+Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
+
+```powershell
+cd DomusCast
+$env:WORKER_BACKOFF_UNIDADE_S = "1"   # novas tentativas em segundos e não em minutos
+docker compose up --build -d
+cd api
+$env:E2E_API_URL = "http://localhost:8000"
+$env:E2E_CALENDARIO_URL = "http://localhost:8001"
+pytest tests_e2e/ -v
+```
+
+Cada execução cria um condomínio novo; `POST /condominios` aceita 5 por hora por IP, por isso, ao repetir muitas vezes, reinicia a API (`docker compose restart api`).
+
 ### Flutter
 
 ```powershell
@@ -212,7 +228,7 @@ Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `ma
 |---|---|---|
 | `pr-regras.yml` | `regras` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
 | `pr-producao.yml` | `postgres` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
-| | `docker` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
+| | `docker` | `docker compose up --build` (com `WORKER_BACKOFF_UNIDADE_S=1`), `/health` com a base de dados ligada, testes end-to-end (`pytest tests_e2e/`, com os logs dos containers se falharem) e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
 | | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
 | | `apk` | `flutter build apk --release`, o mesmo comando do release |
 
@@ -240,6 +256,7 @@ DomusCast/
         reportes.py     ← POST e GET /reportes
     alembic/            ← Migrações de base de dados
     tests/              ← 4 testes automatizados
+    tests_e2e/          ← Testes end-to-end contra a stack em Docker (T-06)
     Dockerfile
     .dockerignore        ← Exclui .env, testes e ficheiros de desenvolvimento da imagem
     requirements.txt    ← Dependências de produção (imagem Docker)
