@@ -135,7 +135,8 @@ jobs:
 
       # T-06: jornada principal de ponta a ponta contra os containers (API, worker-calendario,
       # simulador e PostgreSQL), só por HTTP.
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - name: Instalar o Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
           cache: pip
