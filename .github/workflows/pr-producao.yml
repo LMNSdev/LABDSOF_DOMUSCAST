@@ -135,13 +135,13 @@ jobs:
       # Mesmo Dockerfile da imagem publicada no GHCR; o entrypoint corre as migrações.
       # WORKER_BACKOFF_UNIDADE_S=1: as novas tentativas do calendário demoram segundos e não
       # minutos, para os testes end-to-end da condição de falha caberem no job (T-06).
-      - name: docker compose up
+      - name: Arrancar a stack (docker compose up)
         working-directory: DomusCast
         env:
           WORKER_BACKOFF_UNIDADE_S: "1"
         run: docker compose up --build -d
 
-      - name: /health responde com a base de dados ligada
+      - name: Esperar pela API (/health com a base de dados)
         run: |
           for _ in $(seq 1 30); do
             if curl -fsS http://localhost:8000/health | grep -q '"db":"ok"'; then
@@ -162,30 +162,51 @@ jobs:
           cache: pip
           cache-dependency-path: DomusCast/api/requirements-dev.txt
 
-      - name: Testes end-to-end
+      - name: Instalar as dependências dos testes
+        working-directory: DomusCast/api
+        run: pip install -r requirements-dev.txt
+
+      - name: Testes end-to-end (pytest)
         working-directory: DomusCast/api
         env:
           E2E_API_URL: http://localhost:8000
           E2E_CALENDARIO_URL: http://localhost:8001
-        run: |
-          pip install -r requirements-dev.txt
-          pytest tests_e2e/ -v
+        run: pytest tests_e2e/ -v --junitxml=resultados/pytest-e2e.xml
 
+      # T-08: prova dos testes end-to-end no Summary e nos artefactos do run.
+      - name: Resumo dos testes
+        if: ${{ !cancelled() }}
+        working-directory: DomusCast/api
+        run: >
+          python3 ../../.github/scripts/resumo-testes.py junit "API - testes end-to-end"
+          resultados/pytest-e2e.xml >> "$GITHUB_STEP_SUMMARY"
+
+      # Se algo falhou, os logs dos containers ficam no log do passo e num ficheiro do artefacto.
       - name: Logs dos containers (só se algo falhou)
         if: failure()
         working-directory: DomusCast
-        run: docker compose logs api worker-calendario calendario
+        run: |
+          mkdir -p api/resultados
+          docker compose logs --no-color api worker-calendario calendario | tee api/resultados/logs-containers.txt
+
+      - name: Guardar os relatórios
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-testes-e2e
+          path: DomusCast/api/resultados/
+          if-no-files-found: warn
 
       # Falha em vulnerabilidades HIGH ou CRITICAL que já têm correção.
       # Imagem do Trivy fixada por digest (v0.76.2).
-      - name: Trivy na imagem da API
+      - name: Vulnerabilidades na imagem da API (Trivy)
         run: >
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock
           aquasec/trivy@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb
           image --scanners vuln --ignore-unfixed --severity CRITICAL,HIGH --exit-code 1
           domuscast-api
 
-      - name: docker compose down
+      - name: Parar a stack (docker compose down)
         if: always()
         working-directory: DomusCast
         run: docker compose down -v
