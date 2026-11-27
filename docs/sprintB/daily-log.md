@@ -89,3 +89,17 @@ Facilitada por Luis Santos.
 | Pedro Costa | Acertou as versões do Alembic da US-02 (#80) | Trabalhar na US-05 (#82) e na US-22 (#83) | Nenhum reportado |
 | Marco Garcia | Sem progresso desde a daily de 20/11 | Trabalhar na US-24 (#89) e na US-25 (#90) | Nenhum reportado |
 | Leonardo Costa | Sem progresso desde a daily de 20/11 | Trabalhar na US-03 (#81) e na US-10 (#88) | Nenhum reportado |
+
+## 2026-11-26
+
+Facilitada por Pedro Soares.
+
+"Ontem" resume a atividade de cada pessoa no GitHub (commits, PRs integrados e issues) desde a daily de 21/11.
+
+| Pessoa | Ontem | Hoje | Bloqueios |
+|---|---|---|---|
+| Luis Santos | Integrou os PRs #121 (US-20), #122 (US-23), #124 (US-13) e #126 (#125) a 21/11 e o #128 (US-03) a 23/11 | Rever os PRs abertos; trabalhar na US-27 (#93) | Nenhum reportado |
+| Pedro Soares | US-28 (#91): implementação, evidências e refinamento de 24/11; PR #129 integrado. Integrou o PR #131 (US-05). Sprint C Backlog (#133): refinamento de 26/11 e issues #135 a #153 | Abrir o PR do #133; registar esta daily | Nenhum reportado |
+| Pedro Costa | Implementou a US-05 (#82) com evidências e a proposta de DoR; PR #131 integrado, o que fechou a #82 | Trabalhar na US-22 (#83) | Nenhum reportado |
+| Marco Garcia | US-24 (#89) e US-25 (#90): API, app e testes; refinamento e wireframe da US-29 (#92), atualizado com o feedback do PR | Integrar a US-24 (#89), a US-25 (#90) e a US-29 (#92) | Nenhum reportado |
+| Leonardo Costa | US-03 (#81) integrada no PR #128; US-10 (#88): API, Worker, app, evidências e registo da DoR, já com a `main` atual | Abrir o PR da US-10 (#88) | Nenhum reportado |
