@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import '../widgets/estado_badge.dart';
+import 'mudar_estado_screen.dart';
 
 class ReporteDetalheScreen extends StatefulWidget {
   final ApiService api;
@@ -11,12 +13,16 @@ class ReporteDetalheScreen extends StatefulWidget {
   final int reporteId;
   final VoidCallback? onAcessoRemovido;
 
+  /// US-05: só o administrador vê «Mudar estado».
+  final bool podeMudarEstado;
+
   const ReporteDetalheScreen({
     super.key,
     required this.api,
     required this.reporteId,
     this.credencial,
     this.onAcessoRemovido,
+    this.podeMudarEstado = false,
   });
 
   @override
@@ -34,11 +40,17 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   bool _refreshing = false;
   Timer? _timer;
 
+  /// Ecrã 3 do wireframe: confirmação depois de a API guardar a alteração.
+  bool _alteracaoGuardada = false;
+
+  /// «Atualizar reporte» está aberto por cima deste ecrã.
+  bool _formularioAberto = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    _iniciarTimer();
     _load();
   }
 
@@ -46,10 +58,17 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _timer?.cancel();
     _timer = null;
-    if (state == AppLifecycleState.resumed) {
-      _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    // Com «Atualizar reporte» aberto por cima, o detalhe não atualiza: o timer
+    // volta a ser criado quando o formulário fecha.
+    if (state == AppLifecycleState.resumed && !_formularioAberto) {
+      _iniciarTimer();
       _load();
     }
+  }
+
+  void _iniciarTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
   }
 
   @override
@@ -130,6 +149,38 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
     }
   }
 
+  /// US-05: abre «Atualizar reporte» e, se a API confirmou, mostra logo o novo
+  /// estado e histórico. Sem confirmação, volta a carregar o detalhe.
+  Future<void> _mudarEstado(Map<String, dynamic> reporte) async {
+    _timer?.cancel();
+    _timer = null;
+    _formularioAberto = true;
+    // A confirmação anterior deixa de valer: só volta a aparecer se a API
+    // confirmar esta nova alteração.
+    setState(() => _alteracaoGuardada = false);
+    final atualizado = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (_) => MudarEstadoScreen(
+          api: widget.api,
+          credencial: widget.credencial!,
+          reporteId: widget.reporteId,
+          estadoAtual: reporte['estado'] as String,
+        ),
+      ),
+    );
+    _formularioAberto = false;
+    if (!mounted) return;
+    _iniciarTimer();
+    if (atualizado == null) {
+      await _load();
+      return;
+    }
+    setState(() {
+      _reporte = atualizado;
+      _alteracaoGuardada = true;
+    });
+  }
+
   void _avisarFalha() {
     setState(() => _loading = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -167,7 +218,7 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
   Widget build(BuildContext context) {
     final r = _reporte;
     return Scaffold(
-      appBar: AppBar(title: const Text('Reporte')),
+      appBar: AppBar(title: Text('Reporte #${widget.reporteId}')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _erro != null
@@ -187,14 +238,19 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
           : r == null
           ? const SizedBox.shrink()
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
               children: [
                 Text(
                   r['descricao'] as String? ?? '',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Chip(label: Text(_estado(r['estado']))),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: EstadoBadge(r['estado'] as String?, tamanho: 14),
+                ),
                 if (_foto != null) ...[
                   const SizedBox(height: 12),
                   Semantics(
@@ -205,35 +261,126 @@ class _ReporteDetalheScreenState extends State<ReporteDetalheScreen>
                 ] else if (r['foto_url'] != null) ...[
                   const Text('Foto indisponível.'),
                 ],
-                const SizedBox(height: 12),
-                Text(_autor(r)),
-                Text('Criado: ${_data(r['criado_em'])}'),
-                Text('Atualizado: ${_data(r['atualizado_em'])}'),
-                if (r['duplicado_de_id'] != null)
-                  Text('Duplicado do #${r['duplicado_de_id']}'),
-                const SizedBox(height: 24),
-                Text(
-                  'Histórico',
-                  style: Theme.of(context).textTheme.titleMedium,
+                const SizedBox(height: 16),
+                Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _autor(r),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Criado: ${_data(r['criado_em'])}',
+                          style: _secundario,
+                        ),
+                        Text(
+                          'Atualizado: ${_data(r['atualizado_em'])}',
+                          style: _secundario,
+                        ),
+                        if (r['duplicado_de_id'] != null)
+                          Text('Duplicado do #${r['duplicado_de_id']}'),
+                      ],
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 24),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Histórico',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 for (final item
                     in (r['historico'] as List<dynamic>? ?? []).reversed)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.history),
-                    title: Text(
-                      _estado((item as Map<String, dynamic>)['estado_novo']),
-                    ),
-                    subtitle: Text(
-                      [
-                        _data(item['criado_em']),
-                        if ((item['nota'] as String?)?.isNotEmpty == true)
-                          item['nota'] as String,
-                      ].join('\n'),
+                  _EntradaHistorico(
+                    estado: _estado((item as Map<String, dynamic>)['estado_novo']),
+                    quando: item['estado_anterior'] == null &&
+                            item['autor_tipo'] == 'sistema'
+                        ? '${_data(item['criado_em'])}, estado inicial'
+                        : _data(item['criado_em']),
+                    nota: item['nota'] as String?,
+                  ),
+                if (_alteracaoGuardada)
+                  Semantics(
+                    liveRegion: true,
+                    child: const Text(
+                      'Alteração guardada. O histórico não pode ser editado.',
+                      style: _secundario,
                     ),
                   ),
               ],
             ),
+      bottomNavigationBar: r != null &&
+              _erro == null &&
+              widget.podeMudarEstado &&
+              widget.credencial != null &&
+              proximoEstado(r['estado'] as String?) != null
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: FilledButton(
+                  onPressed: () => _mudarEstado(r),
+                  child: const Text('Mudar estado'),
+                ),
+              ),
+            )
+          : null,
     );
   }
+}
+
+const _secundario = TextStyle(fontSize: 13, color: Color(0xFF5F6B7A));
+
+/// Uma entrada do histórico com a linha à esquerda do wireframe (ecrãs 1 e 3).
+/// O TalkBack lê o estado, a data e a nota de uma só vez.
+class _EntradaHistorico extends StatelessWidget {
+  final String estado;
+  final String quando;
+  final String? nota;
+
+  const _EntradaHistorico({
+    required this.estado,
+    required this.quando,
+    this.nota,
+  });
+
+  @override
+  Widget build(BuildContext context) => MergeSemantics(
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(left: 12, top: 2, bottom: 2),
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: Color(0xFF9AA7BF), width: 2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            estado,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 2),
+          Text(quando, style: _secundario),
+          if (nota?.isNotEmpty == true) ...[
+            const SizedBox(height: 4),
+            Text(nota!),
+          ],
+        ],
+      ),
+    ),
+  );
 }

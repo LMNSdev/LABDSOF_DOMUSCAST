@@ -144,6 +144,20 @@ class ReporteDetalheOut(ReporteOut):
     historico: list[ReporteHistoricoOut]
 
 
+# --- US-05: mudar estado ---
+
+NotaHistorico = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)
+]
+
+
+class MudarEstadoIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    estado: EstadoReporte
+    nota: NotaHistorico
+
+
 # --- US-13: reuniões ---
 
 LocalReuniao = Annotated[
