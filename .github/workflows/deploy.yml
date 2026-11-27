@@ -1,8 +1,8 @@
-name: Deploy
+name: "5. Deploy na VM (manual ou rollback)"
 
 # Implanta uma versão da API na VM de produção (Azure).
-#  - Chamado pelo workflow Release depois de cada nova tag.
-#  - Rollback: Actions → Deploy → Run workflow, com a versão anterior (ex.: v0.3.0).
+#  - Chamado pelo workflow 4 depois de cada nova tag.
+#  - Rollback: Actions → 5. Deploy na VM → Run workflow, com a versão anterior (ex.: v0.3.0).
 # Se a VM estiver desalocada, é ligada só durante o deploy e volta a ser desalocada no fim.
 # Ver docs/sprintB/VM/README.md.
 on:
@@ -65,7 +65,8 @@ jobs:
           docker logout ghcr.io
 
       # Ficheiros de deploy da main: servem para qualquer versão da imagem (também em rollback)
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Obter o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 

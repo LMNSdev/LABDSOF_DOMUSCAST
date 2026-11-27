@@ -1,7 +1,7 @@
-name: PR - regras
+name: "2. PR: convenções do repositório"
 
 # Regras de equipa nos PRs para a main: nome do branch, título do PR e commits.
-# Fica separado do "PR - produção" para que editar o título não volte a correr
+# Fica separado do workflow 3 (pronto para produção) para que editar o título não volte a correr
 # (nem cancele) os jobs pesados.
 on:
   pull_request:
@@ -17,13 +17,14 @@ concurrency:
 
 jobs:
   regras:
-    name: Regras - branch, título e commits
+    name: "Convenções: branch, título e commits"
     # Os PRs do Dependabot têm branch e commits próprios ("dependabot/...", "Bump ...").
     if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Obter o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # para listar os commits do PR
           persist-credentials: false
