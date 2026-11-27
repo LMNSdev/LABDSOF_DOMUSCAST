@@ -77,7 +77,7 @@ Na VM, o script [`DomusCast/deploy/bootstrap-vm.sh`](../../../DomusCast/deploy/b
 
 ## Operação no dia a dia
 
-Qualquer membro da equipa, sem conta na Azure, liga e desliga a VM em *Actions → VM → Run workflow* (ver [Como usar](#como-usar)). Com a Azure CLI, quem gere a subscrição pode:
+Qualquer membro da equipa, sem conta na Azure, liga e desliga a VM em *Actions → 6. VM: ligar e desligar → Run workflow* (ver [Como usar](#como-usar)). Com a Azure CLI, quem gere a subscrição pode:
 
 ```bash
 # Ligar (demora ~1 min)
@@ -300,9 +300,9 @@ O *environment* `production` só aceita jobs que corram na `main` (*deployment b
 
 ### Como usar
 
-- **Deploy:** automático, a cada merge na `main` com o CI verde que mude `DomusCast/api/` ou `DomusCast/deploy/`. Acompanhar em *Actions → Release*: o resumo do job `Tag + GitHub Release` diz se houve deploy e porquê, e o do job `Deploy` diz a versão e se a VM foi ligada só para o deploy. Para implantar uma versão sem alterações no servidor, usar *Actions → Deploy → Run workflow*.
-- **Rollback:** *Actions → Deploy → Run workflow*, com a versão anterior (ex.: `v0.3.0`). Só há imagens a partir da primeira versão publicada por esta pipeline (`v0.3.0`); uma versão mal escrita ou sem imagem no GHCR falha logo no primeiro passo, sem ligar a VM.
-- **Ligar/desligar a VM:** *Actions → VM → Run workflow → ligar* (ou *desligar*). Ligar demora cerca de 1 minuto; a API arranca sozinha (`restart: unless-stopped`).
+- **Deploy:** automático, a cada merge na `main` com o CI verde que mude `DomusCast/api/` ou `DomusCast/deploy/`. Acompanhar em *Actions → 4. Main: versão, imagem, APK e deploy*: o resumo do job `Tag + GitHub Release` diz se houve deploy e porquê, e o do job `Deploy` diz a versão e se a VM foi ligada só para o deploy. Para implantar uma versão sem alterações no servidor, usar *Actions → Deploy → Run workflow*.
+- **Rollback:** *Actions → 5. Deploy na VM (manual ou rollback) → Run workflow*, com a versão anterior (ex.: `v0.3.0`). Só há imagens a partir da primeira versão publicada por esta pipeline (`v0.3.0`); uma versão mal escrita ou sem imagem no GHCR falha logo no primeiro passo, sem ligar a VM.
+- **Ligar/desligar a VM:** *Actions → 6. VM: ligar e desligar → Run workflow → ligar* (ou *desligar*). Ligar demora cerca de 1 minuto; a API arranca sozinha (`restart: unless-stopped`).
 - **Desalocação noturna:** o mesmo workflow `VM` corre todos os dias às 00:00 **UTC** (00:00 em Lisboa no inverno, 01:00 no verão), porque o cron do GitHub não tem fuso horário.
 - **APK:** em cada GitHub Release, ficheiro `domuscast-vX.Y.Z.apk`, já a apontar para `https://domuscast.belgiumcentral.cloudapp.azure.com`.
 - **Na VM** (como `deploy`): `cd /opt/domuscast && docker compose -f docker-compose.prod.yml ps` (ou `logs api`). A versão em uso está em `VERSION` e a password do PostgreSQL no `.env` (modo 600), criado no primeiro deploy e nunca alterado depois.

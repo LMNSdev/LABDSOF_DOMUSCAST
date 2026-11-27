@@ -192,16 +192,27 @@ flutter analyze
 
 ## CI/CD
 
-A pipeline corre automaticamente em cada push e PR para `main`.  
-Ficheiro: `.github/workflows/ci.yml`
+Seis workflows em `.github/workflows/`, numerados pela ordem em que entram em jogo. No separador *Actions* aparecem por esta ordem:
+
+| Workflow | Ficheiro | Quando corre | O que faz |
+|---|---|---|---|
+| **1. Testes e segurança (cada push)** | `ci.yml` | Cada push e cada PR | Testes e análise da API e da app, segurança (código, dependências e segredos) e testes dos scripts da pipeline |
+| **2. PR: convenções do repositório** | `pr-regras.yml` | PR para a `main` | Nome do branch, título do PR e mensagens dos commits |
+| **3. PR: pronto para produção** | `pr-producao.yml` | PR para a `main` | O que só falharia depois do merge: PostgreSQL, a stack em Docker com os testes end-to-end, a imagem, o compose de produção e o APK |
+| **4. Main: versão, imagem, APK e deploy** | `release.yml` | Depois do 1, na `main` | Tag e GitHub Release, imagem no GHCR, APK e deploy na VM |
+| **5. Deploy na VM (manual ou rollback)** | `deploy.yml` | Chamado pelo 4, ou à mão | Implanta uma versão na VM; à mão serve para rollback |
+| **6. VM: ligar e desligar** | `vm.yml` | À mão e todas as noites | Liga ou desliga a VM de produção |
+
+Jobs do workflow 1:
 
 | Job | O que faz |
 |---|---|
-| `api` | `ruff check` (lint + segurança, ver `api/ruff.toml`) + `pip-audit` (SCA Python) + `pytest tests/` |
-| `mobile` | `flutter analyze` + `flutter test` |
-| `sast` | `semgrep` (regras `p/python` e `p/dockerfile`) |
-| `sca-dart` | `osv-scanner` sobre `pubspec.lock` (SCA Dart) |
-| `secrets` | `gitleaks` (deteta credenciais commitadas) |
+| `API: lint, dependências e testes` | `ruff check` (lint e regras de segurança, ver `api/ruff.toml`), `pip-audit` (vulnerabilidades nas dependências) e `pytest tests/` com cobertura |
+| `App: análise e testes` | `flutter analyze` e `flutter test` |
+| `Segurança: análise do código (Semgrep)` | `semgrep` (regras `p/python` e `p/dockerfile`) |
+| `Segurança: dependências da app (OSV)` | `osv-scanner` sobre o `pubspec.lock` |
+| `Segurança: segredos no histórico (gitleaks)` | `gitleaks` (credenciais nos commits) |
+| `Pipeline: testes dos scripts` | `.github/scripts/tests.sh` (versão, deploy, regras dos PRs e resumo dos testes) |
 
 **Relatórios dos testes (T-08):** cada run mostra no separador **Summary** um resumo por conjunto de testes (total, passados, falhados, ignorados, duração e, na API, a cobertura de linhas), e guarda os relatórios como artefactos (`api-testes`, `api-testes-postgres`, `mobile-testes`), para descarregar no fundo da página do run. São publicados também quando os testes falham, com a lista do que falhou. O resumo é feito por `.github/scripts/resumo-testes.py`, testado em `tests.sh`.
 
@@ -209,17 +220,17 @@ A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA d
 
 ### Verificações nos PRs para a `main`
 
-Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `main` passam ainda por dois workflows. Devem estar marcados como obrigatórios nas regras de proteção da `main` (Settings > Branches).
+Cada merge na `main` cria uma versão e faz o deploy, por isso os PRs para a `main` passam ainda pelos workflows 2 e 3. Devem estar marcados como obrigatórios nas regras de proteção da `main` (Settings > Branches). Essa lista guarda o **nome do job** (coluna do meio), por isso mudar um nome obriga a atualizá-la.
 
 | Workflow | Job | O que faz |
 |---|---|---|
-| `pr-regras.yml` | `regras` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
-| `pr-producao.yml` | `postgres` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
-| | `docker` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
-| | `deploy` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
-| | `apk` | `flutter build apk --release`, o mesmo comando do release |
+| 2 | `Convenções: branch, título e commits` | Branch `feature/`, `feat/`, `bugfix/`, `fix/`, `docs/`, `chore/`, `ci/` ou `release/`; título do PR e commits no formato `[#<issue>] - <descrição>` ou `<Área>: <descrição>` (GitHub, Docker, Deploy, CI, Docs, Mobile, API). Regras em `.github/scripts/pr-rules.sh`, testadas em `tests.sh` e usadas também pelo hook `.githooks/commit-msg`. Não corre nos PRs do Dependabot |
+| 3 | `API: migrações e testes em PostgreSQL` | Migrações em PostgreSQL (`upgrade`, `downgrade` e `upgrade`) e `pytest` contra PostgreSQL (`TEST_DATABASE_URL`) |
+| | `Docker: arranque, testes end-to-end e Trivy` | `docker compose up --build`, `/health` com a base de dados ligada e Trivy na imagem da API (falha em HIGH ou CRITICAL com correção) |
+| | `Produção: compose e Caddyfile válidos` | `docker compose config` do `deploy/docker-compose.prod.yml` e `caddy validate` do `Caddyfile`, com a versão do Caddy da VM |
+| | `App: build do APK` | `flutter build apk --release`, o mesmo comando do release |
 
-Num PR que só muda `docs/` (ex.: a daily), o job `alteracoes` usa `.github/scripts/docs-only.sh` e os jobs de `pr-producao.yml` são ignorados, porque esse merge não cria versão nem deploy. Um job ignorado conta como aprovado nas verificações obrigatórias.
+Num PR que só muda `docs/` (ex.: a daily), o job `Triagem: o PR só muda docs/?` usa `.github/scripts/docs-only.sh` e os outros jobs do workflow 3 são ignorados, porque esse merge não cria versão nem deploy. Um job ignorado conta como aprovado nas verificações obrigatórias.
 
 Para correr os testes da API contra PostgreSQL localmente (com a base de dados `ci_testes` criada):
 
