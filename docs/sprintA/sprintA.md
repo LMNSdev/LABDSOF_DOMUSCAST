@@ -630,13 +630,13 @@ Agora o que fica guardado. A história começa num **condomínio**, criado por u
 | Entidade | Campos principais | Notas |
 |---|---|---|
 | `condominio` | id, nome, n_fracoes, calendario_token_hash, criado_em | `calendario_token_hash`: token do feed iCal; só o hash fica guardado e o administrador pode regenerá-lo |
-| `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em | Um ou mais por condomínio, todos com as mesmas permissões (US-19, US-30); o último não pode ser removido. Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
+| `administrador` | id, condominio_id, nome, credencial_hash, criado_em, removido_em, removido_por | Um ou mais por condomínio (no máximo 5), todos com as mesmas permissões (US-19, US-30); o último não pode ser removido; `removido_por` identifica o administrador que fez a remoção (US-30). Autenticação mock no MVP ([ADR-008](#adr-008-autenticação-do-administrador-mock-no-mvp-autorização-real)); o controlo de acessos mantém-se |
 | `convite_admin` | id, condominio_id, codigo_hash, criado_por, expira_em, usado_em | Código de uso único para um residente se tornar administrador (US-19) |
 | `fracao` | id, condominio_id, designacao | |
 | `qr_token` | id, fracao_id, token_hash, criado_em, revogado_em, revogado_por | Só o hash fica guardado, por isso o QR code só é mostrado quando é gerado (US-01); pode haver vários ativos por fração e revogar marca `revogado_em` e o administrador em `revogado_por` (US-20, migração `0006`) |
 | `identidade` | id, fracao_id, qr_token_id, nome, nome_normalizado, papel, credencial_hash, criado_em, removida_em, removida_por | `qr_token_id` é o QR code com que o residente entrou (US-15, US-20); `nome_normalizado` único por fração (sem maiúsculas, acentos, espaços) (US-15); `papel`: `residente` (por omissão) ou `comissao`, atribuído pelo administrador, dá leitura do relatório (US-12, US-33); remover apaga `nome` e `nome_normalizado` e preenche `removida_em` e o administrador em `removida_por` (US-23, migração `0007`) |
-| `reporte` | id, condominio_id, autor_id, idempotency_key, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, oculto_em, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-22); `idempotency_key` única por autor, para reenvios da fila local (US-18); `oculto_em` preenchido quando o administrador oculta o reporte (US-32; deixa de aparecer aos residentes, o histórico mantém-se) |
-| `reporte_historico` | id, reporte_id, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19) |
+| `reporte` | id, condominio_id, autor_id, idempotency_key, descricao, foto_path, foto_alt, mostrar_nome, estado, duplicado_de_id, oculto_em, oculto_por, criado_em, atualizado_em | `estado`: `aberto`, `em_curso`, `resolvido`; um duplicado fecha com `duplicado_de_id` (US-22); `idempotency_key` única por autor, para reenvios da fila local (US-18); `oculto_em` e `oculto_por` preenchidos quando o administrador oculta o reporte (US-32; deixa de aparecer aos residentes, incluindo o autor, e o histórico mantém-se) |
+| `reporte_historico` | id, reporte_id, acao, estado_anterior, estado_novo, nota, autor_tipo, autor_id, criado_em | Só inserção; a aplicação nunca faz update nem delete, exceto ao fim da retenção (US-05); `autor_id` identifica qual administrador fez a mudança (US-19); `acao`: `estado` (por omissão), `ocultado` ou `reposto` (US-32) |
 | `reporte_seguidor` | reporte_id, identidade_id, tipo | `tipo`: `autor`, `co_reporter`, `seguidor` (US-22, US-17) |
 | `aviso` | id, condominio_id, reporte_id (opcional), titulo, texto, local, publicado_em, arquivado_em | Arquivado quando o reporte ligado é resolvido (US-14) |
 | `reuniao` | id, condominio_id, data_hora, local, calendario_externo_id, estado_sync, criado_em, atualizado_em | `estado_sync`: `pendente`, `sincronizada`, `alternativo` (serviço externo falhou, a reunião só está no feed iCal) (US-28); o modo degradado é um estado da app, não guardado aqui ([8.6](#86-integração-externa)). `atualizado_em` muda quando o Worker altera o `estado_sync`; `GET /reunioes?desde=` filtra por ela (US-28) |
@@ -682,9 +682,9 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 |---|---|---|
 | `POST /condominios` | sem auth (bootstrap) | US-01: cria condomínio e frações (A, B, C…); devolve a credencial do primeiro administrador; máximo de 200 frações e de 5 criações por hora por IP ([10.6](#106-modelo-de-ameaças-inicial)) |
 | `POST /condominios/{id}/calendario/regenerar` | admin | US-29: gera novo token do feed iCal e invalida o anterior |
-| `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único com validade |
-| `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador |
-| `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19, US-30: lista e remove; 409 ao tentar remover o último |
+| `POST /condominios/{id}/convites-admin` | admin | US-19: gera um código de uso único (8 caracteres, só o hash fica guardado), válido 48 h; 409 `limite_administradores` com 5 administradores |
+| `POST /administradores` | sem auth (código de convite) | US-19: `{codigo, nome}` devolve credencial de administrador; 404 `convite_invalido` igual para código errado, expirado ou usado; 20 tentativas falhadas por hora por IP |
+| `GET /condominios/{id}/administradores`, `DELETE /administradores/{id}` | admin | US-19, US-30: lista e remove (também a si próprio); 409 `ultimo_administrador` ao tentar remover o último |
 | `GET /condominios/{id}/fracoes` | admin | US-01: frações e nº de residentes por fração |
 | `POST /fracoes/{id}/qr` | admin | US-01: gera um novo token e devolve-o uma única vez (com o link `domuscast://entrar?t=`); os anteriores continuam ativos |
 | `GET /fracoes/{id}/qr` | admin | US-20: lista os QR codes ativos (data e hora de criação, nº de residentes que entraram com cada um), sem o token |
@@ -693,19 +693,20 @@ Lendo a tabela de cima para baixo, segue-se a ordem natural de uso: criar o cond
 | `GET /fracoes/{id}/identidades` | admin | US-23: residentes ativos da fração (id, nome e data de entrada), para escolher quem remover |
 | `DELETE /identidades/{id}` | admin | US-23: remove identidade (204); 404 se já foi removida ou é de outro condomínio |
 | `POST /identidades` | sem auth (token do QR) | US-15: `{token, nome}` devolve `{id, nome, fracao, credencial}`, a credencial do dispositivo; 30 tentativas por hora por QR code, 20 tentativas com token inválido por hora por IP e máximo de 10 identidades ativas por fração ([10.5](#105-qr-code-revogação-e-abuso)); 409 com `codigo` `nome_duplicado` ou `fracao_cheia` |
-| `PATCH /identidades/me` | residente | US-21: editar nome |
+| `GET /identidades/me`, `PATCH /identidades/me` | residente | US-33: a própria identidade `{id, nome, fracao, papel}`, para a app saber o papel; US-21: editar nome, com as regras da US-15 |
 | `PUT /identidades/{id}/papel` | admin | US-33: `{papel: residente\|comissao}` |
 | `POST /reportes` | residente | US-02: multipart com descrição, foto e `foto_alt`, `mostrar_nome`; a API remove os metadados EXIF da foto; exige o cabeçalho `Idempotency-Key`, única por autor, que a fila local reutiliza nos reenvios (um reenvio devolve 200 com o reporte já criado) |
 | `GET /reportes?filtro=todos\|meus\|a_seguir&estado=&atualizado_desde=` | residente / admin | US-03: a resposta ao residente nunca inclui fração nem nome (salvo `mostrar_nome`) nem reportes ocultos; `atualizado_desde` serve a sincronização em segundo plano (US-11) |
 | `GET /reportes/{id}` | residente / admin | US-03: detalhe e histórico |
 | `PATCH /reportes/{id}/estado` | admin | US-05: `{estado, nota}`, com a nota de 1 a 500 caracteres; só avança Aberto -> Em curso -> Resolvido; cria entrada no histórico e devolve o detalhe; 409 com `codigo` `transicao_invalida` ou `reporte_resolvido`. O arquivo do aviso ligado, quando o reporte fica `resolvido`, é feito pela US-14 |
 | `POST /reportes/{id}/duplicado` | admin | US-22: `{original_id}`; fecha e adiciona co-reporter |
-| `PUT /reportes/{id}/oculto` | admin | `{oculto: true\|false}`: oculta ou repõe um reporte com dados de terceiros ([10.6](#106-modelo-de-ameaças-inicial)); a ação fica no histórico |
+| `PUT /reportes/{id}/oculto` | admin | US-32: `{oculto: true\|false, motivo}`: oculta ou repõe um reporte com dados de terceiros ([10.6](#106-modelo-de-ameaças-inicial)); a ação e o motivo ficam no histórico |
 | `POST /reportes/{id}/seguir`, `DELETE .../seguir` | residente | US-17 |
 | `GET /progresso?periodo=mes` | residente / admin | US-16: só totais de resolvidos e abertos, sem nomes nem frações; a opção de ocultar o indicador é uma preferência local da app |
 | `GET /relatorios/reportes?de=&ate=` | admin / comissão | US-12: histórico de reportes e estados num período, só leitura |
 | `POST /avisos`, `GET /avisos?arquivados=&publicado_desde=` | admin / todos | US-06, US-14; `publicado_desde` serve a sincronização em segundo plano |
-| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`), para a sincronização em segundo plano. Muda `atualizado_em` quem altera a reunião: o Worker ao publicá-la (US-28) e a aprovação da ata (US-24), senão a app não vê a mudança |
+| `POST /avisos/{id}/arquivar` | admin | US-06: passa o aviso ao histórico; 409 `aviso_ja_arquivado` |
+| `POST /reunioes`, `GET /reunioes?desde=` | admin / todos | US-13: criar enfileira o job `publicar_calendario`; `desde` devolve as reuniões criadas ou alteradas desde essa data (`reuniao.atualizado_em`), para a sincronização em segundo plano. Muda `atualizado_em` quem altera a reunião: o Worker ao publicá-la (US-28) e a aprovação da ata (US-24), senão a app não vê a mudança; devolve `ata_aprovada_em` (US-26) |
 | `GET /condominios/{id}/calendario.ics?token=` | todos (token do condomínio) | US-29: feed iCal com as reuniões, gerado pela API a partir da tabela `reuniao`, subscrito pela app de calendário do residente |
 | `POST /reunioes/{id}/ata/audio` | admin | US-10: multipart; guarda o áudio e enfileira o job `transcrever` |
 | `GET /reunioes/{id}/ata`, `PUT .../ata`, `POST .../ata/aprovar` | admin / todos (só aprovada) | US-10, US-24, US-25, US-26: ler, editar, aprovar e publicar |

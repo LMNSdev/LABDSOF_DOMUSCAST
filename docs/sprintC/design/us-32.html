@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-32 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.field small{display:block;color:#667}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn2{border:1px solid #0F3478;color:#0F3478;border-radius:10px;padding:9px;text-align:center;font-weight:600;background:#fff}
+.danger{background:#B3261E}
+.note{font-size:11px;color:#667}
+.err{background:#FDECEA;color:#8C1D18;border-radius:10px;padding:10px}
+.ok{background:#E6F4EA;color:#1E4620;border-radius:10px;padding:10px}
+.tag{display:inline-block;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:700;background:#E3E8F2;color:#0F3478}
+.tag.red{background:#FDECEA;color:#8C1D18}.tag.green{background:#E6F4EA;color:#1E4620}.tag.orange{background:#FFF1E0;color:#7A4100}.tag.grey{background:#E6E6E6;color:#444}
+.tabs{display:flex;gap:6px}.tabs span{flex:1;text-align:center;padding:6px;border-radius:8px;background:#fff;color:#0F3478;font-weight:600}.tabs span.on{background:#0F3478;color:#fff}
+.nav{display:flex;justify-content:space-around;background:#fff;border-top:1px solid #c6cfdf;padding:8px 4px;font-size:10px;color:#667}.nav b{color:#0F3478}
+.sheet{background:#fff;border-radius:14px 14px 0 0;padding:12px;margin-top:auto;box-shadow:0 -2px 6px rgba(0,0,0,.15)}
+.notif{color:#1b1b1b;background:#fff;border-radius:12px;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.dim{background:#3a3f4a;color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.big{font-size:22px;font-weight:700;color:#0F3478}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+.body>.tag{align-self:flex-start}
+</style>
+</head>
+<body>
+<h1>US-32: ocultar e repor um reporte</h1>
+<p class="subtitle">Wireframe do refinamento de 2026-11-26. O administrador oculta um reporte com dados de terceiros, indicando o motivo. Deixa de aparecer a todos os residentes (incluindo o autor); o administrador continua a vê-lo e pode repô-lo. Ocultar e repor ficam no histórico.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Reporte #15</div><div class="body"><span class="tag red">Aberto</span><div class="card">Fotografia com a matrícula e a cara do vizinho do 3.º.</div><div class="btn2">Ocultar reporte</div><div class="btn">Mudar estado</div></div></div><div class="cap"><b>1. Detalhe (administrador)</b>Ação «Ocultar reporte» no detalhe.</div></div>
+<div><div class="phone"><div class="bar">Ocultar reporte</div><div class="body"><div class="field" style="min-height:80px"><small>Motivo (obrigatório)</small>Fotografia identifica um vizinho.</div><div class="note">Os residentes deixam de ver este reporte, incluindo quem o fez. Pode repô-lo depois. 34/500</div><div class="btn danger">Ocultar</div></div></div><div class="cap"><b>2. Confirmar com motivo</b>Motivo de 1 a 500 caracteres, que fica no histórico.</div></div>
+<div><div class="phone"><div class="bar">Reporte #15</div><div class="body"><span class="tag red">Aberto</span> <span class="tag grey">Oculto</span><div class="card"><b>Histórico</b><div class="note">03/12 Ocultado: Fotografia identifica um vizinho. (Ana)</div><div class="note">01/12 Aberto, estado inicial</div></div><div class="btn2">Repor reporte</div></div></div><div class="cap"><b>3. Depois de ocultar</b>Etiqueta «Oculto», entrada no histórico e ação «Repor reporte» (com motivo).</div></div>
+<div><div class="phone"><div class="bar">Reportes</div><div class="body"><div class="card"><span class="tag orange">Em curso</span> Elevador parado</div><div class="card"><span class="tag red">Aberto</span> Luz da escada</div><div class="note">O reporte #15 não aparece. Um link antigo para ele mostra «Este reporte já não está disponível.»</div></div><div class="nav"><b>Reportes</b><span>Reuniões</span><span>Avisos</span></div></div><div class="cap"><b>4. Vista do residente</b>Lista sem o reporte; detalhe e foto dão 404.</div></div>
+</div>
+</body>
+</html>

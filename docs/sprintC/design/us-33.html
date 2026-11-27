@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-33 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card,.field{background:#fff;border-radius:10px;padding:10px}
+.field{border:1px solid #c6cfdf}
+.field small{display:block;color:#667}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn2{border:1px solid #0F3478;color:#0F3478;border-radius:10px;padding:9px;text-align:center;font-weight:600;background:#fff}
+.danger{background:#B3261E}
+.note{font-size:11px;color:#667}
+.err{background:#FDECEA;color:#8C1D18;border-radius:10px;padding:10px}
+.ok{background:#E6F4EA;color:#1E4620;border-radius:10px;padding:10px}
+.tag{display:inline-block;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:700;background:#E3E8F2;color:#0F3478}
+.tag.red{background:#FDECEA;color:#8C1D18}.tag.green{background:#E6F4EA;color:#1E4620}.tag.orange{background:#FFF1E0;color:#7A4100}.tag.grey{background:#E6E6E6;color:#444}
+.tabs{display:flex;gap:6px}.tabs span{flex:1;text-align:center;padding:6px;border-radius:8px;background:#fff;color:#0F3478;font-weight:600}.tabs span.on{background:#0F3478;color:#fff}
+.nav{display:flex;justify-content:space-around;background:#fff;border-top:1px solid #c6cfdf;padding:8px 4px;font-size:10px;color:#667}.nav b{color:#0F3478}
+.sheet{background:#fff;border-radius:14px 14px 0 0;padding:12px;margin-top:auto;box-shadow:0 -2px 6px rgba(0,0,0,.15)}
+.notif{color:#1b1b1b;background:#fff;border-radius:12px;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.dim{background:#3a3f4a;color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.big{font-size:22px;font-weight:700;color:#0F3478}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+.body>.tag{align-self:flex-start}
+</style>
+</head>
+<body>
+<h1>US-33: atribuir o papel de comissão</h1>
+<p class="subtitle">Wireframe do refinamento de 2026-11-26. Na lista de residentes da fração (US-23), o administrador dá ou retira o papel de comissão. O papel só dá leitura do relatório da US-12.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Fração 2.º Esq.</div><div class="body"><b>Residentes</b><div class="card row"><span><b>Rui</b><div class="note">Desde 03/11/2026</div></span><span class="tag">Comissão</span></div><div class="card row"><span><b>Marta</b><div class="note">Desde 05/11/2026</div></span><span></span></div></div><div class="nav"><span>Reportes</span><span>Reuniões</span><span>Avisos</span><b>Condomínio</b></div></div><div class="cap"><b>1. Residentes da fração</b>Etiqueta «Comissão» em quem tem o papel.</div></div>
+<div><div class="phone"><div class="bar">Fração 2.º Esq.</div><div class="body"><div class="sheet"><b>Marta</b><div class="btn2" style="margin-top:6px">Dar acesso de comissão</div><div class="btn2" style="margin-top:6px">Remover residente</div><div class="note">A comissão só consulta o relatório de reportes.</div></div></div></div><div class="cap"><b>2. Ações</b>Junto à ação «Remover residente» da US-23.</div></div>
+<div><div class="phone"><div class="bar">Fração 2.º Esq.</div><div class="body"><div class="ok">Marta passou a ter acesso de comissão.</div><div class="card row"><span><b>Marta</b></span><span class="tag">Comissão</span></div></div></div><div class="cap"><b>3. Confirmado</b>Retirar mostra «Marta deixou de ter acesso de comissão.»</div></div>
+<div><div class="phone"><div class="bar">Reportes</div><div class="body"><div class="card row"><span>Relatório da comissão</span><b>&gt;</b></div><div class="card"><span class="tag red">Aberto</span> Luz da escada</div></div><div class="nav"><b>Reportes</b><span>Reuniões</span><span>Avisos</span></div></div><div class="cap"><b>4. Residente com o papel</b>A entrada «Relatório da comissão» aparece quando <code>GET /identidades/me</code> devolve <code>comissao</code>.</div></div>
+</div>
+</body>
+</html>
