@@ -177,6 +177,7 @@ As screenshots vão para `docs/sprintB/screenshots/us-nn/`, com os nomes `01-<ec
 cd DomusCast\api
 pip install -r requirements-dev.txt
 pytest tests/ -v
+# com cobertura (como na CI): pytest tests/ --cov=app --cov-report=term
 ```
 
 ### Flutter
@@ -201,6 +202,8 @@ Ficheiro: `.github/workflows/ci.yml`
 | `sast` | `semgrep` (regras `p/python` e `p/dockerfile`) |
 | `sca-dart` | `osv-scanner` sobre `pubspec.lock` (SCA Dart) |
 | `secrets` | `gitleaks` (deteta credenciais commitadas) |
+
+**Relatórios dos testes (T-08):** cada run mostra no separador **Summary** um resumo por conjunto de testes (total, passados, falhados, ignorados, duração e, na API, a cobertura de linhas), e guarda os relatórios como artefactos (`api-testes`, `api-testes-postgres`, `mobile-testes`), para descarregar no fundo da página do run. São publicados também quando os testes falham, com a lista do que falhou. O resumo é feito por `.github/scripts/resumo-testes.py`, testado em `tests.sh`.
 
 A pipeline usa permissões mínimas (`contents: read`), actions fixadas ao SHA do commit e o Dependabot (`.github/dependabot.yml`) propõe atualizações semanais. A imagem da API corre como utilizador não-root, sem o `pip` (só é preciso no build), e o PostgreSQL só escuta em `127.0.0.1`.
 
