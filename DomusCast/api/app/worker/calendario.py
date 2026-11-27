@@ -9,7 +9,8 @@ calendário externo e atualiza `reuniao.estado_sync`.
 
 Corre num processo próprio, para uma transcrição longa (US-10) não atrasar a publicação:
 `python -m app.worker.calendario` (serviço `worker-calendario` no docker-compose.yml).
-`GET /health` na porta `WORKER_HEALTH_PORT` (8082) verifica a base de dados.
+`GET /health` na porta `WORKER_HEALTH_PORT` (8082) verifica a base de dados e
+`GET /metrics`, na mesma porta, dá as métricas Prometheus (8.7, T-07).
 """
 
 import json
@@ -20,6 +21,7 @@ from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from sqlalchemy import or_, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -35,6 +37,22 @@ ESPERAS = (1, 2, 4, 8)
 INTERVALO_S = 2.0
 
 log = logging.getLogger("domuscast.worker.calendario")
+
+# Métricas de 8.5 e 8.7. `jobs_pendentes` lê-se da base de dados em cada leitura de
+# /metrics; os contadores são do processo e recomeçam a zero quando o Worker reinicia.
+JOBS_PENDENTES = Gauge("jobs_pendentes", "Jobs à espera de serem processados.", ["tipo"])
+JOBS_FALHADOS = Counter(
+    "jobs_falhados", "Jobs que esgotaram as tentativas.", ["tipo"]
+)
+JOB_DURACAO = Histogram(
+    "job_duracao_segundos", "Duração de cada tentativa de um job.", ["tipo"],
+    buckets=(0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0),
+)
+FALHAS_INTEGRACAO = Counter(
+    "integracao_falhas",
+    "Falhas ao chamar um serviço externo, por provider e motivo (8.6).",
+    ["provider", "motivo"],
+)
 
 
 def _registar(nivel: int, evento: str, **campos) -> None:
@@ -120,11 +138,17 @@ def processar_job(
         return
 
     job.tentativas += 1
+    inicio = time.perf_counter()
     try:
         evento_id = provider.publicar(reuniao)
     except FalhaCalendario as falha:
+        JOB_DURACAO.labels(JOB_PUBLICAR).observe(time.perf_counter() - inicio)
+        # Só a categoria ("indisponivel: 503" -> "indisponivel"), para as etiquetas não
+        # crescerem sem limite.
+        FALHAS_INTEGRACAO.labels("calendario", falha.motivo.split(":", 1)[0]).inc()
         job.erro = falha.motivo
         if job.tentativas >= MAX_TENTATIVAS:
+            JOBS_FALHADOS.labels(JOB_PUBLICAR).inc()
             job.estado = models.EstadoJob.falhou
             job.proxima_tentativa_em = None
             reuniao.estado_sync = models.EstadoSyncReuniao.alternativo
@@ -142,6 +166,7 @@ def processar_job(
                 tentativa=job.tentativas, motivo=falha.motivo, proxima_em_s=espera,
             )
     else:
+        JOB_DURACAO.labels(JOB_PUBLICAR).observe(time.perf_counter() - inicio)
         reuniao.calendario_externo_id = evento_id
         reuniao.estado_sync = models.EstadoSyncReuniao.sincronizada
         job.estado = models.EstadoJob.concluido
@@ -174,28 +199,39 @@ def estado_saude(db: Session) -> dict:
         .filter_by(tipo=JOB_PUBLICAR, estado=models.EstadoJob.pendente)
         .count()
     )
+    JOBS_PENDENTES.labels(JOB_PUBLICAR).set(pendentes)
     return {"status": "ok", "db": "ok", "jobs_pendentes": pendentes}
+
+
+def metricas(db: Session) -> bytes:
+    """Corpo de `GET /metrics`: atualiza `jobs_pendentes` e devolve o texto Prometheus."""
+    estado_saude(db)
+    return generate_latest()
 
 
 class _Saude(BaseHTTPRequestHandler):  # pragma: no cover (servidor do container)
     def do_GET(self):  # noqa: N802 (nome do método do http.server)
-        if self.path != "/health":
+        if self.path not in ("/health", "/metrics"):
             self.send_error(404)
             return
+        tipo = "application/json"
         try:
             with SessionLocal() as db:
-                corpo, codigo = estado_saude(db), 200
+                if self.path == "/metrics":
+                    dados, codigo, tipo = metricas(db), 200, CONTENT_TYPE_LATEST
+                else:
+                    dados, codigo = json.dumps(estado_saude(db)).encode(), 200
         except SQLAlchemyError:
-            corpo, codigo = {"status": "erro", "db": "indisponivel"}, 503
-        dados = json.dumps(corpo).encode()
+            dados = json.dumps({"status": "erro", "db": "indisponivel"}).encode()
+            codigo = 503
         self.send_response(codigo)
-        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Type", tipo)
         self.send_header("Content-Length", str(len(dados)))
         self.end_headers()
         self.wfile.write(dados)
 
     def log_message(self, formato, *args):
-        # O healthcheck corre de 10 em 10 s; não enche o log.
+        # O healthcheck corre de 10 em 10 s e o Prometheus lê /metrics; não enchem o log.
         return
 
 
@@ -203,7 +239,7 @@ def main() -> None:  # pragma: no cover (ciclo do container)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
     porta = int(os.getenv("WORKER_HEALTH_PORT", "8082"))
-    # Só o healthcheck do Docker lhe chega: o serviço não publica portas.
+    # Só o healthcheck do Docker e o Prometheus (rede interna) lhe chegam: não publica portas.
     servidor = ThreadingHTTPServer(("0.0.0.0", porta), _Saude)  # noqa: S104
     Thread(target=servidor.serve_forever, daemon=True).start()
     provider = ServicoCalendarioProvider(os.environ["CALENDARIO_URL"])
