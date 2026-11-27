@@ -186,6 +186,13 @@ def _eventos(calendario, condominio) -> list[dict]:
     return r.json()["items"]
 
 
+def _pedidos(calendario, condominio) -> int:
+    """Pedidos de criação que o simulador recebeu para o calendário do condomínio."""
+    r = calendario.get("/_chaos")
+    assert r.status_code == 200, r.text
+    return r.json()["pedidos"].get(f"condominio{condominio['id']}", 0)
+
+
 def test_reuniao_publicada_no_calendario(api, calendario, condominio, residente):
     """US-13 e US-28: workflow assíncrono e integração externa, com o simulador a responder."""
     assert calendario.post("/_chaos", json={"modo": "ok"}).status_code == 200
@@ -219,11 +226,17 @@ def test_calendario_indisponivel_passa_a_alternativo(api, calendario, condominio
 def test_calendario_recupera_depois_de_falhar(api, calendario, condominio):
     """Condição de falha e recuperação: a primeira tentativa falha e uma seguinte publica."""
     assert calendario.post("/_chaos", json={"modo": "indisponivel"}).status_code == 200
+    antes = _pedidos(calendario, condominio)
     reuniao = _agendar(api, condominio)
 
-    # O Worker procura jobs de 2 em 2 s: ao fim de 3 s já tentou e falhou pelo menos uma vez,
-    # e ainda tem tentativas pela frente (a 5.ª só acontece cerca de 15 s depois da 1.ª).
-    time.sleep(3)
+    # Espera que o Worker tente e falhe pelo menos uma vez (o simulador conta os pedidos
+    # por calendário, também os que falham); a 5.ª tentativa só acontece cerca de 15 s
+    # depois da 1.ª, por isso ainda há tentativas pela frente quando o serviço volta.
+    _esperar(
+        lambda: _pedidos(calendario, condominio) > antes,
+        "uma tentativa do Worker com o serviço em baixo",
+        limite_s=10,
+    )
     assert _estado_sync(api, condominio, reuniao["id"]) == "pendente"
 
     assert calendario.post("/_chaos", json={"modo": "ok"}).status_code == 200

@@ -8,7 +8,9 @@ Imita um subconjunto da API de eventos do Google Calendar:
   `Retry-After`) e `503`.
 - `GET /calendars/{calendarId}/events` lista os eventos (`{items: [...]}`), para mostrar
   que não há duplicados.
-- `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento; `GET /_chaos` mostra-o.
+- `POST /_chaos` com `{modo, atraso_ms}` muda o comportamento; `GET /_chaos` mostra-o,
+  com o nº de pedidos de criação recebidos por calendário (`pedidos`), também os que
+  falharam: é o que permite a um teste confirmar que o Worker tentou.
 
 O `id` escolhido pelo cliente segue as regras do Google (base32hex: `a` a `v` e `0` a
 `9`, 5 a 1024 caracteres); é o que permite ao Worker repetir sem duplicar eventos.
@@ -67,6 +69,8 @@ class Estado:
         self.modo = Modo.ok
         self.atraso_ms = ATRASO_LENTO_MS
         self.eventos: dict[str, dict[str, dict]] = {}
+        # Pedidos de criação recebidos por calendário, com sucesso ou não (T-06).
+        self.pedidos: dict[str, int] = {}
 
 
 estado = Estado()
@@ -94,7 +98,7 @@ def health():
 
 @app.get("/_chaos")
 def ver_caos():
-    return {"modo": estado.modo, "atraso_ms": estado.atraso_ms}
+    return {"modo": estado.modo, "atraso_ms": estado.atraso_ms, "pedidos": estado.pedidos}
 
 
 @app.post("/_chaos")
@@ -111,6 +115,7 @@ def listar_eventos(calendar_id: str):
 
 @app.post("/calendars/{calendar_id}/events")
 async def criar_evento(calendar_id: str, evento: Evento):
+    estado.pedidos[calendar_id] = estado.pedidos.get(calendar_id, 0) + 1
     if estado.modo == Modo.indisponivel:
         return _erro(503, "Backend Error")
     if estado.modo == Modo.limite:
