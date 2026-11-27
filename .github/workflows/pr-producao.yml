@@ -113,8 +113,12 @@ jobs:
           persist-credentials: false
 
       # Mesmo Dockerfile da imagem publicada no GHCR; o entrypoint corre as migrações.
+      # WORKER_BACKOFF_UNIDADE_S=1: as novas tentativas do calendário demoram segundos e não
+      # minutos, para os testes end-to-end da condição de falha caberem no job (T-06).
       - name: docker compose up
         working-directory: DomusCast
+        env:
+          WORKER_BACKOFF_UNIDADE_S: "1"
         run: docker compose up --build -d
 
       - name: /health responde com a base de dados ligada
@@ -128,6 +132,29 @@ jobs:
           done
           docker compose -f DomusCast/docker-compose.yml logs api
           exit 1
+
+      # T-06: jornada principal de ponta a ponta contra os containers (API, worker-calendario,
+      # simulador e PostgreSQL), só por HTTP.
+      - name: Instalar o Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: DomusCast/api/requirements-dev.txt
+
+      - name: Testes end-to-end
+        working-directory: DomusCast/api
+        env:
+          E2E_API_URL: http://localhost:8000
+          E2E_CALENDARIO_URL: http://localhost:8001
+        run: |
+          pip install -r requirements-dev.txt
+          pytest tests_e2e/ -v
+
+      - name: Logs dos containers (só se algo falhou)
+        if: failure()
+        working-directory: DomusCast
+        run: docker compose logs api worker-calendario calendario
 
       # Falha em vulnerabilidades HIGH ou CRITICAL que já têm correção.
       # Imagem do Trivy fixada por digest (v0.76.2).

@@ -151,7 +151,23 @@ def test_simulador_modos_de_falha(simulador):
     inicio = time.monotonic()
     assert simulador.post("/calendars/c1/events", json=corpo).status_code == 200
     assert time.monotonic() - inicio >= 0.2
-    assert simulador.get("/_chaos").json() == {"modo": "lento", "atraso_ms": 200}
+    caos = simulador.get("/_chaos").json()
+    assert (caos["modo"], caos["atraso_ms"]) == ("lento", 200)
+
+
+def test_simulador_conta_os_pedidos_por_calendario_mesmo_os_que_falham(simulador):
+    corpo = {
+        "summary": "Assembleia",
+        "start": {"dateTime": INICIO},
+        "end": {"dateTime": FIM},
+    }
+    _caos(simulador, "indisponivel")
+    assert simulador.post("/calendars/c1/events", json=corpo).status_code == 503
+    _caos(simulador, "ok")
+    assert simulador.post("/calendars/c1/events", json=corpo).status_code == 200
+    assert simulador.post("/calendars/c2/events", json=corpo).status_code == 200
+
+    assert simulador.get("/_chaos").json()["pedidos"] == {"c1": 2, "c2": 1}
 
 
 def test_simulador_recusa_modo_desconhecido(simulador):
