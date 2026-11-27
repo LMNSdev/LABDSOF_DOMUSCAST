@@ -194,3 +194,20 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 | Validação planeada | Sim: testes de API e da app, e TalkBack em PT-PT. Os resultados estão em [us-05.md](us-05.md). |
 
 **Resultado:** DoR da US-05 cumprida e diferenças ao wireframe aprovadas, por Pedro Soares. A DoR foi registada depois da implementação, que já seguia estas regras; nenhuma alteração ao código foi necessária.
+
+## 2026-11-27
+
+**Participantes:** Pedro Soares, Luis Santos, Pedro Costa, Marco Garcia e Leonardo Costa.
+
+### T-06: Testes end-to-end da jornada principal
+
+- **Porquê:** o entregável 10 do Sprint 2 pede testes unitários, de integração e end-to-end relevantes. A CI só fazia `docker compose up` e chamava `/health`; não havia nenhum teste da jornada contra a stack a correr.
+- **Item técnico e não US:** não muda comportamento para o utilizador, por isso fica como T-06 (EP-04, issue #157), a seguir aos T-01 a T-05 do Sprint C, para os IDs não se repetirem.
+- **Âmbito:** só por HTTP contra os containers reais (API, `worker-calendario`, simulador e PostgreSQL), sem importar o código da API. Cobre a jornada do reporte (US-01, US-15, US-02, US-03, US-05, US-09), a publicação da reunião no calendário (US-13, US-28) e a condição de falha do calendário, com a recuperação.
+- **Tempo do job:** com `WORKER_BACKOFF_UNIDADE_S=1` as 5 tentativas do calendário cabem em cerca de 15 s; os quatro testes correm em menos de 30 s.
+- **Testes de UI:** ficam fora. Os ecrãs têm testes de widget e evidências no emulador; um teste no emulador na CI teria um custo de tempo e de estabilidade desproporcionado para este sprint.
+
+- **Sobreposição com o T-03 (Sprint C):** o T-03 previa automatizar na CI o calendário em baixo até `alternativo`. Essa parte fica feita aqui (`test_calendario_indisponivel_passa_a_alternativo` e `test_calendario_recupera_depois_de_falhar`), por isso o T-03 parte de `tests_e2e/` e deixa de a contar; o âmbito do T-03 foi ajustado no [Sprint C Backlog](../sprintC/backlog.md) e no [refinamento do Sprint C](../sprintC/refinamento.md#t-03-t-04-e-t-05-operação).
+- **Prova da tentativa falhada:** o simulador passa a contar os pedidos de criação por calendário (`GET /_chaos`, campo `pedidos`), também os que falham. O teste de recuperação espera que o Worker tenha tentado pelo menos uma vez com o serviço em baixo antes de o repor, em vez de esperar um tempo fixo. Acrescentado depois da revisão do PR #158.
+
+**Resultado:** DoR do T-06 cumprida, aprovada por Pedro Soares com a concordância dos participantes.

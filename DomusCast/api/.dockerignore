@@ -9,3 +9,4 @@ __pycache__/
 tests/
 requirements-dev.txt
 ruff.toml
+tests_e2e/
