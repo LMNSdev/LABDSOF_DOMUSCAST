@@ -182,7 +182,7 @@ pytest tests/ -v
 
 ### End-to-end (T-06, com a stack em Docker)
 
-Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
+Testes da jornada principal contra os containers a correr, só por HTTP: criar o condomínio, gerar o QR code, entrar com o nome, reportar, acompanhar e resolver; agendar uma reunião e vê-la publicada no simulador; e a condição de falha do calendário (`indisponivel` até `alternativo`, e a recuperação quando o serviço volta); e que o `/metrics` da API conta os pedidos (T-07). Ficam em `api/tests_e2e/` e são ignorados sem `E2E_API_URL`, por isso `pytest tests/` não os corre.
 
 ```powershell
 cd DomusCast

@@ -211,3 +211,15 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Prova da tentativa falhada:** o simulador passa a contar os pedidos de criação por calendário (`GET /_chaos`, campo `pedidos`), também os que falham. O teste de recuperação espera que o Worker tenha tentado pelo menos uma vez com o serviço em baixo antes de o repor, em vez de esperar um tempo fixo. Acrescentado depois da revisão do PR #158.
 
 **Resultado:** DoR do T-06 cumprida, aprovada por Pedro Soares com a concordância dos participantes.
+
+### T-07: Logs estruturados e métricas iniciais na API e no Worker
+
+- **Porquê:** o entregável 12 do Sprint 2 pede logs estruturados, health checks e métricas iniciais. Os health checks já existiam (`/health` na API e nos workers, com a base de dados), mas a API só escrevia as linhas de texto do uvicorn, sem `request_id`, e nem a API nem o `worker-calendario` tinham `/metrics`.
+- **Item técnico, Must:** não muda comportamento para o utilizador, por isso fica como T-07 (EP-04, issue #159); é Must porque é um entregável obrigatório do sprint.
+- **Modelo da rota e não o caminho:** o log e as etiquetas das métricas usam `/reportes/{reporte_id}` e não `/reportes/12?token=...`, porque os caminhos têm ids e, no feed iCal, tokens (TM-08); também mantém as séries das métricas em número limitado. O access log do uvicorn fica desligado, porque é ele que escreve a query string.
+- **Só ids, nunca nomes:** o log leva o `identidade_id` ou o `administrador_id` de quem fez o pedido, como pede 8.7.
+- **`/metrics` só na rede interna:** o Caddy responde 404 a `/metrics*`; o Prometheus do T-05 (Sprint C) lê-o dentro do Compose.
+- **Motivo das falhas por categoria:** `integracao_falhas_total` guarda só `indisponivel`, `atrasado`, `incompleto`, `invalido` ou `recusado`, sem o detalhe, para as etiquetas não crescerem sem limite.
+- **Efeito no Sprint C:** o `/metrics` deixa de fazer parte do T-05, que passa de 3 para 2 SP ([refinamento do Sprint C](../sprintC/refinamento.md#2026-11-27)).
+
+**Resultado:** DoR do T-07 cumprida, aprovada por Pedro Soares com a concordância dos participantes.
