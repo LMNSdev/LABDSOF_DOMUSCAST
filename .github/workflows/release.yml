@@ -90,7 +90,7 @@ jobs:
           if [ "$deploy" = true ]; then
             echo "Deploy: sim (há alterações no servidor desde ${latest:-o início})" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → Deploy → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
+            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → 5. Deploy na VM (manual ou rollback) → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
   # Os jobs seguintes só correm quando este run criou uma versão nova

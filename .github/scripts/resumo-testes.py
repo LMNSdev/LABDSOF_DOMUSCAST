@@ -94,6 +94,8 @@ def main(argumentos: list[str]) -> str:
 
 
 if __name__ == "__main__":
+    # A consola do Windows (cp1252) não escreve os emojis; o Summary do GitHub é UTF-8.
+    sys.stdout.reconfigure(encoding="utf-8")
     try:
         print(main(sys.argv[1:]))
     except (OSError, ValueError, KeyError, ET.ParseError) as erro:
