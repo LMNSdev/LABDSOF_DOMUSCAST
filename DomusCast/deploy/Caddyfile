@@ -1,4 +1,6 @@
 # HTTPS automático (Let's Encrypt) para o endereço da VM; reencaminha para a API.
 {$DOMAIN} {
+	# T-07: as métricas só ficam na rede interna do Compose (TM-08).
+	respond /metrics* 404
 	reverse_proxy api:8000
 }
