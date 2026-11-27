@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../local/reunioes_cache.dart';
 import '../services/api_service.dart';
+import 'ata_screen.dart';
 import '../theme.dart';
 import 'nova_reuniao_screen.dart';
 
@@ -22,7 +23,8 @@ class ReunioesScreen extends StatelessWidget {
   final int? condominioId;
   final CacheReunioes? cache;
 
-  const ReunioesScreen({super.key, this.api, this.credencial, this.condominioId, this.cache});
+  const ReunioesScreen(
+      {super.key, this.api, this.credencial, this.condominioId, this.cache});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,10 @@ class ReunioesScreen extends StatelessWidget {
     final credencial = this.credencial;
     if (api != null && credencial != null) {
       return _ReunioesAdmin(
-          api: api, credencial: credencial, condominioId: condominioId, cache: cache);
+          api: api,
+          credencial: credencial,
+          condominioId: condominioId,
+          cache: cache);
     }
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(
@@ -44,7 +49,8 @@ class ReunioesScreen extends StatelessWidget {
               Icon(Icons.event_outlined, size: 56, color: muted),
               const SizedBox(height: 12),
               Text('As reuniões vão aparecer aqui.',
-                  textAlign: TextAlign.center, style: TextStyle(color: muted, fontSize: 16)),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: muted, fontSize: 16)),
             ],
           ),
         ),
@@ -83,17 +89,22 @@ class _ReunioesAdmin extends StatefulWidget {
   final CacheReunioes? cache;
 
   const _ReunioesAdmin(
-      {required this.api, required this.credencial, this.condominioId, this.cache});
+      {required this.api,
+      required this.credencial,
+      this.condominioId,
+      this.cache});
 
   @override
   State<_ReunioesAdmin> createState() => _ReunioesAdminState();
 }
 
-class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObserver {
+class _ReunioesAdminState extends State<_ReunioesAdmin>
+    with WidgetsBindingObserver {
   late final CacheReunioes _cache = widget.cache ?? SqliteCacheReunioes();
   List<Map<String, dynamic>> _reunioes = [];
   bool _aCarregar = true;
   String? _erro;
+  bool _incluirPassadas = false;
 
   /// A API não respondeu e a lista vem do telemóvel (ecrã 4 do wireframe).
   bool _guardadas = false;
@@ -136,7 +147,10 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
       });
     }
     try {
-      final reunioes = await widget.api.getReunioes(widget.credencial);
+      final reunioes = await widget.api.getReunioes(
+        widget.credencial,
+        incluirPassadas: _incluirPassadas,
+      );
       if (!mounted) return;
       setState(() {
         _reunioes = reunioes;
@@ -165,8 +179,11 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
       // Resposta que não é JSON (ex.: página HTML de um proxy).
       await _semApi();
     }
-    if (mounted && !_pausada && (_guardadas || _reunioes.any(_publicacaoPendente))) {
-      _atualizacao = Timer(intervaloAtualizacao, () => _carregar(silencioso: true));
+    if (mounted &&
+        !_pausada &&
+        (_guardadas || _reunioes.any(_publicacaoPendente))) {
+      _atualizacao =
+          Timer(intervaloAtualizacao, () => _carregar(silencioso: true));
     }
   }
 
@@ -197,18 +214,32 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
 
   Future<void> _agendar() async {
     final criada = await Navigator.of(context).push<bool>(MaterialPageRoute(
-      builder: (_) => NovaReuniaoScreen(api: widget.api, credencial: widget.credencial),
+      builder: (_) =>
+          NovaReuniaoScreen(api: widget.api, credencial: widget.credencial),
     ));
     if (criada != true || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reunião agendada.')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Reunião agendada.')));
     await _carregar();
   }
 
-  Widget _caixa(IconData icone, String texto, Color fundo, Color cor) => Container(
+  Future<void> _abrirAta(Map<String, dynamic> reuniao) async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => AtaScreen(
+        api: widget.api,
+        credencial: widget.credencial,
+        reuniao: reuniao,
+      ),
+    ));
+  }
+
+  Widget _caixa(IconData icone, String texto, Color fundo, Color cor) =>
+      Container(
         width: double.infinity,
         margin: const EdgeInsets.only(top: 8),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(color: fundo, borderRadius: BorderRadius.circular(8)),
+        decoration:
+            BoxDecoration(color: fundo, borderRadius: BorderRadius.circular(8)),
         child: Row(children: [
           Icon(icone, size: 18, color: cor),
           const SizedBox(width: 8),
@@ -217,11 +248,12 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
       );
 
   Widget _estado(String? estado) => switch (estado) {
-        'sincronizada' =>
-          _caixa(Icons.event_available, estadoPublicacao(estado), sucessoFundo, sucessoTexto),
-        'alternativo' =>
-          _caixa(Icons.warning_amber_rounded, estadoPublicacao(estado), avisoFundo, avisoTexto),
-        _ => _caixa(Icons.schedule, estadoPublicacao(estado), avisoFundo, avisoTexto),
+        'sincronizada' => _caixa(Icons.event_available,
+            estadoPublicacao(estado), sucessoFundo, sucessoTexto),
+        'alternativo' => _caixa(Icons.warning_amber_rounded,
+            estadoPublicacao(estado), avisoFundo, avisoTexto),
+        _ => _caixa(
+            Icons.schedule, estadoPublicacao(estado), avisoFundo, avisoTexto),
       };
 
   Widget _nota(ColorScheme scheme, String texto) => Padding(
@@ -232,31 +264,36 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final Widget corpo;
+    final Widget lista;
     if (_aCarregar) {
-      corpo = const Center(child: CircularProgressIndicator());
+      lista = const Center(child: CircularProgressIndicator());
     } else if (_erro != null) {
-      corpo = Center(
+      lista = Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(_erro!, textAlign: TextAlign.center),
-          TextButton(onPressed: _carregar, child: const Text('Tentar novamente')),
+          TextButton(
+              onPressed: _carregar, child: const Text('Tentar novamente')),
         ]),
       );
     } else if (_reunioes.isEmpty) {
-      corpo = Center(
+      lista = Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.event_outlined, size: 56, color: scheme.onSurfaceVariant),
+            Icon(Icons.event_outlined,
+                size: 56, color: scheme.onSurfaceVariant),
             const SizedBox(height: 12),
-            Text('Ainda não há reuniões agendadas.',
+            Text(
+                _incluirPassadas
+                    ? 'Ainda não há reuniões.'
+                    : 'Ainda não há reuniões agendadas.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 16)),
           ]),
         ),
       );
     } else {
-      corpo = RefreshIndicator(
+      lista = RefreshIndicator(
         onRefresh: _carregar,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -274,23 +311,32 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
             for (final r in _reunioes)
               Card(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Assembleia de condóminos',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    Text('${formatarReuniao(r['data_hora'] as String)}\n${r['local']}',
-                        style: TextStyle(color: scheme.onSurfaceVariant)),
-                    // Com a lista guardada, o estado pode já não ser o atual.
-                    if (!_guardadas) _estado(r['estado_sync'] as String?),
-                  ]),
+                child: InkWell(
+                  onTap: () => _abrirAta(r),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Assembleia de condóminos',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 16)),
+                          const SizedBox(height: 4),
+                          Text(
+                              '${formatarReuniao(r['data_hora'] as String)}\n${r['local']}',
+                              style: TextStyle(color: scheme.onSurfaceVariant)),
+                          // Com a lista guardada, o estado pode já não ser o atual.
+                          if (!_guardadas) _estado(r['estado_sync'] as String?),
+                        ]),
+                  ),
                 ),
               ),
             if (_guardadas)
-              _nota(scheme, 'A sincronização será tentada quando houver ligação.')
+              _nota(
+                  scheme, 'A sincronização será tentada quando houver ligação.')
             else ...[
-              if (_reunioes.any(_publicacaoPendente)) _nota(scheme, 'A sincronização é automática.'),
+              if (_reunioes.any(_publicacaoPendente))
+                _nota(scheme, 'A sincronização é automática.'),
               if (_reunioes.any((r) => r['estado_sync'] == 'alternativo'))
                 _nota(scheme, 'A API mantém os dados da reunião.'),
             ],
@@ -301,7 +347,21 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reuniões')),
-      body: corpo,
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Mostrar reuniões passadas'),
+            value: _incluirPassadas,
+            onChanged: (valor) {
+              setState(() => _incluirPassadas = valor);
+              _carregar();
+            },
+          ),
+        ),
+        Expanded(child: lista),
+      ]),
       bottomNavigationBar: _aCarregar
           ? null
           : SafeArea(
@@ -311,7 +371,8 @@ class _ReunioesAdminState extends State<_ReunioesAdmin> with WidgetsBindingObser
                   onPressed: _agendar,
                   icon: const Icon(Icons.add),
                   label: const Text('Agendar reunião'),
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
             ),

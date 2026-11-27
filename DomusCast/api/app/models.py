@@ -46,7 +46,15 @@ class EstadoSyncReuniao(str, enum.Enum):
 
 class EstadoAta(str, enum.Enum):
     rascunho = "rascunho"
+    a_transcrever = "a_transcrever"
+    pendente_revisao = "pendente_revisao"
+    falhou_transcricao = "falhou_transcricao"
     aprovada = "aprovada"
+
+
+class OrigemAta(str, enum.Enum):
+    ia = "ia"
+    manual = "manual"
 
 
 class EstadoJob(str, enum.Enum):
@@ -303,15 +311,20 @@ class Ata(Base):
     id = Column(Integer, primary_key=True)
     reuniao_id = Column(Integer, ForeignKey("reuniao.id"), nullable=False)
     audio_path = Column(String(500), nullable=True)
+    audio_sha256 = Column(String(64), nullable=True)
     transcricao = Column(Text, nullable=True)
     rascunho = Column(Text, nullable=True)
     texto_aprovado = Column(Text, nullable=True)
+    origem = Column(Enum(OrigemAta, name="origem_ata"), nullable=False, server_default="ia")
     estado = Column(
         Enum(EstadoAta, name="estado_ata"),
         nullable=False,
         server_default="rascunho",
     )
     aprovada_em = Column(DateTime(timezone=True), nullable=True)
+    aprovada_por = Column(Integer, ForeignKey("administrador.id"), nullable=True)
+
+    __table_args__ = (UniqueConstraint("reuniao_id", name="uq_ata_reuniao"),)
 
     reuniao = relationship("Reuniao", back_populates="atas")
 
@@ -323,6 +336,7 @@ class Job(Base):
     tipo = Column(String(100), nullable=False)
     chave_idempotencia = Column(String(128), nullable=False, unique=True)
     payload = Column(Text, nullable=True)
+    request_id = Column(String(36), nullable=True)
     estado = Column(
         Enum(EstadoJob, name="estado_job"),
         nullable=False,

@@ -8,7 +8,7 @@ from pydantic import (
     StringConstraints,
     field_validator,
 )
-from .models import EstadoReporte, EstadoSyncReuniao
+from .models import EstadoAta, EstadoReporte, EstadoSyncReuniao, OrigemAta
 
 MAX_FRACOES = 200
 
@@ -197,3 +197,15 @@ class ReuniaoOut(BaseModel):
     def com_fuso(cls, value: datetime) -> datetime:
         # O SQLite devolve datas sem fuso; os valores gravados estão em UTC.
         return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
+class AtaOut(BaseModel):
+    id: int
+    reuniao_id: int
+    estado: EstadoAta
+    origem: OrigemAta
+    audio_guardado: bool
+    erro_transcricao: str | None = None
+    transcricao: str | None = None
+    rascunho: str | None = None
+    texto_aprovado: str | None = None

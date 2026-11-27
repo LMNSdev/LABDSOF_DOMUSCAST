@@ -26,14 +26,43 @@ services:
     image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
     environment:
       DATABASE_URL: postgresql://condoapp:${POSTGRES_PASSWORD}@postgres:5432/condoapp
+      MEDIA_ROOT: /app/media
       # A API está atrás do Caddy: sem isto, request.client.host seria o IP do Caddy
       # e os limites por IP (US-01, US-15) contariam para todos os utilizadores juntos.
       # Confiar no X-Forwarded-For é seguro porque a API não tem portas publicadas
       # (só o Caddy lhe chega) e o Caddy substitui o cabeçalho enviado pelo cliente.
       FORWARDED_ALLOW_IPS: "*"
+    volumes:
+      - media:/app/media
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  worker:
+    image: ghcr.io/lmnsdev/domuscast-api:${IMAGE_TAG:?defina IMAGE_TAG (vX.Y.Z)}
+    command: ["python", "-m", "app.worker.main"]
+    environment:
+      DATABASE_URL: postgresql://condoapp:${POSTGRES_PASSWORD}@postgres:5432/condoapp
+      MEDIA_ROOT: /app/media
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     restart: unless-stopped
 
   # US-28: Worker do calendário e simulador, com a mesma imagem da API e outro
@@ -81,5 +110,6 @@ services:
 
 volumes:
   pgdata:
+  media:
   caddy_data:
   caddy_config:

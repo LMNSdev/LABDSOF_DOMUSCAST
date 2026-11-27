@@ -75,20 +75,23 @@ def listar_reunioes(
     quem: Annotated[models.Administrador | models.Identidade, Depends(utilizador_atual)],
     db: Annotated[Session, Depends(get_db)],
     desde: AwareDatetime | None = None,
+    incluir_passadas: bool = False,
 ):
     """US-13: reuniões do condomínio de quem pede, pela ordem da data.
 
-    Sem `desde`, as de hoje em diante (dia de Portugal continental). Com `desde`,
-    as criadas ou alteradas desde essa data (ex.: o Worker publicou-a, US-28),
-    para a app sincronizar só o que mudou (8.4).
+    Sem filtros, as de hoje em diante (dia de Portugal continental). O admin
+    usa `incluir_passadas` para anexar o áudio após a assembleia. Com `desde`,
+    as criadas ou alteradas desde essa data (US-28).
     """
     consulta = db.query(models.Reuniao).filter(
         models.Reuniao.condominio_id == _condominio_de(quem)
     )
-    if desde is None:
+    if incluir_passadas and not isinstance(quem, models.Administrador):
+        raise HTTPException(status_code=403, detail="Só o administrador pode consultar reuniões passadas.")
+    if desde is None and not incluir_passadas:
         hoje = datetime.now(FUSO).replace(hour=0, minute=0, second=0, microsecond=0)
         consulta = consulta.filter(models.Reuniao.data_hora >= hoje.astimezone(timezone.utc))
-    else:
+    elif desde is not None:
         consulta = consulta.filter(models.Reuniao.atualizado_em >= desde.astimezone(timezone.utc))
     try:
         return consulta.order_by(models.Reuniao.data_hora, models.Reuniao.id).all()

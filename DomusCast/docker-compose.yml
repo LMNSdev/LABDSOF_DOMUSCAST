@@ -27,6 +27,31 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build: ./api
+    command: ["python", "-m", "app.worker.main"]
+    environment:
+      DATABASE_URL: postgresql://condoapp:condoapp@postgres:5432/condoapp
+      MEDIA_ROOT: /app/media
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - reportes_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   # US-28: publica as reuniões no calendário externo (jobs publicar_calendario).
   # Mesma imagem da API, outro comando; as migrações correm no arranque da API.
