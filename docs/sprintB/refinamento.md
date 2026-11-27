@@ -206,8 +206,18 @@ As decisões tomadas já durante a implementação (partilha por imagem e link, 
 - **Âmbito:** só por HTTP contra os containers reais (API, `worker-calendario`, simulador e PostgreSQL), sem importar o código da API. Cobre a jornada do reporte (US-01, US-15, US-02, US-03, US-05, US-09), a publicação da reunião no calendário (US-13, US-28) e a condição de falha do calendário, com a recuperação.
 - **Tempo do job:** com `WORKER_BACKOFF_UNIDADE_S=1` as 5 tentativas do calendário cabem em cerca de 15 s; os quatro testes correm em menos de 30 s.
 - **Testes de UI:** ficam fora. Os ecrãs têm testes de widget e evidências no emulador; um teste no emulador na CI teria um custo de tempo e de estabilidade desproporcionado para este sprint.
-
 - **Sobreposição com o T-03 (Sprint C):** o T-03 previa automatizar na CI o calendário em baixo até `alternativo`. Essa parte fica feita aqui (`test_calendario_indisponivel_passa_a_alternativo` e `test_calendario_recupera_depois_de_falhar`), por isso o T-03 parte de `tests_e2e/` e deixa de a contar; o âmbito do T-03 foi ajustado no [Sprint C Backlog](../sprintC/backlog.md) e no [refinamento do Sprint C](../sprintC/refinamento.md#t-03-t-04-e-t-05-operação).
 - **Prova da tentativa falhada:** o simulador passa a contar os pedidos de criação por calendário (`GET /_chaos`, campo `pedidos`), também os que falham. O teste de recuperação espera que o Worker tenha tentado pelo menos uma vez com o serviço em baixo antes de o repor, em vez de esperar um tempo fixo. Acrescentado depois da revisão do PR #158.
 
 **Resultado:** DoR do T-06 cumprida, aprovada por Pedro Soares com a concordância dos participantes.
+
+### T-08: Relatórios dos testes e cobertura nos resultados da pipeline
+
+- **Porquê:** os testes já faziam a pipeline falhar, mas a prova de que passaram estava só no log de cada job, que é longo de ler e desaparece com o tempo. Os entregáveis 10 e 11 do Sprint 2 (testes e CI/CD) mostram-se melhor com um resumo por run.
+- **Item técnico e não defect:** nenhum documento pedia relatórios de testes, por isso não há um comportamento esperado que falhe (o critério do template de defect). Fica como T-08 (EP-04, issue #160), Should, porque os testes já correm e já bloqueiam.
+- **Âmbito:** relatório JUnit do pytest (API em SQLite, em PostgreSQL e end-to-end), JSON do `flutter test` e cobertura de linhas da API (`pytest-cov`), como artefactos e com um resumo no Summary, também quando os testes falham. Ficam fora os relatórios de lint, Semgrep, Trivy e gitleaks: já falham o job quando encontram algo, e um relatório vazio não prova nada.
+- **Cobertura sem mínimo:** informativa, para não bloquear PRs por uma percentagem.
+- **Sem actions de terceiros novas:** o resumo é um script do repositório (`.github/scripts/resumo-testes.py`), testado em `tests.sh`; a única action nova é a oficial `actions/upload-artifact`, fixada ao SHA.
+- **Nomes da pipeline:** no mesmo item, os workflows passam a numerados pela ordem do fluxo, os jobs ao formato `Área: o quê` e todos os passos têm nome, porque os nomes antigos não diziam o que cada workflow faz. Os nomes dos jobs são os das verificações obrigatórias da `main`; `Pipeline: testes dos scripts` passa também a obrigatória.
+
+**Resultado:** DoR do T-08 cumprida, aprovada por Pedro Soares com a concordância dos participantes.

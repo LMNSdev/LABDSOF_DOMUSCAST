@@ -73,3 +73,7 @@ mobile/ios/Runner/GeneratedPluginRegistrant.*
 .vscode/
 *.swp
 *.swo
+
+# Relatórios dos testes da pipeline (T-08), também gerados ao correr localmente
+resultados/
+.coverage

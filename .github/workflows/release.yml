@@ -1,6 +1,6 @@
-name: Release
+name: "4. Main: versão, imagem, APK e deploy"
 
-# Sempre que o CI passa na main (ou seja, depois de cada merge):
+# Sempre que o workflow 1 (testes e segurança) passa na main, ou seja, depois de cada merge:
 #   1. tag   - cria a tag de versão (vX.Y.Z) e a respetiva GitHub Release
 #              feat/* e feature/* -> MINOR | restantes branches/push direto -> PATCH
 #   2. image - publica a imagem da API no GHCR (ghcr.io/lmnsdev/domuscast-api)
@@ -14,7 +14,7 @@ name: Release
 # por isso a imagem, o APK e o deploy correm aqui.
 on:
   workflow_run:
-    workflows: [CI]
+    workflows: ["1. Testes e segurança (cada push)"] # o nome do workflow de ci.yml
     types: [completed]
     branches: [main]
 
@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   tag:
-    name: Tag + GitHub Release
+    name: "Versão: tag e GitHub Release"
     if: >
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
@@ -42,7 +42,8 @@ jobs:
       version: ${{ steps.release.outputs.version }}
       deploy: ${{ steps.release.outputs.deploy }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Obter o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0 # histórico + tags
@@ -89,7 +90,7 @@ jobs:
           if [ "$deploy" = true ]; then
             echo "Deploy: sim (há alterações no servidor desde ${latest:-o início})" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → Deploy → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
+            echo "Deploy: não (sem alterações em DomusCast/api nem DomusCast/deploy desde $latest; para implantar à mão: Actions → 5. Deploy na VM (manual ou rollback) → Run workflow)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
   # Os jobs seguintes só correm quando este run criou uma versão nova
@@ -104,7 +105,8 @@ jobs:
       contents: read
       packages: write # publicar no GitHub Container Registry
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Obter o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           persist-credentials: false
@@ -135,16 +137,19 @@ jobs:
       run:
         working-directory: DomusCast/mobile
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Obter o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           persist-credentials: false
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+      - name: Instalar o Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: "3.47.x"
           channel: stable
           cache: true
-      - run: flutter pub get
+      - name: Instalar as dependências da app
+        run: flutter pub get
 
       - name: Build do APK
         env:
@@ -170,7 +175,7 @@ jobs:
           echo "### APK \`domuscast-$VERSION.apk\` anexado à release" >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
-    name: Deploy
+    name: Deploy na VM
     needs: [tag, image]
     if: needs.tag.outputs.version != '' && needs.tag.outputs.deploy == 'true'
     permissions:

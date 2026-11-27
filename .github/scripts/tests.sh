@@ -66,5 +66,40 @@ check "área desconhecida recusada"       "$(bash $pr mensagem 'Coisas: várias'
 check "issue sem descrição recusada"     "$(bash $pr mensagem '[#12] - ')"                         false
 check "issue sem separador recusada"     "$(bash $pr mensagem '[#12] Formulário')"                 false
 
+# Resumo dos testes (T-08): relatórios pequenos escritos aqui, no formato do pytest e do flutter.
+rt=.github/scripts/resumo-testes.py
+tmp=$(mktemp -d)
+cat > "$tmp/ok.xml" <<'EOF'
+<testsuites><testsuite name="pytest" tests="3"><testcase classname="tests.test_a" name="test_um" time="0.5"/><testcase classname="tests.test_a" name="test_dois" time="0.25"/><testcase classname="tests.test_a" name="test_tres" time="0.25"><skipped message="x"/></testcase></testsuite></testsuites>
+EOF
+cat > "$tmp/falha.xml" <<'EOF'
+<testsuites><testsuite name="pytest" tests="2"><testcase classname="tests.test_b" name="test_ok" time="1"/><testcase classname="tests.test_b" name="test_partido" time="1"><failure message="assert"/></testcase></testsuite></testsuites>
+EOF
+cat > "$tmp/cobertura.xml" <<'EOF'
+<coverage line-rate="0.873" branch-rate="0"></coverage>
+EOF
+cat > "$tmp/flutter.json" <<'EOF'
+{"protocolVersion":"0.1.1","type":"start","time":0}
+{"test":{"id":1,"name":"loading test/a_test.dart"},"type":"testStart","time":1}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":2}
+{"test":{"id":2,"name":"mostra o formulário"},"type":"testStart","time":3}
+{"testID":2,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4}
+{"test":{"id":3,"name":"anuncia o erro"},"type":"testStart","time":5}
+{"testID":3,"result":"failure","skipped":false,"hidden":false,"type":"testDone","time":6}
+{"success":false,"type":"done","time":2500}
+EOF
+linha() { python3 $rt "$@" | grep '^| [0-9]'; }
+check "pytest verde: totais"              "$(linha junit API "$tmp/ok.xml")"                  "| 3 | 2 | 0 | 1 | 1,0 s |"
+check "pytest verde: título com ✅"       "$(python3 $rt junit API "$tmp/ok.xml" | head -1)"   "### ✅ API"
+check "pytest com falha: totais"          "$(linha junit API "$tmp/falha.xml")"               "| 2 | 1 | 1 | 0 | 2,0 s |"
+check "pytest com falha: lista o teste"   "$(python3 $rt junit API "$tmp/falha.xml" | grep -c 'tests.test_b::test_partido')" 1
+check "cobertura em percentagem"          "$(python3 $rt junit API "$tmp/ok.xml" "$tmp/cobertura.xml" | tail -1)" "Cobertura de linhas: **87,3%**"
+check "flutter ignora os passos internos" "$(linha flutter App "$tmp/flutter.json")"          "| 2 | 1 | 1 | 0 | 2,5 s |"
+check "flutter lista o teste que falhou"  "$(python3 $rt flutter App "$tmp/flutter.json" | grep -c 'anuncia o erro')" 1
+check "sem relatório não falha o passo"   "$(python3 $rt junit API "$tmp/nao-existe.xml" > /dev/null; echo $?)" 0
+echo "isto não é XML" > "$tmp/estragado.xml"
+check "relatório estragado não falha"     "$(python3 $rt junit API "$tmp/estragado.xml" | grep -c 'Não foi possível ler')" 1
+rm -rf "$tmp"
+
 echo
 if [ "$falhas" -eq 0 ]; then echo "Todos os testes passaram."; else echo "$falhas teste(s) falharam."; exit 1; fi
