@@ -245,3 +245,30 @@ def test_calendario_recupera_depois_de_falhar(api, calendario, condominio):
         "a reunião ficar sincronizada depois de o serviço voltar",
     )
     assert any(e["id"] == f"domuscast{reuniao['id']}" for e in _eventos(calendario, condominio))
+
+
+def _contador(api, etiquetas: str) -> float:
+    """Valor de `pedidos_total{...}` no /metrics da API (0 se a série ainda não existe)."""
+    r = api.get("/metrics")
+    assert r.status_code == 200, r.text
+    for linha in r.text.splitlines():
+        if linha.startswith(f"pedidos_total{{{etiquetas}}} "):
+            return float(linha.split()[-1])
+    return 0.0
+
+
+def test_metrics_conta_os_pedidos_da_api(api, condominio):
+    """T-07: o /metrics da API responde e conta os pedidos pelo modelo da rota."""
+    sem_credencial = 'codigo="401",metodo="GET",rota="/reportes"'
+    admin = 'codigo="200",metodo="GET",rota="/condominios/{condominio_id}/fracoes"'
+    antes = (_contador(api, sem_credencial), _contador(api, admin))
+
+    assert api.get("/reportes").status_code == 401
+    r = api.get(
+        f"/condominios/{condominio['id']}/fracoes", headers=_auth(condominio["admin"])
+    )
+    assert r.status_code == 200, r.text
+
+    assert _contador(api, sem_credencial) == antes[0] + 1
+    # O id do condomínio não aparece nas etiquetas: conta no modelo da rota.
+    assert _contador(api, admin) == antes[1] + 1
