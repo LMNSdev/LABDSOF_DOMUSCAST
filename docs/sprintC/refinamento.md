@@ -14,7 +14,7 @@ Aqui ficam as sessões de refinamento do Sprint C. Em cada uma, a equipa prepara
 - **Could:** US-11, US-17, US-34, US-16, US-12, US-33 e US-21.
 - **Itens técnicos T-01 a T-05:** cobrem o que os [objetivos do Sprint C](../sprintA/sprintA.md#61-objetivos-dos-sprints) pedem e que não é uma user story: avaliação formal da IA, resiliência, carga e dashboard. A apresentação final fica fora do Sprint Backlog, porque não é incremento de produto.
 
-**Compromisso:** 23 SP (Should e itens técnicos), com as Could (7 SP) como esforço adicional por prioridade, como no Sprint B. Se uma história do Sprint B não cumprir a DoD a 2026-12-06, entra no topo do Sprint C e é revista no refinamento seguinte.
+**Compromisso:** 22 SP (Should e itens técnicos; eram 23 até à revisão de 2026-11-27), com as Could (7 SP) como esforço adicional por prioridade, como no Sprint B. Se uma história do Sprint B não cumprir a DoD a 2026-12-06, entra no topo do Sprint C e é revista no refinamento seguinte.
 
 **Distribuição end-to-end:** os itens que dependem uns dos outros ficam com a mesma pessoa, que continua o trabalho do Sprint B na mesma área:
 
@@ -24,7 +24,7 @@ Aqui ficam as sessões de refinamento do Sprint C. Em cada uma, a equipa prepara
 | Luis Santos | US-19, US-30, US-33, US-12, US-21 | 5 | Administradores, papéis e identidade; continua a US-01, a US-20 e a US-23 |
 | Marco Garcia | US-11, US-17, US-16, US-08 | 6 | Notificações, seguir, indicador e acessibilidade, quase tudo na app |
 | Leonardo Costa | US-26, T-01, T-02 | 6 | Atas e avaliação da IA; continua a US-10 |
-| Pedro Soares | T-03, T-04, T-05 | 7 | Operação: resiliência, carga e dashboard; continua o Worker e o simulador da US-28 |
+| Pedro Soares | T-03, T-04, T-05 | 6 | Operação: resiliência, carga e dashboard; continua o Worker e o simulador da US-28 |
 
 **Wireframes:** os 13 wireframes abaixo, em `design/`, foram revistos e aprovados na sessão. Seguem o estilo dos do Sprint B. A US-08 e os itens técnicos não criam ecrãs.
 
@@ -175,9 +175,19 @@ Sem wireframe: a história não cria ecrãs, corrige os da US-02 e da US-03.
 
 - **Resiliência (T-03):** os cinco cenários de 8.6 (IA, calendário, rede, Worker e base de dados em baixo) correm com Docker Compose e o `/_chaos` do simulador. O que se automatiza entra na CI. Os restantes ficam com passos, resultado esperado e obtido, logs e screenshots em `docs/sprintC/resiliencia.md`.
 - **Carga (T-04):** k6 contra `POST /reportes` e `GET /reportes` com dados sintéticos, num ambiente igual ao da VM. Mede o p95 (< 1 s) e a disponibilidade (99%) de 8.7 e o ponto em que deixam de se cumprir, para decidir se a VM de 2 vCPU e 4 GB chega (8.10). Corre depois do T-05, para ler CPU, memória e latência do lado do servidor.
-- **Dashboard (T-05):** `GET /metrics` na API e no Worker com `prometheus-client` e as métricas de 8.5 e 8.7. Os containers `prometheus` e `grafana` são provisionados por ficheiro, para `docker compose up` trazer o dashboard pronto. O `/metrics` só fica na rede interna do Compose e o Caddy não o encaminha (TM-08). As etiquetas das métricas não levam nomes nem conteúdo.
+- **Dashboard (T-05):** os containers `prometheus` e `grafana` são provisionados por ficheiro, para `docker compose up` trazer o dashboard pronto. O Prometheus lê o `/metrics` da API e dos workers, que o T-07 (Sprint B) já entrega, pela rede interna do Compose; nem o Prometheus nem o Grafana ficam públicos (TM-08).
 - **Painéis do Grafana:** disponibilidade e latência p95 de `POST /reportes`, pedidos por código, jobs por estado e por tipo, duração dos jobs, falhas de integração por provider (calendário e IA) e idade do job pendente mais antigo.
 
 **Modelo de dados e API:** as colunas novas (`reporte.oculto_em`, `reporte.oculto_por`, `reporte_historico.acao`, `administrador.removido_por`) e as rotas novas (`POST /avisos/{id}/arquivar`, `GET /identidades/me`) foram acrescentadas ao [8.3](../sprintA/sprintA.md#83-modelo-de-dados) e ao [8.4](../sprintA/sprintA.md#84-api-esboço) do Technical Design. Os números das migrações escolhem-se na implementação, a seguir à última da `main`, porque há migrações do Sprint B ainda por integrar.
 
 **Resultado:** DoR cumprida em todos os itens do [Sprint C Backlog](backlog.md), validada por todos os participantes. Falta criar as issues GitHub de cada item, ou atualizar as que já existem, com o responsável atribuído no GitHub Projects.
+
+## 2026-11-27
+
+### T-05: Dashboard operacional
+
+- **Âmbito reduzido:** o entregável 12 do Sprint 2 pede métricas iniciais, por isso o `/metrics` da API e do `worker-calendario` passou para o Sprint B, no item técnico T-07 (#159), com os logs estruturados. O T-05 fica só com o Prometheus, o Grafana e o dashboard.
+- **Estimativa:** de 3 para 2 SP. O compromisso do Sprint C passa de 23 para 22 SP e o Pedro Soares fica com 6 SP.
+- **Dependência nova:** o T-05 depende do T-07, que fecha no Sprint B.
+
+**Resultado:** DoR do T-05 revista e cumprida.
