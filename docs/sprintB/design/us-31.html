@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-31 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border-radius:10px;padding:10px}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn2{border:1.5px solid #0F3478;color:#0F3478;border-radius:10px;padding:9px;text-align:center;font-weight:600}
+.note{font-size:11px;color:#667}
+.status{background:#fff2d6;border-radius:8px;padding:8px}
+.ok{background:#dff5e3;border-radius:8px;padding:8px;color:#1c6b2c}
+.err{background:#fde3e1;border-radius:8px;padding:8px;color:#8a1c12}
+.field{background:#fff;border:1px solid #c5cbd6;border-radius:8px;padding:8px;color:#444;min-height:150px}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-31: modo degradado visível</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. Só o administrador vê estes avisos. Com o calendário externo em baixo, as reuniões continuam no feed iCal e a publicação volta a ser tentada de hora a hora. Com a IA em baixo, o aviso aparece logo à primeira falha e a ata manual (US-25) fica disponível.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Reuniões</div><div class="body"><div class="status">Calendário externo indisponível. As reuniões continuam no feed iCal e a publicação volta a ser tentada automaticamente.</div><div class="card"><b>Assembleia de condóminos</b><div class="note">02/12/2026 às 19:00 · Garagem</div><div class="status">Serviço externo indisponível. Disponível no feed iCal.</div></div></div></div><div class="cap"><b>1. Calendário em baixo</b>Aviso no topo enquanto houver reuniões futuras em "alternativo". O estado do cartão é o da US-28.</div></div>
+<div><div class="phone"><div class="bar">Reuniões</div><div class="body"><div class="card"><b>Assembleia de condóminos</b><div class="note">02/12/2026 às 19:00 · Garagem</div><div class="ok">Sincronizada com o calendário</div></div></div></div><div class="cap"><b>2. Calendário recuperado</b>Uma nova tentativa resultou: o aviso desaparece sem ação do administrador.</div></div>
+<div><div class="phone"><div class="bar">Ata da reunião</div><div class="body"><div class="card"><b>Assembleia de condóminos</b><div class="note">02/12/2026 · áudio enviado</div></div><div class="status">O serviço de IA não respondeu. Nova tentativa às 19:42 (tentativa 2 de 5).</div><div class="note">Pode escrever a ata manualmente. A transcrição em curso é cancelada.</div><div class="btn2">Escrever ata manualmente</div></div></div><div class="cap"><b>3. IA a falhar</b>Logo depois da 1.ª falha, com a hora da próxima tentativa.</div></div>
+<div><div class="phone"><div class="bar">Ata da reunião</div><div class="body"><div class="err">A transcrição falhou após várias tentativas. O áudio continua guardado.</div><div class="btn">Tentar transcrição novamente</div><div class="btn2">Escrever ata manualmente</div></div></div><div class="cap"><b>4. IA em baixo</b>Estado da US-10 depois das 5 tentativas, com a ata manual ao lado.</div></div>
+<div><div class="phone"><div class="bar">Ata manual</div><div class="body"><div class="field">Aos dois dias de dezembro, reuniu a assembleia de condóminos…</div><div class="note">Ata escrita pelo administrador. Só é publicada depois de aprovada.</div><div class="btn">Guardar rascunho</div></div></div><div class="cap"><b>5. Ata manual</b>Fluxo da US-25. Uma resposta tardia da IA não substitui este texto.</div></div>
+</div>
+</body>
+</html>
