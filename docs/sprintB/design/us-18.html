@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US-18 wireframe</title>
+<style>
+body{margin:0;padding:24px;background:#fff;color:#1b1b1b;font-family:system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 6px}
+.subtitle{color:#555;max-width:1250px;margin:0 0 22px;line-height:1.45}
+.flow{display:flex;gap:18px;align-items:flex-start}
+.phone{width:230px;border:2px solid #333;border-radius:26px;overflow:hidden;background:#F0F4FB;font-size:12px}
+.bar{background:#0F3478;color:#fff;padding:12px 14px;font-weight:700;font-size:14px}
+.body{padding:14px;min-height:380px;display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border-radius:10px;padding:10px}
+.btn{background:#0F3478;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:600}
+.btn2{border:1.5px solid #0F3478;color:#0F3478;border-radius:10px;padding:9px;text-align:center;font-weight:600}
+.note{font-size:11px;color:#667}
+.status{background:#fff2d6;border-radius:8px;padding:8px}
+.err{background:#fde3e1;border-radius:8px;padding:8px;color:#8a1c12}
+.field{background:#fff;border:1px solid #c5cbd6;border-radius:8px;padding:8px;color:#444}
+.snack{background:#323232;color:#fff;border-radius:8px;padding:9px;margin-top:auto}
+.strip{background:#0F3478;color:#fff;border-radius:8px;padding:8px;font-weight:600}
+.cap{width:230px;font-size:13px;margin-top:6px}
+.cap b{display:block}
+</style>
+</head>
+<body>
+<h1>US-18: fila local sem internet</h1>
+<p class="subtitle">Proposta de wireframe para validação da equipa. O que se cria sem ligação fica numa fila no telemóvel, com o autor, e é enviado quando a ligação volta, por ordem dentro de cada tipo (reportes, reuniões, áudio). Um item que a API recusa não se perde: fica em "Por enviar" com o motivo. Sem ligação, a lista de reportes mostra a última lista recebida. A mesma faixa aparece na lista de reuniões do administrador.</p>
+<div class="flow">
+<div><div class="phone"><div class="bar">Novo reporte</div><div class="body"><div class="field">Lâmpada fundida no 2.º andar</div><div class="field">Foto: escada.jpg<br><span class="note">Texto alternativo: lâmpada do patamar apagada</span></div><div class="btn">Enviar</div><div class="snack">Sem ligação. O reporte fica guardado e é enviado quando a ligação voltar.</div></div></div><div class="cap"><b>1. Guardar sem ligação</b>Também com foto. Mesma mensagem da US-02; a reunião e o áudio têm a sua variante.</div></div>
+<div><div class="phone"><div class="bar">Reportes</div><div class="body"><div class="strip">Por enviar (2) &rsaquo;</div><div class="card"><b>Portão da garagem não fecha</b><div class="note">Aberto · 20/11</div></div><div class="card"><b>Infiltração na arrecadação</b><div class="note">Em curso · 18/11</div></div></div></div><div class="cap"><b>2. Faixa "Por enviar"</b>No topo da lista enquanto houver itens na fila. Desaparece quando tudo foi enviado.</div></div>
+<div><div class="phone"><div class="bar">Reportes</div><div class="body"><div class="status">Sem ligação. A mostrar a lista guardada de 26/11 às 18:10.</div><div class="card"><b>Portão da garagem não fecha</b><div class="note">Aberto · 20/11</div><div class="note">Foto disponível com ligação</div></div><div class="card"><b>Infiltração na arrecadação</b><div class="note">Em curso · 18/11</div></div><div class="note">A lista atualiza sozinha quando a ligação voltar.</div></div></div><div class="cap"><b>3. Lista guardada</b>Sem ligação ou API em baixo: última lista desta sessão e deste filtro, com a data. Sem fotos nem histórico.</div></div>
+<div><div class="phone"><div class="bar">Por enviar</div><div class="body"><div class="note"><b>Reportes</b></div><div class="card"><b>Lâmpada fundida no 2.º andar</b><div class="note">Com foto · 26/11 18:02</div><div class="status">A aguardar ligação</div></div><div class="card"><b>Ruído no elevador</b><div class="note">26/11 18:05</div><div class="status">A aguardar ligação</div></div><div class="note">Cada tipo é enviado por esta ordem.</div></div></div><div class="cap"><b>4. Pendentes</b>Agrupados por tipo, por ordem de criação. Uma falha de rede para o envio sem mudar a ordem.</div></div>
+<div><div class="phone"><div class="bar">Por enviar</div><div class="body"><div class="card"><b>Assembleia de condóminos</b><div class="note">Reunião · 24/11 às 19:00 · Garagem</div><div class="err">Não enviada: a data já passou.</div><div class="btn">Agendar de novo</div><div class="btn2">Remover</div></div></div></div><div class="cap"><b>5. Recusado pela API</b>Fica no telemóvel com o motivo. A reunião abre o formulário da US-13 já preenchido.</div></div>
+<div><div class="phone"><div class="bar">DomusCast</div><div class="body"><div class="err"><b>O seu acesso foi removido</b></div><div class="card">2 itens por enviar ficaram guardados neste telemóvel. Não são enviados com outra identidade.</div><div class="btn">Ler QR code</div></div></div><div class="cap"><b>6. Identidade removida</b>401 (US-23): os itens desse autor ficam recusados e guardados, sem envio.</div></div>
+</div>
+</body>
+</html>
