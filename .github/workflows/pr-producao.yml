@@ -99,7 +99,20 @@ jobs:
           TEST_DATABASE_URL: postgresql://condoapp:condoapp@localhost:5432/ci_testes
         run: |
           psql -d condoapp -c "CREATE DATABASE ci_testes"
-          pytest tests/ -v
+          pytest tests/ -v --junitxml=resultados/pytest-postgres.xml
+
+      # T-08: prova dos testes em PostgreSQL no Summary e nos artefactos do run.
+      - name: Resumo dos testes
+        if: ${{ !cancelled() }}
+        run: >
+          python3 ../../.github/scripts/resumo-testes.py junit "API - testes em PostgreSQL"
+          resultados/pytest-postgres.xml >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: api-testes-postgres
+          path: DomusCast/api/resultados/
+          if-no-files-found: warn
 
   docker:
     name: Docker - arranque, /health e Trivy

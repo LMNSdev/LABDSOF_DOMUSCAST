@@ -40,7 +40,23 @@ jobs:
       - run: ruff check .
       # Vulnerabilidades conhecidas nas dependências de produção
       - run: pip-audit -r requirements.txt
-      - run: pytest tests/ -v
+      # T-08: relatório JUnit e cobertura como prova no Summary e nos artefactos do run.
+      - name: Testes
+        run: >
+          pytest tests/ -v
+          --junitxml=resultados/pytest.xml
+          --cov=app --cov-report=term --cov-report=xml:resultados/cobertura.xml
+      - name: Resumo dos testes
+        if: ${{ !cancelled() }}
+        run: >
+          python3 ../../.github/scripts/resumo-testes.py junit "API - testes (SQLite)"
+          resultados/pytest.xml resultados/cobertura.xml >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: api-testes
+          path: DomusCast/api/resultados/
+          if-no-files-found: warn
 
   mobile:
     name: Mobile - analyze + tests
@@ -60,7 +76,22 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
+      # T-08: relatório JSON do flutter test (o output da consola não muda).
+      - name: Testes
+        run: |
+          mkdir -p resultados
+          flutter test --file-reporter json:resultados/flutter-test.json
+      - name: Resumo dos testes
+        if: ${{ !cancelled() }}
+        run: >
+          python3 ../../.github/scripts/resumo-testes.py flutter "App - testes de widget"
+          resultados/flutter-test.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: mobile-testes
+          path: DomusCast/mobile/resultados/
+          if-no-files-found: warn
 
   sast:
     name: SAST - Semgrep
